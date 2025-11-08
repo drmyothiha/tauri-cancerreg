@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tauri App</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Material Icons for VS Code-like icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <!-- Custom Title Bar -->
+    <div class="titlebar">
+        <!-- Drag Region -->
+        <div class="titlebar-drag-region"></div>
+        
+        <!-- App Icon and Title -->
+        <div class="titlebar-left">
+            <div class="app-icon">💻</div>
+            <span class="network-status app-title">My Tauri App</span>
+        </div>
+
+        <!-- Menu Bar (VS Code Style) -->
+        <div class="menu-bar">
+            <div class="menu-item" data-menu="file">
+    File
+    <div class="menu-dropdown" id="file-menu">
+        <div class="menu-option" data-action="new-file">
+            <span class="menu-icon">📄</span>
+            New Patient
+            <span class="menu-shortcut">Ctrl+N</span>
+        </div>
+        <div class="menu-option" data-action="open-file">
+            <span class="menu-icon">📁</span>
+            Open File...
+            <span class="menu-shortcut">Ctrl+O</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-option" data-action="save">
+            <span class="menu-icon">💾</span>
+            Save
+            <span class="menu-shortcut">Ctrl+S</span>
+        </div>
+        <div class="menu-divider"></div>
+        <!-- Login/Logout items -->
+        <div class="menu-option" data-action="login" id="login-menu-item">
+            <span class="menu-icon">🔐</span>
+            Login
+        </div>
+        <div class="menu-option" data-action="logout" id="logout-menu-item" style="display: none;">
+            <span class="menu-icon">🚪</span>
+            Logout
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-option" data-action="exit">
+            <span class="menu-icon">🚪</span>
+            Exit
+            <span class="menu-shortcut">Alt+F4</span>
+        </div>
+    </div>
+</div>
+            
+            <div class="menu-item" data-menu="edit">
+                Edit
+                <div class="menu-dropdown" id="edit-menu">
+                    <div class="menu-option" data-action="undo">
+                        <span class="menu-icon">↶</span>
+                        Undo
+                        <span class="menu-shortcut">Ctrl+Z</span>
+                    </div>
+                    <div class="menu-option" data-action="redo">
+                        <span class="menu-icon">↷</span>
+                        Redo
+                        <span class="menu-shortcut">Ctrl+Y</span>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-option" data-action="cut">
+                        <span class="menu-icon">✂️</span>
+                        Cut
+                        <span class="menu-shortcut">Ctrl+X</span>
+                    </div>
+                    <div class="menu-option" data-action="copy">
+                        <span class="menu-icon">📋</span>
+                        Copy
+                        <span class="menu-shortcut">Ctrl+C</span>
+                    </div>
+                    <div class="menu-option" data-action="paste">
+                        <span class="menu-icon">📝</span>
+                        Paste
+                        <span class="menu-shortcut">Ctrl+V</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item" data-menu="view">
+                View
+                <div class="menu-dropdown" id="view-menu">
+                    <div class="menu-option" data-action="command-palette">
+                        <span class="menu-icon">⌘</span>
+                        Command Palette...
+                        <span class="menu-shortcut">Ctrl+Shift+P</span>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-option" data-action="zoom-in">
+                        <span class="menu-icon">🔍</span>
+                        Zoom In
+                        <span class="menu-shortcut">Ctrl+=</span>
+                    </div>
+                    <div class="menu-option" data-action="zoom-out">
+                        <span class="menu-icon">🔍</span>
+                        Zoom Out
+                        <span class="menu-shortcut">Ctrl+-</span>
+                    </div>
+                    <div class="menu-option" data-action="reset-zoom">
+                        <span class="menu-icon">🔍</span>
+                        Reset Zoom
+                        <span class="menu-shortcut">Ctrl+0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item" data-menu="help">
+                Help
+                <div class="menu-dropdown" id="help-menu">
+                    <div class="menu-option" data-action="welcome">
+                        <span class="menu-icon">👋</span>
+                        Welcome
+                    </div>
+                    <div class="menu-option" data-action="documentation">
+                        <span class="menu-icon">📚</span>
+                        Documentation
+                    </div>
+                    <div class="menu-divider"></div>
+                    <div class="menu-option" data-action="about">
+                        <span class="menu-icon">ℹ️</span>
+                        About
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Window Controls -->
+        <div class="window-controls">
+            <button class="window-control window-control-minimize" id="minimize-button">
+                <span>−</span>
+            </button>
+            <button class="window-control window-control-maximize" id="maximize-button">
+                <span>□</span>
+            </button>
+            <button class="window-control window-control-close" id="close-button">
+                <span>×</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Tab Navigation -->
+<nav class="tab-nav">
+    <div class="nav-container">
+        <button class="tab-button active" data-page="home.html">
+            <span class="material-icons">home</span>
+            Home
+        </button>
+        <button class="tab-button" data-page="new-patient.html">
+            <span class="material-icons">person_add</span>
+            New Patient
+        </button>
+        <button class="tab-button" data-page="patients.html">
+            <span class="material-icons">groups</span>
+            Patients
+        </button>
+        <button class="tab-button" data-page="report.html">
+            <span class="material-icons">assessment</span>
+            Report
+        </button>
+    </div>
+</nav>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <div id="content-container">
+                <div class="welcome-message">
+                    <h1>Welcome to My Tauri App! 🚀</h1>
+                    <p>Select a tab to begin exploring.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+<!-- Bottom Toolbar -->
+<div class="bottom-toolbar">
+  <div class="status-left">
+    <span class="material-icons">wifi</span>
+    <span id="network-status-text">Checking network...</span>
+  </div>
+  <div class="status-right">
+    <span class="material-icons">info</span>
+    <span>v1.0.0</span>
+  </div>
+</div>
+	
+    <script type="module" src="/src/titlebar.js"></script>
+	
+	<script src="src/auth.js"></script> 
+    <script src="src/tabs.js"></script>
+
+
+<!-- Modal -->
+<div id="login-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Login</h3>
+      <button type="button" class="modal-close" id="close-login">&times;</button>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label" for="login-username">Username</label>
+        <input type="text" id="login-username" class="form-input" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input type="password" id="login-password" class="form-input" required>
+      </div>
+
+      <div id="login-error" class="error-message" style="display:none;">Invalid credentials</div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancel-login">Cancel</button>
+        <button type="submit" class="btn-primary">Login</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const loginModal = document.getElementById('login-modal');
+  const cancelBtn = document.getElementById('cancel-login');
+  const loginForm = document.getElementById('login-form');
+
+  function openLoginModal() {
+    loginModal.classList.add('show');
+  }
+
+  function closeLoginModal() {
+    loginModal.classList.remove('show');
+    document.getElementById('login-error').style.display = 'none';
+  }
+
+  // Open modal from menu
+  const loginMenuItem = document.getElementById('login-menu-item');
+  loginMenuItem?.addEventListener('click', openLoginModal);
+
+  // Cancel button closes modal
+  cancelBtn?.addEventListener('click', closeLoginModal);
+
+  // Close by clicking on overlay
+  loginModal.addEventListener('click', e => {
+    if (e.target === loginModal) closeLoginModal();
+  });
+
+  // Login form submission
+  loginForm?.addEventListener('submit', e => {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+
+    // TODO: replace this with your fetch to API
+    if (username === 'admin' && password === '1234') {
+      alert('Login success');
+      closeLoginModal();
+    } else {
+      const errorEl = document.getElementById('login-error');
+      errorEl.style.display = 'block';
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login Modal Test</title>
+<style>
+  /* ===== Base Reset ===== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: #ddd;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* ===== Modal Overlay ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;           /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  /* ===== Modal Box ===== */
+  .modal-content {
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 8px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    padding: 24px;
+    animation: popIn 0.2s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    color: #fff;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 20px;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover {
+    color: white;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    background: #1e1e1e;
+    color: #fff;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-primary {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+  }
+
+  .btn-secondary {
+    background: #3e3e42;
+    color: #ccc;
+    border: 1px solid #3e3e42;
+    padding: 8px 16px;
+    border-radius: 4px;
+  }
+
+  .btn-primary:hover { background: #005a9e; }
+  .btn-secondary:hover { background: #4e4e52; color: #fff; }
+
+  .error-message {
+    color: #f48771;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<button id="open-login">Open Login Modal</button>
+
+<!-- Modal -->
+<div id="login-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Login</h3>
+      <button type="button" class="modal-close" id="close-login">&times;</button>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label" for="login-username">Username</label>
+        <input type="text" id="login-username" class="form-input" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input type="password" id="login-password" class="form-input" required>
+      </div>
+
+      <div id="login-error" class="error-message" style="display:none;">Invalid credentials</div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancel-login">Cancel</button>
+        <button type="submit" class="btn-primary">Login</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const loginModal = document.getElementById('login-modal');
+  const openBtn = document.getElementById('open-login');
+  const closeBtn = document.getElementById('close-login');
+  const cancelBtn = document.getElementById('cancel-login');
+
+  openBtn.addEventListener('click', openLoginModal);
+  closeBtn.addEventListener('click', closeLoginModal);
+  cancelBtn.addEventListener('click', closeLoginModal);
+  loginModal.addEventListener('click', e => {
+    if (e.target === loginModal) closeLoginModal();
+  });
+
+  function openLoginModal() {
+    loginModal.classList.add('show');
+  }
+
+  function closeLoginModal() {
+    loginModal.classList.remove('show');
+  }
+
+  document.getElementById('login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    console.log('Logging in:', username, password);
+    closeLoginModal();
+  });
+</script>
+
+</body>
+</html>
