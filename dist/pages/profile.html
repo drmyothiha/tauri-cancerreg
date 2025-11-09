@@ -1,0 +1,154 @@
+<div class="page-content">
+        <div class="container mx-auto px-6 py-8">
+        <!-- Key Metrics -->
+        <div id="dashboard-metrics" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"></div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Cancer Types Distribution</h3>
+                <div class="h-80"><canvas id="cancerTypesChart"></canvas></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Registrations</h3>
+                <div class="h-80"><canvas id="monthlyChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Hospital Updates</h3>
+            <div id="recent-activity" class="space-y-4"></div>
+        </div>
+    </div>
+</div>
+
+<script src="vendor/chart.js"></script>
+<script>
+
+
+async function loadRealDashboard(forceReload = false) {
+    // Try cache first
+    if (!forceReload) {
+        const cached = localStorage.getItem("dashboardData");
+        if (cached) {
+            try {
+                API_DATA.dashboard = JSON.parse(cached);
+                renderDashboardMetrics();
+                renderRecentActivity();
+                updateDashboardCharts();
+                return;
+            } catch {}
+        }
+    }
+
+    try {
+        const res = await apiFetch("https://api.cancerreg.org/v1/dashboard");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rawData = await res.json();
+
+        // Safe parsing
+        const summary = rawData.summary || {};
+        const charts = rawData.charts || {};
+
+        API_DATA.dashboard = {
+            metrics: {
+                totalHospitals: 127,
+                activeCases: summary.total_patients || 0,
+                newThisMonth: (charts.cases_by_year || [])
+                    .filter(y => y.year === '2025')
+                    .reduce((s, y) => s + (y.count || 0), 0),
+                regionsCovered: 14
+            },
+            cancerTypes: {
+                labels: (charts.top_sites || []).map(i => i.site),
+                data: (charts.top_sites || []).map(i => i.count)
+            },
+            monthlyRegistrations: {
+                labels: (charts.cases_by_year || []).map(y => y.year),
+                data: (charts.cases_by_year || []).map(y => y.count)
+            },
+            recentActivity: [{
+                id: 1,
+                hospitalCode: "YGH",
+                hospitalName: "Yangon General Hospital",
+                activity: "Updated records",
+                timeAgo: "Just now",
+                status: "Active",
+                bgColor: "bg-blue-500"
+            }]
+        };
+
+        localStorage.setItem("dashboardData", JSON.stringify(API_DATA.dashboard));
+
+        renderDashboardMetrics();
+        renderRecentActivity();
+        updateDashboardCharts();
+
+    } catch (err) {
+        alert("Could not load live data.");
+    }
+}
+
+
+// ===== Rendering helpers (unchanged) =====
+function renderDashboardMetrics() {
+    const cont = document.getElementById("dashboard-metrics");
+    const m = API_DATA.dashboard.metrics;
+    cont.innerHTML = [
+        { label: "Total Hospitals", value: m.totalHospitals, icon: "🏥", color: "blue" },
+        { label: "Active Cases", value: m.activeCases, icon: "📊", color: "green" },
+        { label: "New This Month", value: m.newThisMonth, icon: "📈", color: "yellow" },
+        { label: "Regions Covered", value: m.regionsCovered, icon: "🗺️", color: "purple" }
+    ].map(i => `
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-${i.color}-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">${i.label}</p>
+                    <p class="text-3xl font-bold text-gray-900">${i.value}</p>
+                </div>
+                <div class="w-12 h-12 bg-${i.color}-100 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">${i.icon}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderRecentActivity() {
+    const cont = document.getElementById("recent-activity");
+    cont.innerHTML = API_DATA.dashboard.recentActivity.map(a => `
+        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+            <div class="w-10 h-10 ${a.bgColor} rounded-full flex items-center justify-center text-white font-bold">
+                ${a.hospitalCode}
+            </div>
+            <div class="flex-1">
+                <p class="font-medium text-gray-800">${a.hospitalName}</p>
+                <p class="text-sm text-gray-600">${a.activity} - ${a.timeAgo}</p>
+            </div>
+            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">${a.status}</span>
+        </div>
+    `).join('');
+}
+
+function updateDashboardCharts() {
+    const d = API_DATA.dashboard;
+    if (!d) return;
+
+    const ctx1 = document.getElementById("cancerTypesChart").getContext("2d");
+    if (cancerTypesChart) cancerTypesChart.destroy();
+    cancerTypesChart = new Chart(ctx1, {
+        type: "doughnut",
+        data: { labels: d.cancerTypes.labels, datasets: [{ data: d.cancerTypes.data }] },
+        options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+    });
+
+    const ctx2 = document.getElementById("monthlyChart").getContext("2d");
+    if (monthlyChart) monthlyChart.destroy();
+    monthlyChart = new Chart(ctx2, {
+        type: "bar",
+        data: { labels: d.monthlyRegistrations.labels, datasets: [{ data: d.monthlyRegistrations.data }] },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+}
+</script>

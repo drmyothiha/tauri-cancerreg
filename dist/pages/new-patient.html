@@ -1,0 +1,503 @@
+<div class="page-content">
+    <h1>New Patient Registration</h1>
+    <p>Add a new patient to the cancer registry system.</p>
+
+    <form id="bioForm" class="patient-form">
+        <!-- ====== Patient Info Section ====== -->
+        <div class="form-section">
+            <h3 class="section-title">Patient Information</h3>
+            <div class="form-grid">
+                <!-- Left Column -->
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="regs" class="form-label">Reg</label>
+                        <input type="text" id="regs" name="cancer_registry[Reg]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rank" class="form-label">Rank</label>
+                        <input type="text" id="rank" list="ranks" name="cancer_registry[Rank]" class="form-input" />
+                        <datalist id="ranks">
+                            <option value="rm"><option value="lcpl"><option value="cpl"><option value="sgt">
+                            <option value="sgt/clk"><option value="WOII"><option value="WOI"><option value="slt">
+                            <option value="lt"><option value="Capt"><option value="Maj"><option value="LtCol">
+                            <option value="Col"><option value="Bg"><option value="Gen">
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" class="form-label">Patient Name *</label>
+                        <input type="text" id="name" name="cancer_registry[Name]" required class="form-input" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dob" class="form-label">Date of Birth</label>
+                            <input type="date" id="dob" name="cancer_registry[dob]" class="form-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" id="m" name="cancer_registry[Sex]" value="m" class="radio-input" />
+                                    <span class="radio-text">Male</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" id="f" name="cancer_registry[Sex]" value="f" class="radio-input" />
+                                    <span class="radio-text">Female</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="MaritalStatus" class="form-label">Marital Status</label>
+                        <input type="text" id="MaritalStatus" name="cancer_registry[MaritalStatus]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Spouse" class="form-label">Spouse / Relative Name</label>
+                        <input type="text" id="Spouse" name="cancer_registry[Spouse]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Relationship" class="form-label">Relationship</label>
+                        <input type="text" id="Relationship" list="relationships" name="cancer_registry[Relationship]" class="form-input" />
+                        <datalist id="relationships">
+                            <option value="self"><option value="fo"><option value="mo"><option value="spouse">
+                            <option value="so"><option value="do"><option value="civilian">
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Unit" class="form-label">Unit</label>
+                        <input type="text" id="Unit" name="cancer_registry[Unit]" class="form-input" />
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="Address" class="form-label">Address / Town</label>
+                        <input type="text" id="Address" name="cancer_registry[Address]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Medical History</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="PreviousCA" name="cancer_registry[PreviousCA]" class="checkbox-input" />
+                                <span class="checkbox-text">Previous CA</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="FamilyCA" name="cancer_registry[FamilyCA]" class="checkbox-input" />
+                                <span class="checkbox-text">Family CA</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="Recurrent" name="cancer_registry[Recurrent]" class="checkbox-input" />
+                                <span class="checkbox-text">Recurrent?</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PatientType" class="form-label">Patient Type</label>
+                        <input type="text" id="PatientType" name="cancer_registry[PatientType]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Smoking" class="form-label">Smoking</label>
+                        <input type="text" id="Smoking" name="cancer_registry[Smoking]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Alcohol_Frequency" class="form-label">Alcohol Frequency</label>
+                        <input type="text" id="Alcohol_Frequency" name="cancer_registry[Alcohol_Frequency]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="BMI" class="form-label">BMI</label>
+                        <input type="text" id="BMI" name="cancer_registry[BMI]" class="form-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== Treatments Section ====== -->
+        <div class="form-section">
+            <h3 class="section-title">Treatments</h3>
+            <div class="form-grid">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="WorkingDiagnosis" class="form-label">Working Diagnosis</label>
+                        <input type="text" id="WorkingDiagnosis" name="treatments[WorkingDiagnosis]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Disease" class="form-label">Disease</label>
+                        <input type="text" id="Disease" name="treatments[Disease]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ICD11" class="form-label">ICD11</label>
+                        <input type="text" id="ICD11" name="treatments[ICD11]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caSite" class="form-label">Ca Site</label>
+                        <input type="text" id="caSite" name="treatments[caSite]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mcode" class="form-label">Morphology Code</label>
+                        <input type="text" id="mcode" name="treatments[mcode]" class="form-input" />
+                    </div>
+                </div>
+
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="ctMriResult" class="form-label">CT/MRI Result</label>
+                        <textarea id="ctMriResult" name="treatments[ctMriResult]" rows="3" class="form-textarea"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetedTreatment" class="form-label">Targeted Treatment</label>
+                        <input type="text" id="targetedTreatment" name="treatments[targetedTreatment]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hormonalTreatment" class="form-label">Hormonal Treatment</label>
+                        <textarea id="hormonalTreatment" name="treatments[hormonalTreatment]" rows="3" class="form-textarea"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="immunotherapy" class="form-label">Immunotherapy</label>
+                        <textarea id="immunotherapy" name="treatments[immunotherapy]" rows="3" class="form-textarea"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="radiationType" class="form-label">Radiation Type</label>
+                        <input type="text" id="radiationType" name="treatments[radiationType]" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="indicationForCyberknife" name="treatments[indicationForCyberknife]" class="checkbox-input" />
+                            <span class="checkbox-text">Indication For Cyberknife</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-actions">
+            <button type="button" id="save" class="submit-button">
+                <span class="material-icons">save</span>
+                Save Patient
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Use the same apiFetch function from home.html
+async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem("authToken");
+    const headers = options.headers || {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    headers["Content-Type"] = "application/json";
+    options.headers = headers;
+
+    const res = await fetch(url, options);
+    return res;
+}
+
+document.getElementById("save").addEventListener("click", async () => {
+    const form = document.getElementById("bioForm");
+    const saveButton = document.getElementById("save");
+    
+    // Show loading state
+    saveButton.innerHTML = '<span class="material-icons">hourglass_empty</span> Saving...';
+    saveButton.disabled = true;
+
+    const formData = new FormData(form);
+
+    // Convert FormData to nested object structure
+    const data = {};
+    for (const [key, value] of formData.entries()) {
+        const match = key.match(/^([^\[]+)\[([^\]]+)\]$/);
+        if (match) {
+            const group = match[1];
+            const field = match[2];
+            data[group] = data[group] || {};
+            data[group][field] = value;
+        } else {
+            data[key] = value;
+        }
+    }
+
+    // Handle checkboxes (unchecked ones are not in FormData)
+    form.querySelectorAll("input[type=checkbox]").forEach(chk => {
+        const match = chk.name.match(/^([^\[]+)\[([^\]]+)\]$/);
+        if (match) {
+            const group = match[1];
+            const field = match[2];
+            data[group] = data[group] || {};
+            data[group][field] = chk.checked ? "1" : "0"; // store as string "1"/"0" for SQLite
+        }
+    });
+
+    // Optional: ensure empty strings for missing fields
+    ["cancer_registry", "treatments"].forEach(group => {
+        data[group] = data[group] || {};
+    });
+
+    console.log("Submitting JSON:", JSON.stringify(data, null, 2));
+
+    try {
+        const response = await apiFetch("https://api.cancerreg.org/v1/pts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        console.log("Response:", result);
+
+        if (response.ok) {
+            if (window.titlebarManager && window.titlebarManager.showNotification) {
+                window.titlebarManager.showNotification("Patient record saved successfully!");
+            } else {
+                alert("Patient record saved successfully!");
+            }
+            form.reset();
+        } else {
+            const errorMessage = result.message || "Unknown error occurred";
+            if (window.titlebarManager && window.titlebarManager.showNotification) {
+                window.titlebarManager.showNotification("Error: " + errorMessage);
+            } else {
+                alert("Error: " + errorMessage);
+            }
+        }
+    } catch (error) {
+        console.error("Network error:", error);
+        const errorMessage = "Failed to connect to server. Please check your connection.";
+        if (window.titlebarManager && window.titlebarManager.showNotification) {
+            window.titlebarManager.showNotification(errorMessage);
+        } else {
+            alert(errorMessage);
+        }
+    } finally {
+        // Reset button state
+        saveButton.innerHTML = '<span class="material-icons">save</span> Save Patient';
+        saveButton.disabled = false;
+    }
+});
+
+// Add some form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bioForm');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.classList.add('form-input-error');
+            } else {
+                this.classList.remove('form-input-error');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.patient-form {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: #252526;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #3e3e42;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    margin: 0 0 20px 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 2px solid #007acc;
+    padding-bottom: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #cccccc;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-input, .form-textarea {
+    background: #2d2d30;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.form-input::placeholder, .form-textarea::placeholder {
+    color: #666;
+}
+
+.form-input-error {
+    border-color: #f48771 !important;
+    box-shadow: 0 0 0 2px rgba(244, 135, 113, 0.2) !important;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* Radio and Checkbox Styles */
+.radio-group, .checkbox-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.radio-label, .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #cccccc;
+    font-size: 14px;
+}
+
+.radio-input, .checkbox-input {
+    width: 18px;
+    height: 18px;
+    accent-color: #007acc;
+    cursor: pointer;
+}
+
+.radio-text, .checkbox-text {
+    user-select: none;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #3e3e42;
+}
+
+.submit-button {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+    background: #005a9e;
+}
+
+.submit-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-section {
+        padding: 20px;
+    }
+    
+    .radio-group, .checkbox-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* Datalist styling */
+datalist {
+    background: #2d2d30;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+}
+
+datalist option {
+    background: #2d2d30;
+    color: #ffffff;
+    padding: 8px 12px;
+}
+
+datalist option:hover {
+    background: #007acc;
+}
+</style>
