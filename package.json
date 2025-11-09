@@ -1,0 +1,17 @@
+{
+  "name": "tauri-vanilla-sqlite",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --outfile=dist/main.js --format=esm",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "esbuild": "^0.26.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.9.0"
+  }
+}
