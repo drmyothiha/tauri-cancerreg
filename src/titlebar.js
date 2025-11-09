@@ -173,6 +173,14 @@ class TitlebarManager {
             case 'exit':
                 this.closeWindow();
                 break;
+			case 'refresh-dashboard':
+            // Force reload the dashboard
+            if (window.tabManager) {
+                window.tabManager.switchToPage('home.html');
+                // Also trigger refresh from home.js
+                import('./home.js').then(mod => mod.loadRealDashboard(true));
+            }
+            break;
             // ... other cases
             default:
                 console.log('Unknown action:', action);

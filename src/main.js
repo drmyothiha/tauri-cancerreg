@@ -3,3 +3,6 @@ import './titlebar.js';
 import './auth.js';
 import './tabs.js';
 //import './database.js';
+// main.js
+import './home.js';
+
