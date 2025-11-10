@@ -8,19 +8,40 @@
     "beforeDevCommand": "npm run build",
     "beforeBuildCommand": "npm run build"
   },
-  "app": {
+"app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "tauri-vanilla-sqlite",
-        "width": 800,
-        "height": 600,
-        "minWidth": 400,
-        "minHeight": 300
+        "title": "CancerReg",
+        "width": 1200,
+        "height": 730,
+        "resizable": true,
+        "decorations": false,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true,
+        "center": true,
+        "devtools": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+    {
+      "identifier": "window-controls",
+      "description": "Allows controlling window (minimize, maximize, close)",
+      "permissions": [
+        "core:default",
+        "core:window:allow-close",
+        "core:window:allow-minimize",
+        "core:window:allow-maximize",
+        "core:window:allow-unmaximize",
+        "core:window:allow-toggle-maximize"
+      ],
+      "windows": ["main"],
+      "local": true
+    }
+  ]
     }
   },
   "bundle": {

@@ -1,8 +1,10 @@
 // src/main.js - Main entry point
 import './titlebar.js';
+import './status.js';
 import './auth.js';
 import './tabs.js';
 //import './database.js';
 // main.js
 import './home.js';
+
 

@@ -1,2243 +1,418 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-
-// node_modules/@tauri-apps/api/external/tslib/tslib.es6.js
-function __classPrivateFieldGet(receiver, state, kind, f) {
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-function __classPrivateFieldSet(receiver, state, value, kind, f) {
-  if (kind === "m") throw new TypeError("Private method is not writable");
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-}
-var init_tslib_es6 = __esm({
-  "node_modules/@tauri-apps/api/external/tslib/tslib.es6.js"() {
+// src/titlebar.js
+var TitlebarManager = class {
+  constructor() {
+    this.isMaximized = false;
+    this.appWindow = null;
+    this.initializeTauri();
   }
-});
-
-// node_modules/@tauri-apps/api/core.js
-function transformCallback(callback2, once2 = false) {
-  return window.__TAURI_INTERNALS__.transformCallback(callback2, once2);
-}
-async function invoke(cmd, args = {}, options) {
-  return window.__TAURI_INTERNALS__.invoke(cmd, args, options);
-}
-var _Channel_onmessage, _Channel_nextMessageIndex, _Channel_pendingMessages, _Channel_messageEndIndex, _Resource_rid, SERIALIZE_TO_IPC_FN, Channel, Resource;
-var init_core = __esm({
-  "node_modules/@tauri-apps/api/core.js"() {
-    init_tslib_es6();
-    SERIALIZE_TO_IPC_FN = "__TAURI_TO_IPC_KEY__";
-    Channel = class {
-      constructor(onmessage) {
-        _Channel_onmessage.set(this, void 0);
-        _Channel_nextMessageIndex.set(this, 0);
-        _Channel_pendingMessages.set(this, []);
-        _Channel_messageEndIndex.set(this, void 0);
-        __classPrivateFieldSet(this, _Channel_onmessage, onmessage || (() => {
-        }), "f");
-        this.id = transformCallback((rawMessage) => {
-          const index2 = rawMessage.index;
-          if ("end" in rawMessage) {
-            if (index2 == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
-              this.cleanupCallback();
-            } else {
-              __classPrivateFieldSet(this, _Channel_messageEndIndex, index2, "f");
-            }
-            return;
-          }
-          const message = rawMessage.message;
-          if (index2 == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
-            __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message);
-            __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
-            while (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") in __classPrivateFieldGet(this, _Channel_pendingMessages, "f")) {
-              const message2 = __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
-              __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message2);
-              delete __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
-              __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
-            }
-            if (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") === __classPrivateFieldGet(this, _Channel_messageEndIndex, "f")) {
-              this.cleanupCallback();
-            }
-          } else {
-            __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[index2] = message;
-          }
-        });
-      }
-      cleanupCallback() {
-        window.__TAURI_INTERNALS__.unregisterCallback(this.id);
-      }
-      set onmessage(handler) {
-        __classPrivateFieldSet(this, _Channel_onmessage, handler, "f");
-      }
-      get onmessage() {
-        return __classPrivateFieldGet(this, _Channel_onmessage, "f");
-      }
-      [(_Channel_onmessage = /* @__PURE__ */ new WeakMap(), _Channel_nextMessageIndex = /* @__PURE__ */ new WeakMap(), _Channel_pendingMessages = /* @__PURE__ */ new WeakMap(), _Channel_messageEndIndex = /* @__PURE__ */ new WeakMap(), SERIALIZE_TO_IPC_FN)]() {
-        return `__CHANNEL__:${this.id}`;
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    Resource = class {
-      get rid() {
-        return __classPrivateFieldGet(this, _Resource_rid, "f");
-      }
-      constructor(rid) {
-        _Resource_rid.set(this, void 0);
-        __classPrivateFieldSet(this, _Resource_rid, rid, "f");
-      }
-      /**
-       * Destroys and cleans up this resource from memory.
-       * **You should not call any method on this object anymore and should drop any reference to it.**
-       */
-      async close() {
-        return invoke("plugin:resources|close", {
-          rid: this.rid
-        });
-      }
-    };
-    _Resource_rid = /* @__PURE__ */ new WeakMap();
-  }
-});
-
-// node_modules/@tauri-apps/api/dpi.js
-var LogicalSize, PhysicalSize, Size, LogicalPosition, PhysicalPosition, Position;
-var init_dpi = __esm({
-  "node_modules/@tauri-apps/api/dpi.js"() {
-    init_core();
-    LogicalSize = class {
-      constructor(...args) {
-        this.type = "Logical";
-        if (args.length === 1) {
-          if ("Logical" in args[0]) {
-            this.width = args[0].Logical.width;
-            this.height = args[0].Logical.height;
-          } else {
-            this.width = args[0].width;
-            this.height = args[0].height;
-          }
-        } else {
-          this.width = args[0];
-          this.height = args[1];
-        }
-      }
-      /**
-       * Converts the logical size to a physical one.
-       * @example
-       * ```typescript
-       * import { LogicalSize } from '@tauri-apps/api/dpi';
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       *
-       * const appWindow = getCurrentWindow();
-       * const factor = await appWindow.scaleFactor();
-       * const size = new LogicalSize(400, 500);
-       * const physical = size.toPhysical(factor);
-       * ```
-       *
-       * @since 2.0.0
-       */
-      toPhysical(scaleFactor) {
-        return new PhysicalSize(this.width * scaleFactor, this.height * scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          width: this.width,
-          height: this.height
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    PhysicalSize = class {
-      constructor(...args) {
-        this.type = "Physical";
-        if (args.length === 1) {
-          if ("Physical" in args[0]) {
-            this.width = args[0].Physical.width;
-            this.height = args[0].Physical.height;
-          } else {
-            this.width = args[0].width;
-            this.height = args[0].height;
-          }
-        } else {
-          this.width = args[0];
-          this.height = args[1];
-        }
-      }
-      /**
-       * Converts the physical size to a logical one.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const appWindow = getCurrentWindow();
-       * const factor = await appWindow.scaleFactor();
-       * const size = await appWindow.innerSize(); // PhysicalSize
-       * const logical = size.toLogical(factor);
-       * ```
-       */
-      toLogical(scaleFactor) {
-        return new LogicalSize(this.width / scaleFactor, this.height / scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          width: this.width,
-          height: this.height
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    Size = class {
-      constructor(size) {
-        this.size = size;
-      }
-      toLogical(scaleFactor) {
-        return this.size instanceof LogicalSize ? this.size : this.size.toLogical(scaleFactor);
-      }
-      toPhysical(scaleFactor) {
-        return this.size instanceof PhysicalSize ? this.size : this.size.toPhysical(scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          [`${this.size.type}`]: {
-            width: this.size.width,
-            height: this.size.height
-          }
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    LogicalPosition = class {
-      constructor(...args) {
-        this.type = "Logical";
-        if (args.length === 1) {
-          if ("Logical" in args[0]) {
-            this.x = args[0].Logical.x;
-            this.y = args[0].Logical.y;
-          } else {
-            this.x = args[0].x;
-            this.y = args[0].y;
-          }
-        } else {
-          this.x = args[0];
-          this.y = args[1];
-        }
-      }
-      /**
-       * Converts the logical position to a physical one.
-       * @example
-       * ```typescript
-       * import { LogicalPosition } from '@tauri-apps/api/dpi';
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       *
-       * const appWindow = getCurrentWindow();
-       * const factor = await appWindow.scaleFactor();
-       * const position = new LogicalPosition(400, 500);
-       * const physical = position.toPhysical(factor);
-       * ```
-       *
-       * @since 2.0.0
-       */
-      toPhysical(scaleFactor) {
-        return new PhysicalPosition(this.x * scaleFactor, this.y * scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          x: this.x,
-          y: this.y
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    PhysicalPosition = class {
-      constructor(...args) {
-        this.type = "Physical";
-        if (args.length === 1) {
-          if ("Physical" in args[0]) {
-            this.x = args[0].Physical.x;
-            this.y = args[0].Physical.y;
-          } else {
-            this.x = args[0].x;
-            this.y = args[0].y;
-          }
-        } else {
-          this.x = args[0];
-          this.y = args[1];
-        }
-      }
-      /**
-       * Converts the physical position to a logical one.
-       * @example
-       * ```typescript
-       * import { PhysicalPosition } from '@tauri-apps/api/dpi';
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       *
-       * const appWindow = getCurrentWindow();
-       * const factor = await appWindow.scaleFactor();
-       * const position = new PhysicalPosition(400, 500);
-       * const physical = position.toLogical(factor);
-       * ```
-       *
-       * @since 2.0.0
-       */
-      toLogical(scaleFactor) {
-        return new LogicalPosition(this.x / scaleFactor, this.y / scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          x: this.x,
-          y: this.y
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-    Position = class {
-      constructor(position) {
-        this.position = position;
-      }
-      toLogical(scaleFactor) {
-        return this.position instanceof LogicalPosition ? this.position : this.position.toLogical(scaleFactor);
-      }
-      toPhysical(scaleFactor) {
-        return this.position instanceof PhysicalPosition ? this.position : this.position.toPhysical(scaleFactor);
-      }
-      [SERIALIZE_TO_IPC_FN]() {
-        return {
-          [`${this.position.type}`]: {
-            x: this.position.x,
-            y: this.position.y
-          }
-        };
-      }
-      toJSON() {
-        return this[SERIALIZE_TO_IPC_FN]();
-      }
-    };
-  }
-});
-
-// node_modules/@tauri-apps/api/event.js
-async function _unlisten(event, eventId) {
-  window.__TAURI_EVENT_PLUGIN_INTERNALS__.unregisterListener(event, eventId);
-  await invoke("plugin:event|unlisten", {
-    event,
-    eventId
-  });
-}
-async function listen(event, handler, options) {
-  var _a;
-  const target = typeof (options === null || options === void 0 ? void 0 : options.target) === "string" ? { kind: "AnyLabel", label: options.target } : (_a = options === null || options === void 0 ? void 0 : options.target) !== null && _a !== void 0 ? _a : { kind: "Any" };
-  return invoke("plugin:event|listen", {
-    event,
-    target,
-    handler: transformCallback(handler)
-  }).then((eventId) => {
-    return async () => _unlisten(event, eventId);
-  });
-}
-async function once(event, handler, options) {
-  return listen(event, (eventData) => {
-    void _unlisten(event, eventData.id);
-    handler(eventData);
-  }, options);
-}
-async function emit(event, payload) {
-  await invoke("plugin:event|emit", {
-    event,
-    payload
-  });
-}
-async function emitTo(target, event, payload) {
-  const eventTarget = typeof target === "string" ? { kind: "AnyLabel", label: target } : target;
-  await invoke("plugin:event|emit_to", {
-    target: eventTarget,
-    event,
-    payload
-  });
-}
-var TauriEvent;
-var init_event = __esm({
-  "node_modules/@tauri-apps/api/event.js"() {
-    init_core();
-    (function(TauriEvent2) {
-      TauriEvent2["WINDOW_RESIZED"] = "tauri://resize";
-      TauriEvent2["WINDOW_MOVED"] = "tauri://move";
-      TauriEvent2["WINDOW_CLOSE_REQUESTED"] = "tauri://close-requested";
-      TauriEvent2["WINDOW_DESTROYED"] = "tauri://destroyed";
-      TauriEvent2["WINDOW_FOCUS"] = "tauri://focus";
-      TauriEvent2["WINDOW_BLUR"] = "tauri://blur";
-      TauriEvent2["WINDOW_SCALE_FACTOR_CHANGED"] = "tauri://scale-change";
-      TauriEvent2["WINDOW_THEME_CHANGED"] = "tauri://theme-changed";
-      TauriEvent2["WINDOW_CREATED"] = "tauri://window-created";
-      TauriEvent2["WEBVIEW_CREATED"] = "tauri://webview-created";
-      TauriEvent2["DRAG_ENTER"] = "tauri://drag-enter";
-      TauriEvent2["DRAG_OVER"] = "tauri://drag-over";
-      TauriEvent2["DRAG_DROP"] = "tauri://drag-drop";
-      TauriEvent2["DRAG_LEAVE"] = "tauri://drag-leave";
-    })(TauriEvent || (TauriEvent = {}));
-  }
-});
-
-// node_modules/@tauri-apps/api/image.js
-function transformImage(image) {
-  const ret = image == null ? null : typeof image === "string" ? image : image instanceof Image ? image.rid : image;
-  return ret;
-}
-var Image;
-var init_image = __esm({
-  "node_modules/@tauri-apps/api/image.js"() {
-    init_core();
-    Image = class _Image extends Resource {
-      /**
-       * Creates an Image from a resource ID. For internal use only.
-       *
-       * @ignore
-       */
-      constructor(rid) {
-        super(rid);
-      }
-      /** Creates a new Image using RGBA data, in row-major order from top to bottom, and with specified width and height. */
-      static async new(rgba, width, height) {
-        return invoke("plugin:image|new", {
-          rgba: transformImage(rgba),
-          width,
-          height
-        }).then((rid) => new _Image(rid));
-      }
-      /**
-       * Creates a new image using the provided bytes by inferring the file format.
-       * If the format is known, prefer [@link Image.fromPngBytes] or [@link Image.fromIcoBytes].
-       *
-       * Only `ico` and `png` are supported (based on activated feature flag).
-       *
-       * Note that you need the `image-ico` or `image-png` Cargo features to use this API.
-       * To enable it, change your Cargo.toml file:
-       * ```toml
-       * [dependencies]
-       * tauri = { version = "...", features = ["...", "image-png"] }
-       * ```
-       */
-      static async fromBytes(bytes) {
-        return invoke("plugin:image|from_bytes", {
-          bytes: transformImage(bytes)
-        }).then((rid) => new _Image(rid));
-      }
-      /**
-       * Creates a new image using the provided path.
-       *
-       * Only `ico` and `png` are supported (based on activated feature flag).
-       *
-       * Note that you need the `image-ico` or `image-png` Cargo features to use this API.
-       * To enable it, change your Cargo.toml file:
-       * ```toml
-       * [dependencies]
-       * tauri = { version = "...", features = ["...", "image-png"] }
-       * ```
-       */
-      static async fromPath(path) {
-        return invoke("plugin:image|from_path", { path }).then((rid) => new _Image(rid));
-      }
-      /** Returns the RGBA data for this image, in row-major order from top to bottom.  */
-      async rgba() {
-        return invoke("plugin:image|rgba", {
-          rid: this.rid
-        }).then((buffer) => new Uint8Array(buffer));
-      }
-      /** Returns the size of this image.  */
-      async size() {
-        return invoke("plugin:image|size", { rid: this.rid });
-      }
-    };
-  }
-});
-
-// node_modules/@tauri-apps/api/window.js
-var window_exports = {};
-__export(window_exports, {
-  CloseRequestedEvent: () => CloseRequestedEvent,
-  Effect: () => Effect,
-  EffectState: () => EffectState,
-  LogicalPosition: () => LogicalPosition,
-  LogicalSize: () => LogicalSize,
-  PhysicalPosition: () => PhysicalPosition,
-  PhysicalSize: () => PhysicalSize,
-  ProgressBarStatus: () => ProgressBarStatus,
-  UserAttentionType: () => UserAttentionType,
-  Window: () => Window,
-  availableMonitors: () => availableMonitors,
-  currentMonitor: () => currentMonitor,
-  cursorPosition: () => cursorPosition,
-  getAllWindows: () => getAllWindows,
-  getCurrentWindow: () => getCurrentWindow,
-  monitorFromPoint: () => monitorFromPoint,
-  primaryMonitor: () => primaryMonitor
-});
-function getCurrentWindow() {
-  return new Window(window.__TAURI_INTERNALS__.metadata.currentWindow.label, {
-    // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-    skip: true
-  });
-}
-async function getAllWindows() {
-  return invoke("plugin:window|get_all_windows").then((windows) => windows.map((w) => new Window(w, {
-    // @ts-expect-error `skip` is not defined in the public API but it is handled by the constructor
-    skip: true
-  })));
-}
-function mapMonitor(m) {
-  return m === null ? null : {
-    name: m.name,
-    scaleFactor: m.scaleFactor,
-    position: new PhysicalPosition(m.position),
-    size: new PhysicalSize(m.size),
-    workArea: {
-      position: new PhysicalPosition(m.workArea.position),
-      size: new PhysicalSize(m.workArea.size)
+  /**
+   * Initialize Tauri window API and set up event listeners
+   * This assumes Tauri is always available (remove browser mock logic)
+   */
+  initializeTauri() {
+    try {
+      const { getCurrentWindow } = window.__TAURI__.window;
+      this.appWindow = getCurrentWindow();
+      this.setupEventListeners();
+      this.initializeWindowState();
+    } catch (error) {
+      console.error("Failed to initialize Tauri window API:", error);
     }
-  };
-}
-async function currentMonitor() {
-  return invoke("plugin:window|current_monitor").then(mapMonitor);
-}
-async function primaryMonitor() {
-  return invoke("plugin:window|primary_monitor").then(mapMonitor);
-}
-async function monitorFromPoint(x, y) {
-  return invoke("plugin:window|monitor_from_point", {
-    x,
-    y
-  }).then(mapMonitor);
-}
-async function availableMonitors() {
-  return invoke("plugin:window|available_monitors").then((ms) => ms.map(mapMonitor));
-}
-async function cursorPosition() {
-  return invoke("plugin:window|cursor_position").then((v) => new PhysicalPosition(v));
-}
-var UserAttentionType, CloseRequestedEvent, ProgressBarStatus, localTauriEvents, Window, BackgroundThrottlingPolicy, ScrollBarStyle, Effect, EffectState;
-var init_window = __esm({
-  "node_modules/@tauri-apps/api/window.js"() {
-    init_dpi();
-    init_dpi();
-    init_event();
-    init_core();
-    init_image();
-    (function(UserAttentionType2) {
-      UserAttentionType2[UserAttentionType2["Critical"] = 1] = "Critical";
-      UserAttentionType2[UserAttentionType2["Informational"] = 2] = "Informational";
-    })(UserAttentionType || (UserAttentionType = {}));
-    CloseRequestedEvent = class {
-      constructor(event) {
-        this._preventDefault = false;
-        this.event = event.event;
-        this.id = event.id;
-      }
-      preventDefault() {
-        this._preventDefault = true;
-      }
-      isPreventDefault() {
-        return this._preventDefault;
-      }
-    };
-    (function(ProgressBarStatus2) {
-      ProgressBarStatus2["None"] = "none";
-      ProgressBarStatus2["Normal"] = "normal";
-      ProgressBarStatus2["Indeterminate"] = "indeterminate";
-      ProgressBarStatus2["Paused"] = "paused";
-      ProgressBarStatus2["Error"] = "error";
-    })(ProgressBarStatus || (ProgressBarStatus = {}));
-    localTauriEvents = ["tauri://created", "tauri://error"];
-    Window = class {
-      /**
-       * Creates a new Window.
-       * @example
-       * ```typescript
-       * import { Window } from '@tauri-apps/api/window';
-       * const appWindow = new Window('my-label');
-       * appWindow.once('tauri://created', function () {
-       *  // window successfully created
-       * });
-       * appWindow.once('tauri://error', function (e) {
-       *  // an error happened creating the window
-       * });
-       * ```
-       *
-       * @param label The unique window label. Must be alphanumeric: `a-zA-Z-/:_`.
-       * @returns The {@link Window} instance to communicate with the window.
-       */
-      constructor(label, options = {}) {
-        var _a;
-        this.label = label;
-        this.listeners = /* @__PURE__ */ Object.create(null);
-        if (!(options === null || options === void 0 ? void 0 : options.skip)) {
-          invoke("plugin:window|create", {
-            options: {
-              ...options,
-              parent: typeof options.parent === "string" ? options.parent : (_a = options.parent) === null || _a === void 0 ? void 0 : _a.label,
-              label
-            }
-          }).then(async () => this.emit("tauri://created")).catch(async (e) => this.emit("tauri://error", e));
-        }
-      }
-      /**
-       * Gets the Window associated with the given label.
-       * @example
-       * ```typescript
-       * import { Window } from '@tauri-apps/api/window';
-       * const mainWindow = Window.getByLabel('main');
-       * ```
-       *
-       * @param label The window label.
-       * @returns The Window instance to communicate with the window or null if the window doesn't exist.
-       */
-      static async getByLabel(label) {
-        var _a;
-        return (_a = (await getAllWindows()).find((w) => w.label === label)) !== null && _a !== void 0 ? _a : null;
-      }
-      /**
-       * Get an instance of `Window` for the current window.
-       */
-      static getCurrent() {
-        return getCurrentWindow();
-      }
-      /**
-       * Gets a list of instances of `Window` for all available windows.
-       */
-      static async getAll() {
-        return getAllWindows();
-      }
-      /**
-       *  Gets the focused window.
-       * @example
-       * ```typescript
-       * import { Window } from '@tauri-apps/api/window';
-       * const focusedWindow = Window.getFocusedWindow();
-       * ```
-       *
-       * @returns The Window instance or `undefined` if there is not any focused window.
-       */
-      static async getFocusedWindow() {
-        for (const w of await getAllWindows()) {
-          if (await w.isFocused()) {
-            return w;
-          }
-        }
-        return null;
-      }
-      /**
-       * Listen to an emitted event on this window.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const unlisten = await getCurrentWindow().listen<string>('state-changed', (event) => {
-       *   console.log(`Got error: ${payload}`);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @param event Event name. Must include only alphanumeric characters, `-`, `/`, `:` and `_`.
-       * @param handler Event handler.
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async listen(event, handler) {
-        if (this._handleTauriEvent(event, handler)) {
-          return () => {
-            const listeners = this.listeners[event];
-            listeners.splice(listeners.indexOf(handler), 1);
-          };
-        }
-        return listen(event, handler, {
-          target: { kind: "Window", label: this.label }
-        });
-      }
-      /**
-       * Listen to an emitted event on this window only once.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const unlisten = await getCurrentWindow().once<null>('initialized', (event) => {
-       *   console.log(`Window initialized!`);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @param event Event name. Must include only alphanumeric characters, `-`, `/`, `:` and `_`.
-       * @param handler Event handler.
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async once(event, handler) {
-        if (this._handleTauriEvent(event, handler)) {
-          return () => {
-            const listeners = this.listeners[event];
-            listeners.splice(listeners.indexOf(handler), 1);
-          };
-        }
-        return once(event, handler, {
-          target: { kind: "Window", label: this.label }
-        });
-      }
-      /**
-       * Emits an event to all {@link EventTarget|targets}.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().emit('window-loaded', { loggedIn: true, token: 'authToken' });
-       * ```
-       *
-       * @param event Event name. Must include only alphanumeric characters, `-`, `/`, `:` and `_`.
-       * @param payload Event payload.
-       */
-      async emit(event, payload) {
-        if (localTauriEvents.includes(event)) {
-          for (const handler of this.listeners[event] || []) {
-            handler({
-              event,
-              id: -1,
-              payload
-            });
-          }
-          return;
-        }
-        return emit(event, payload);
-      }
-      /**
-       * Emits an event to all {@link EventTarget|targets} matching the given target.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().emit('main', 'window-loaded', { loggedIn: true, token: 'authToken' });
-       * ```
-       * @param target Label of the target Window/Webview/WebviewWindow or raw {@link EventTarget} object.
-       * @param event Event name. Must include only alphanumeric characters, `-`, `/`, `:` and `_`.
-       * @param payload Event payload.
-       */
-      async emitTo(target, event, payload) {
-        if (localTauriEvents.includes(event)) {
-          for (const handler of this.listeners[event] || []) {
-            handler({
-              event,
-              id: -1,
-              payload
-            });
-          }
-          return;
-        }
-        return emitTo(target, event, payload);
-      }
-      /** @ignore */
-      _handleTauriEvent(event, handler) {
-        if (localTauriEvents.includes(event)) {
-          if (!(event in this.listeners)) {
-            this.listeners[event] = [handler];
-          } else {
-            this.listeners[event].push(handler);
-          }
-          return true;
-        }
-        return false;
-      }
-      // Getters
-      /**
-       * The scale factor that can be used to map physical pixels to logical pixels.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const factor = await getCurrentWindow().scaleFactor();
-       * ```
-       *
-       * @returns The window's monitor scale factor.
-       */
-      async scaleFactor() {
-        return invoke("plugin:window|scale_factor", {
-          label: this.label
-        });
-      }
-      /**
-       * The position of the top-left hand corner of the window's client area relative to the top-left hand corner of the desktop.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const position = await getCurrentWindow().innerPosition();
-       * ```
-       *
-       * @returns The window's inner position.
-       */
-      async innerPosition() {
-        return invoke("plugin:window|inner_position", {
-          label: this.label
-        }).then((p) => new PhysicalPosition(p));
-      }
-      /**
-       * The position of the top-left hand corner of the window relative to the top-left hand corner of the desktop.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const position = await getCurrentWindow().outerPosition();
-       * ```
-       *
-       * @returns The window's outer position.
-       */
-      async outerPosition() {
-        return invoke("plugin:window|outer_position", {
-          label: this.label
-        }).then((p) => new PhysicalPosition(p));
-      }
-      /**
-       * The physical size of the window's client area.
-       * The client area is the content of the window, excluding the title bar and borders.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const size = await getCurrentWindow().innerSize();
-       * ```
-       *
-       * @returns The window's inner size.
-       */
-      async innerSize() {
-        return invoke("plugin:window|inner_size", {
-          label: this.label
-        }).then((s) => new PhysicalSize(s));
-      }
-      /**
-       * The physical size of the entire window.
-       * These dimensions include the title bar and borders. If you don't want that (and you usually don't), use inner_size instead.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const size = await getCurrentWindow().outerSize();
-       * ```
-       *
-       * @returns The window's outer size.
-       */
-      async outerSize() {
-        return invoke("plugin:window|outer_size", {
-          label: this.label
-        }).then((s) => new PhysicalSize(s));
-      }
-      /**
-       * Gets the window's current fullscreen state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const fullscreen = await getCurrentWindow().isFullscreen();
-       * ```
-       *
-       * @returns Whether the window is in fullscreen mode or not.
-       */
-      async isFullscreen() {
-        return invoke("plugin:window|is_fullscreen", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current minimized state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const minimized = await getCurrentWindow().isMinimized();
-       * ```
-       */
-      async isMinimized() {
-        return invoke("plugin:window|is_minimized", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current maximized state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const maximized = await getCurrentWindow().isMaximized();
-       * ```
-       *
-       * @returns Whether the window is maximized or not.
-       */
-      async isMaximized() {
-        return invoke("plugin:window|is_maximized", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current focus state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const focused = await getCurrentWindow().isFocused();
-       * ```
-       *
-       * @returns Whether the window is focused or not.
-       */
-      async isFocused() {
-        return invoke("plugin:window|is_focused", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current decorated state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const decorated = await getCurrentWindow().isDecorated();
-       * ```
-       *
-       * @returns Whether the window is decorated or not.
-       */
-      async isDecorated() {
-        return invoke("plugin:window|is_decorated", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current resizable state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const resizable = await getCurrentWindow().isResizable();
-       * ```
-       *
-       * @returns Whether the window is resizable or not.
-       */
-      async isResizable() {
-        return invoke("plugin:window|is_resizable", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's native maximize button state.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux / iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const maximizable = await getCurrentWindow().isMaximizable();
-       * ```
-       *
-       * @returns Whether the window's native maximize button is enabled or not.
-       */
-      async isMaximizable() {
-        return invoke("plugin:window|is_maximizable", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's native minimize button state.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux / iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const minimizable = await getCurrentWindow().isMinimizable();
-       * ```
-       *
-       * @returns Whether the window's native minimize button is enabled or not.
-       */
-      async isMinimizable() {
-        return invoke("plugin:window|is_minimizable", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's native close button state.
-       *
-       * #### Platform-specific
-       *
-       * - **iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const closable = await getCurrentWindow().isClosable();
-       * ```
-       *
-       * @returns Whether the window's native close button is enabled or not.
-       */
-      async isClosable() {
-        return invoke("plugin:window|is_closable", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current visible state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const visible = await getCurrentWindow().isVisible();
-       * ```
-       *
-       * @returns Whether the window is visible or not.
-       */
-      async isVisible() {
-        return invoke("plugin:window|is_visible", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current title.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const title = await getCurrentWindow().title();
-       * ```
-       */
-      async title() {
-        return invoke("plugin:window|title", {
-          label: this.label
-        });
-      }
-      /**
-       * Gets the window's current theme.
-       *
-       * #### Platform-specific
-       *
-       * - **macOS:** Theme was introduced on macOS 10.14. Returns `light` on macOS 10.13 and below.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const theme = await getCurrentWindow().theme();
-       * ```
-       *
-       * @returns The window theme.
-       */
-      async theme() {
-        return invoke("plugin:window|theme", {
-          label: this.label
-        });
-      }
-      /**
-       * Whether the window is configured to be always on top of other windows or not.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * const alwaysOnTop = await getCurrentWindow().isAlwaysOnTop();
-       * ```
-       *
-       * @returns Whether the window is visible or not.
-       */
-      async isAlwaysOnTop() {
-        return invoke("plugin:window|is_always_on_top", {
-          label: this.label
-        });
-      }
-      // Setters
-      /**
-       * Centers the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().center();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async center() {
-        return invoke("plugin:window|center", {
-          label: this.label
-        });
-      }
-      /**
-       *  Requests user attention to the window, this has no effect if the application
-       * is already focused. How requesting for user attention manifests is platform dependent,
-       * see `UserAttentionType` for details.
-       *
-       * Providing `null` will unset the request for user attention. Unsetting the request for
-       * user attention might not be done automatically by the WM when the window receives input.
-       *
-       * #### Platform-specific
-       *
-       * - **macOS:** `null` has no effect.
-       * - **Linux:** Urgency levels have the same effect.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().requestUserAttention();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async requestUserAttention(requestType) {
-        let requestType_ = null;
-        if (requestType) {
-          if (requestType === UserAttentionType.Critical) {
-            requestType_ = { type: "Critical" };
-          } else {
-            requestType_ = { type: "Informational" };
-          }
-        }
-        return invoke("plugin:window|request_user_attention", {
-          label: this.label,
-          value: requestType_
-        });
-      }
-      /**
-       * Updates the window resizable flag.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setResizable(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setResizable(resizable) {
-        return invoke("plugin:window|set_resizable", {
-          label: this.label,
-          value: resizable
-        });
-      }
-      /**
-       * Enable or disable the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setEnabled(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       *
-       * @since 2.0.0
-       */
-      async setEnabled(enabled) {
-        return invoke("plugin:window|set_enabled", {
-          label: this.label,
-          value: enabled
-        });
-      }
-      /**
-       * Whether the window is enabled or disabled.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setEnabled(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       *
-       * @since 2.0.0
-       */
-      async isEnabled() {
-        return invoke("plugin:window|is_enabled", {
-          label: this.label
-        });
-      }
-      /**
-       * Sets whether the window's native maximize button is enabled or not.
-       * If resizable is set to false, this setting is ignored.
-       *
-       * #### Platform-specific
-       *
-       * - **macOS:** Disables the "zoom" button in the window titlebar, which is also used to enter fullscreen mode.
-       * - **Linux / iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setMaximizable(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setMaximizable(maximizable) {
-        return invoke("plugin:window|set_maximizable", {
-          label: this.label,
-          value: maximizable
-        });
-      }
-      /**
-       * Sets whether the window's native minimize button is enabled or not.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux / iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setMinimizable(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setMinimizable(minimizable) {
-        return invoke("plugin:window|set_minimizable", {
-          label: this.label,
-          value: minimizable
-        });
-      }
-      /**
-       * Sets whether the window's native close button is enabled or not.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux:** GTK+ will do its best to convince the window manager not to show a close button. Depending on the system, this function may not have any effect when called on a window that is already visible
-       * - **iOS / Android:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setClosable(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setClosable(closable) {
-        return invoke("plugin:window|set_closable", {
-          label: this.label,
-          value: closable
-        });
-      }
-      /**
-       * Sets the window title.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setTitle('Tauri');
-       * ```
-       *
-       * @param title The new title
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setTitle(title) {
-        return invoke("plugin:window|set_title", {
-          label: this.label,
-          value: title
-        });
-      }
-      /**
-       * Maximizes the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().maximize();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async maximize() {
-        return invoke("plugin:window|maximize", {
-          label: this.label
-        });
-      }
-      /**
-       * Unmaximizes the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().unmaximize();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async unmaximize() {
-        return invoke("plugin:window|unmaximize", {
-          label: this.label
-        });
-      }
-      /**
-       * Toggles the window maximized state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().toggleMaximize();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async toggleMaximize() {
-        return invoke("plugin:window|toggle_maximize", {
-          label: this.label
-        });
-      }
-      /**
-       * Minimizes the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().minimize();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async minimize() {
-        return invoke("plugin:window|minimize", {
-          label: this.label
-        });
-      }
-      /**
-       * Unminimizes the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().unminimize();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async unminimize() {
-        return invoke("plugin:window|unminimize", {
-          label: this.label
-        });
-      }
-      /**
-       * Sets the window visibility to true.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().show();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async show() {
-        return invoke("plugin:window|show", {
-          label: this.label
-        });
-      }
-      /**
-       * Sets the window visibility to false.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().hide();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async hide() {
-        return invoke("plugin:window|hide", {
-          label: this.label
-        });
-      }
-      /**
-       * Closes the window.
-       *
-       * Note this emits a closeRequested event so you can intercept it. To force window close, use {@link Window.destroy}.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().close();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async close() {
-        return invoke("plugin:window|close", {
-          label: this.label
-        });
-      }
-      /**
-       * Destroys the window. Behaves like {@link Window.close} but forces the window close instead of emitting a closeRequested event.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().destroy();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async destroy() {
-        return invoke("plugin:window|destroy", {
-          label: this.label
-        });
-      }
-      /**
-       * Whether the window should have borders and bars.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setDecorations(false);
-       * ```
-       *
-       * @param decorations Whether the window should have borders and bars.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setDecorations(decorations) {
-        return invoke("plugin:window|set_decorations", {
-          label: this.label,
-          value: decorations
-        });
-      }
-      /**
-       * Whether or not the window should have shadow.
-       *
-       * #### Platform-specific
-       *
-       * - **Windows:**
-       *   - `false` has no effect on decorated window, shadows are always ON.
-       *   - `true` will make undecorated window have a 1px white border,
-       * and on Windows 11, it will have a rounded corners.
-       * - **Linux:** Unsupported.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setShadow(false);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setShadow(enable) {
-        return invoke("plugin:window|set_shadow", {
-          label: this.label,
-          value: enable
-        });
-      }
-      /**
-       * Set window effects.
-       */
-      async setEffects(effects2) {
-        return invoke("plugin:window|set_effects", {
-          label: this.label,
-          value: effects2
-        });
-      }
-      /**
-       * Clear any applied effects if possible.
-       */
-      async clearEffects() {
-        return invoke("plugin:window|set_effects", {
-          label: this.label,
-          value: null
-        });
-      }
-      /**
-       * Whether the window should always be on top of other windows.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setAlwaysOnTop(true);
-       * ```
-       *
-       * @param alwaysOnTop Whether the window should always be on top of other windows or not.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setAlwaysOnTop(alwaysOnTop) {
-        return invoke("plugin:window|set_always_on_top", {
-          label: this.label,
-          value: alwaysOnTop
-        });
-      }
-      /**
-       * Whether the window should always be below other windows.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setAlwaysOnBottom(true);
-       * ```
-       *
-       * @param alwaysOnBottom Whether the window should always be below other windows or not.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setAlwaysOnBottom(alwaysOnBottom) {
-        return invoke("plugin:window|set_always_on_bottom", {
-          label: this.label,
-          value: alwaysOnBottom
-        });
-      }
-      /**
-       * Prevents the window contents from being captured by other apps.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setContentProtected(true);
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setContentProtected(protected_) {
-        return invoke("plugin:window|set_content_protected", {
-          label: this.label,
-          value: protected_
-        });
-      }
-      /**
-       * Resizes the window with a new inner size.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setSize(new LogicalSize(600, 500));
-       * ```
-       *
-       * @param size The logical or physical inner size.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setSize(size) {
-        return invoke("plugin:window|set_size", {
-          label: this.label,
-          value: size instanceof Size ? size : new Size(size)
-        });
-      }
-      /**
-       * Sets the window minimum inner size. If the `size` argument is not provided, the constraint is unset.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setMinSize(new PhysicalSize(600, 500));
-       * ```
-       *
-       * @param size The logical or physical inner size, or `null` to unset the constraint.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setMinSize(size) {
-        return invoke("plugin:window|set_min_size", {
-          label: this.label,
-          value: size instanceof Size ? size : size ? new Size(size) : null
-        });
-      }
-      /**
-       * Sets the window maximum inner size. If the `size` argument is undefined, the constraint is unset.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setMaxSize(new LogicalSize(600, 500));
-       * ```
-       *
-       * @param size The logical or physical inner size, or `null` to unset the constraint.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setMaxSize(size) {
-        return invoke("plugin:window|set_max_size", {
-          label: this.label,
-          value: size instanceof Size ? size : size ? new Size(size) : null
-        });
-      }
-      /**
-       * Sets the window inner size constraints.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setSizeConstraints({ minWidth: 300 });
-       * ```
-       *
-       * @param constraints The logical or physical inner size, or `null` to unset the constraint.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setSizeConstraints(constraints) {
-        function logical(pixel) {
-          return pixel ? { Logical: pixel } : null;
-        }
-        return invoke("plugin:window|set_size_constraints", {
-          label: this.label,
-          value: {
-            minWidth: logical(constraints === null || constraints === void 0 ? void 0 : constraints.minWidth),
-            minHeight: logical(constraints === null || constraints === void 0 ? void 0 : constraints.minHeight),
-            maxWidth: logical(constraints === null || constraints === void 0 ? void 0 : constraints.maxWidth),
-            maxHeight: logical(constraints === null || constraints === void 0 ? void 0 : constraints.maxHeight)
-          }
-        });
-      }
-      /**
-       * Sets the window outer position.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, LogicalPosition } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setPosition(new LogicalPosition(600, 500));
-       * ```
-       *
-       * @param position The new position, in logical or physical pixels.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setPosition(position) {
-        return invoke("plugin:window|set_position", {
-          label: this.label,
-          value: position instanceof Position ? position : new Position(position)
-        });
-      }
-      /**
-       * Sets the window fullscreen state.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setFullscreen(true);
-       * ```
-       *
-       * @param fullscreen Whether the window should go to fullscreen or not.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setFullscreen(fullscreen) {
-        return invoke("plugin:window|set_fullscreen", {
-          label: this.label,
-          value: fullscreen
-        });
-      }
-      /**
-       * On macOS, Toggles a fullscreen mode that doesn’t require a new macOS space. Returns a boolean indicating whether the transition was successful (this won’t work if the window was already in the native fullscreen).
-       * This is how fullscreen used to work on macOS in versions before Lion. And allows the user to have a fullscreen window without using another space or taking control over the entire monitor.
-       *
-       * On other platforms, this is the same as {@link Window.setFullscreen}.
-       *
-       * @param fullscreen Whether the window should go to simple fullscreen or not.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setSimpleFullscreen(fullscreen) {
-        return invoke("plugin:window|set_simple_fullscreen", {
-          label: this.label,
-          value: fullscreen
-        });
-      }
-      /**
-       * Bring the window to front and focus.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setFocus();
-       * ```
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setFocus() {
-        return invoke("plugin:window|set_focus", {
-          label: this.label
-        });
-      }
-      /**
-       * Sets whether the window can be focused.
-       *
-       * #### Platform-specific
-       *
-       * - **macOS**: If the window is already focused, it is not possible to unfocus it after calling `set_focusable(false)`.
-       *   In this case, you might consider calling {@link Window.setFocus} but it will move the window to the back i.e. at the bottom in terms of z-order.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setFocusable(true);
-       * ```
-       *
-       * @param focusable Whether the window can be focused.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setFocusable(focusable) {
-        return invoke("plugin:window|set_focusable", {
-          label: this.label,
-          value: focusable
-        });
-      }
-      /**
-       * Sets the window icon.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setIcon('/tauri/awesome.png');
-       * ```
-       *
-       * Note that you may need the `image-ico` or `image-png` Cargo features to use this API.
-       * To enable it, change your Cargo.toml file:
-       * ```toml
-       * [dependencies]
-       * tauri = { version = "...", features = ["...", "image-png"] }
-       * ```
-       *
-       * @param icon Icon bytes or path to the icon file.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setIcon(icon) {
-        return invoke("plugin:window|set_icon", {
-          label: this.label,
-          value: transformImage(icon)
-        });
-      }
-      /**
-       * Whether the window icon should be hidden from the taskbar or not.
-       *
-       * #### Platform-specific
-       *
-       * - **macOS:** Unsupported.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setSkipTaskbar(true);
-       * ```
-       *
-       * @param skip true to hide window icon, false to show it.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setSkipTaskbar(skip2) {
-        return invoke("plugin:window|set_skip_taskbar", {
-          label: this.label,
-          value: skip2
-        });
-      }
-      /**
-       * Grabs the cursor, preventing it from leaving the window.
-       *
-       * There's no guarantee that the cursor will be hidden. You should
-       * hide it by yourself if you want so.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux:** Unsupported.
-       * - **macOS:** This locks the cursor in a fixed location, which looks visually awkward.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setCursorGrab(true);
-       * ```
-       *
-       * @param grab `true` to grab the cursor icon, `false` to release it.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setCursorGrab(grab) {
-        return invoke("plugin:window|set_cursor_grab", {
-          label: this.label,
-          value: grab
-        });
-      }
-      /**
-       * Modifies the cursor's visibility.
-       *
-       * #### Platform-specific
-       *
-       * - **Windows:** The cursor is only hidden within the confines of the window.
-       * - **macOS:** The cursor is hidden as long as the window has input focus, even if the cursor is
-       *   outside of the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setCursorVisible(false);
-       * ```
-       *
-       * @param visible If `false`, this will hide the cursor. If `true`, this will show the cursor.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setCursorVisible(visible) {
-        return invoke("plugin:window|set_cursor_visible", {
-          label: this.label,
-          value: visible
-        });
-      }
-      /**
-       * Modifies the cursor icon of the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setCursorIcon('help');
-       * ```
-       *
-       * @param icon The new cursor icon.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setCursorIcon(icon) {
-        return invoke("plugin:window|set_cursor_icon", {
-          label: this.label,
-          value: icon
-        });
-      }
-      /**
-       * Sets the window background color.
-       *
-       * #### Platform-specific:
-       *
-       * - **Windows:** alpha channel is ignored.
-       * - **iOS / Android:** Unsupported.
-       *
-       * @returns A promise indicating the success or failure of the operation.
-       *
-       * @since 2.1.0
-       */
-      async setBackgroundColor(color2) {
-        return invoke("plugin:window|set_background_color", { color: color2 });
-      }
-      /**
-       * Changes the position of the cursor in window coordinates.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, LogicalPosition } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setCursorPosition(new LogicalPosition(600, 300));
-       * ```
-       *
-       * @param position The new cursor position.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setCursorPosition(position) {
-        return invoke("plugin:window|set_cursor_position", {
-          label: this.label,
-          value: position instanceof Position ? position : new Position(position)
-        });
-      }
-      /**
-       * Changes the cursor events behavior.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setIgnoreCursorEvents(true);
-       * ```
-       *
-       * @param ignore `true` to ignore the cursor events; `false` to process them as usual.
-       * @returns A promise indicating the success or failure of the operation.
-       */
-      async setIgnoreCursorEvents(ignore) {
-        return invoke("plugin:window|set_ignore_cursor_events", {
-          label: this.label,
-          value: ignore
-        });
-      }
-      /**
-       * Starts dragging the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().startDragging();
-       * ```
-       *
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async startDragging() {
-        return invoke("plugin:window|start_dragging", {
-          label: this.label
-        });
-      }
-      /**
-       * Starts resize-dragging the window.
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().startResizeDragging();
-       * ```
-       *
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async startResizeDragging(direction) {
-        return invoke("plugin:window|start_resize_dragging", {
-          label: this.label,
-          value: direction
-        });
-      }
-      /**
-       * Sets the badge count. It is app wide and not specific to this window.
-       *
-       * #### Platform-specific
-       *
-       * - **Windows**: Unsupported. Use @{linkcode Window.setOverlayIcon} instead.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setBadgeCount(5);
-       * ```
-       *
-       * @param count The badge count. Use `undefined` to remove the badge.
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async setBadgeCount(count) {
-        return invoke("plugin:window|set_badge_count", {
-          label: this.label,
-          value: count
-        });
-      }
-      /**
-       * Sets the badge cont **macOS only**.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setBadgeLabel("Hello");
-       * ```
-       *
-       * @param label The badge label. Use `undefined` to remove the badge.
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async setBadgeLabel(label) {
-        return invoke("plugin:window|set_badge_label", {
-          label: this.label,
-          value: label
-        });
-      }
-      /**
-       * Sets the overlay icon. **Windows only**
-       * The overlay icon can be set for every window.
-       *
-       *
-       * Note that you may need the `image-ico` or `image-png` Cargo features to use this API.
-       * To enable it, change your Cargo.toml file:
-       *
-       * ```toml
-       * [dependencies]
-       * tauri = { version = "...", features = ["...", "image-png"] }
-       * ```
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setOverlayIcon("/tauri/awesome.png");
-       * ```
-       *
-       * @param icon Icon bytes or path to the icon file. Use `undefined` to remove the overlay icon.
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async setOverlayIcon(icon) {
-        return invoke("plugin:window|set_overlay_icon", {
-          label: this.label,
-          value: icon ? transformImage(icon) : void 0
-        });
-      }
-      /**
-       * Sets the taskbar progress state.
-       *
-       * #### Platform-specific
-       *
-       * - **Linux / macOS**: Progress bar is app-wide and not specific to this window.
-       * - **Linux**: Only supported desktop environments with `libunity` (e.g. GNOME).
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow, ProgressBarStatus } from '@tauri-apps/api/window';
-       * await getCurrentWindow().setProgressBar({
-       *   status: ProgressBarStatus.Normal,
-       *   progress: 50,
-       * });
-       * ```
-       *
-       * @return A promise indicating the success or failure of the operation.
-       */
-      async setProgressBar(state) {
-        return invoke("plugin:window|set_progress_bar", {
-          label: this.label,
-          value: state
-        });
-      }
-      /**
-       * Sets whether the window should be visible on all workspaces or virtual desktops.
-       *
-       * #### Platform-specific
-       *
-       * - **Windows / iOS / Android:** Unsupported.
-       *
-       * @since 2.0.0
-       */
-      async setVisibleOnAllWorkspaces(visible) {
-        return invoke("plugin:window|set_visible_on_all_workspaces", {
-          label: this.label,
-          value: visible
-        });
-      }
-      /**
-       * Sets the title bar style. **macOS only**.
-       *
-       * @since 2.0.0
-       */
-      async setTitleBarStyle(style2) {
-        return invoke("plugin:window|set_title_bar_style", {
-          label: this.label,
-          value: style2
-        });
-      }
-      /**
-       * Set window theme, pass in `null` or `undefined` to follow system theme
-       *
-       * #### Platform-specific
-       *
-       * - **Linux / macOS**: Theme is app-wide and not specific to this window.
-       * - **iOS / Android:** Unsupported.
-       *
-       * @since 2.0.0
-       */
-      async setTheme(theme) {
-        return invoke("plugin:window|set_theme", {
-          label: this.label,
-          value: theme
-        });
-      }
-      // Listeners
-      /**
-       * Listen to window resize.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * const unlisten = await getCurrentWindow().onResized(({ payload: size }) => {
-       *  console.log('Window resized', size);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onResized(handler) {
-        return this.listen(TauriEvent.WINDOW_RESIZED, (e) => {
-          e.payload = new PhysicalSize(e.payload);
-          handler(e);
-        });
-      }
-      /**
-       * Listen to window move.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * const unlisten = await getCurrentWindow().onMoved(({ payload: position }) => {
-       *  console.log('Window moved', position);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onMoved(handler) {
-        return this.listen(TauriEvent.WINDOW_MOVED, (e) => {
-          e.payload = new PhysicalPosition(e.payload);
-          handler(e);
-        });
-      }
-      /**
-       * Listen to window close requested. Emitted when the user requests to closes the window.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * import { confirm } from '@tauri-apps/api/dialog';
-       * const unlisten = await getCurrentWindow().onCloseRequested(async (event) => {
-       *   const confirmed = await confirm('Are you sure?');
-       *   if (!confirmed) {
-       *     // user did not confirm closing the window; let's prevent it
-       *     event.preventDefault();
-       *   }
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onCloseRequested(handler) {
-        return this.listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async (event) => {
-          const evt = new CloseRequestedEvent(event);
-          await handler(evt);
-          if (!evt.isPreventDefault()) {
-            await this.destroy();
-          }
-        });
-      }
-      /**
-       * Listen to a file drop event.
-       * The listener is triggered when the user hovers the selected files on the webview,
-       * drops the files or cancels the operation.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/webview";
-       * const unlisten = await getCurrentWindow().onDragDropEvent((event) => {
-       *  if (event.payload.type === 'over') {
-       *    console.log('User hovering', event.payload.position);
-       *  } else if (event.payload.type === 'drop') {
-       *    console.log('User dropped', event.payload.paths);
-       *  } else {
-       *    console.log('File drop cancelled');
-       *  }
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onDragDropEvent(handler) {
-        const unlistenDrag = await this.listen(TauriEvent.DRAG_ENTER, (event) => {
-          handler({
-            ...event,
-            payload: {
-              type: "enter",
-              paths: event.payload.paths,
-              position: new PhysicalPosition(event.payload.position)
-            }
-          });
-        });
-        const unlistenDragOver = await this.listen(TauriEvent.DRAG_OVER, (event) => {
-          handler({
-            ...event,
-            payload: {
-              type: "over",
-              position: new PhysicalPosition(event.payload.position)
-            }
-          });
-        });
-        const unlistenDrop = await this.listen(TauriEvent.DRAG_DROP, (event) => {
-          handler({
-            ...event,
-            payload: {
-              type: "drop",
-              paths: event.payload.paths,
-              position: new PhysicalPosition(event.payload.position)
-            }
-          });
-        });
-        const unlistenCancel = await this.listen(TauriEvent.DRAG_LEAVE, (event) => {
-          handler({ ...event, payload: { type: "leave" } });
-        });
-        return () => {
-          unlistenDrag();
-          unlistenDrop();
-          unlistenDragOver();
-          unlistenCancel();
-        };
-      }
-      /**
-       * Listen to window focus change.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * const unlisten = await getCurrentWindow().onFocusChanged(({ payload: focused }) => {
-       *  console.log('Focus changed, window is focused? ' + focused);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onFocusChanged(handler) {
-        const unlistenFocus = await this.listen(TauriEvent.WINDOW_FOCUS, (event) => {
-          handler({ ...event, payload: true });
-        });
-        const unlistenBlur = await this.listen(TauriEvent.WINDOW_BLUR, (event) => {
-          handler({ ...event, payload: false });
-        });
-        return () => {
-          unlistenFocus();
-          unlistenBlur();
-        };
-      }
-      /**
-       * Listen to window scale change. Emitted when the window's scale factor has changed.
-       * The following user actions can cause DPI changes:
-       * - Changing the display's resolution.
-       * - Changing the display's scale factor (e.g. in Control Panel on Windows).
-       * - Moving the window to a display with a different scale factor.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * const unlisten = await getCurrentWindow().onScaleChanged(({ payload }) => {
-       *  console.log('Scale changed', payload.scaleFactor, payload.size);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onScaleChanged(handler) {
-        return this.listen(TauriEvent.WINDOW_SCALE_FACTOR_CHANGED, handler);
-      }
-      /**
-       * Listen to the system theme change.
-       *
-       * @example
-       * ```typescript
-       * import { getCurrentWindow } from "@tauri-apps/api/window";
-       * const unlisten = await getCurrentWindow().onThemeChanged(({ payload: theme }) => {
-       *  console.log('New theme: ' + theme);
-       * });
-       *
-       * // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
-       * unlisten();
-       * ```
-       *
-       * @returns A promise resolving to a function to unlisten to the event.
-       * Note that removing the listener is required if your listener goes out of scope e.g. the component is unmounted.
-       */
-      async onThemeChanged(handler) {
-        return this.listen(TauriEvent.WINDOW_THEME_CHANGED, handler);
-      }
-    };
-    (function(BackgroundThrottlingPolicy2) {
-      BackgroundThrottlingPolicy2["Disabled"] = "disabled";
-      BackgroundThrottlingPolicy2["Throttle"] = "throttle";
-      BackgroundThrottlingPolicy2["Suspend"] = "suspend";
-    })(BackgroundThrottlingPolicy || (BackgroundThrottlingPolicy = {}));
-    (function(ScrollBarStyle2) {
-      ScrollBarStyle2["Default"] = "default";
-      ScrollBarStyle2["FluentOverlay"] = "fluentOverlay";
-    })(ScrollBarStyle || (ScrollBarStyle = {}));
-    (function(Effect2) {
-      Effect2["AppearanceBased"] = "appearanceBased";
-      Effect2["Light"] = "light";
-      Effect2["Dark"] = "dark";
-      Effect2["MediumLight"] = "mediumLight";
-      Effect2["UltraDark"] = "ultraDark";
-      Effect2["Titlebar"] = "titlebar";
-      Effect2["Selection"] = "selection";
-      Effect2["Menu"] = "menu";
-      Effect2["Popover"] = "popover";
-      Effect2["Sidebar"] = "sidebar";
-      Effect2["HeaderView"] = "headerView";
-      Effect2["Sheet"] = "sheet";
-      Effect2["WindowBackground"] = "windowBackground";
-      Effect2["HudWindow"] = "hudWindow";
-      Effect2["FullScreenUI"] = "fullScreenUI";
-      Effect2["Tooltip"] = "tooltip";
-      Effect2["ContentBackground"] = "contentBackground";
-      Effect2["UnderWindowBackground"] = "underWindowBackground";
-      Effect2["UnderPageBackground"] = "underPageBackground";
-      Effect2["Mica"] = "mica";
-      Effect2["Blur"] = "blur";
-      Effect2["Acrylic"] = "acrylic";
-      Effect2["Tabbed"] = "tabbed";
-      Effect2["TabbedDark"] = "tabbedDark";
-      Effect2["TabbedLight"] = "tabbedLight";
-    })(Effect || (Effect = {}));
-    (function(EffectState2) {
-      EffectState2["FollowsWindowActiveState"] = "followsWindowActiveState";
-      EffectState2["Active"] = "active";
-      EffectState2["Inactive"] = "inactive";
-    })(EffectState || (EffectState = {}));
   }
+  /**
+   * Initialize window state by checking current maximize status
+   */
+  async initializeWindowState() {
+    try {
+      this.isMaximized = await this.appWindow.isMaximized();
+      this.updateMaximizeButton();
+    } catch (error) {
+      this.isMaximized = false;
+    }
+  }
+  /**
+   * Set up event listeners for window control buttons
+   */
+  setupEventListeners() {
+    const minimizeBtn = document.getElementById("minimize-button");
+    if (minimizeBtn) {
+      minimizeBtn.addEventListener("click", () => this.minimizeWindow());
+    }
+    const maximizeBtn = document.getElementById("maximize-button");
+    if (maximizeBtn) {
+      maximizeBtn.addEventListener("click", () => this.toggleMaximize());
+    }
+    const closeBtn = document.getElementById("close-button");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => this.closeWindow());
+    }
+  }
+  /**
+   * Minimize the window to taskbar
+   */
+  async minimizeWindow() {
+    try {
+      await this.appWindow.minimize();
+    } catch (error) {
+      console.error("Failed to minimize window:", error);
+    }
+  }
+  /**
+   * Toggle between maximized and normal window state
+   */
+  async toggleMaximize() {
+    try {
+      if (this.isMaximized) {
+        await this.appWindow.unmaximize();
+        this.isMaximized = false;
+      } else {
+        await this.appWindow.maximize();
+        this.isMaximized = true;
+      }
+      this.updateMaximizeButton();
+    } catch (error) {
+      console.error("Failed to toggle maximize:", error);
+    }
+  }
+  /**
+   * Close the application window
+   */
+  async closeWindow() {
+    try {
+      await this.appWindow.close();
+    } catch (error) {
+      console.error("Failed to close window:", error);
+    }
+  }
+  /**
+   * Update the maximize button UI to reflect current window state
+   * Uses different symbols for maximized vs normal state
+   */
+  updateMaximizeButton() {
+    const button = document.getElementById("maximize-button");
+    if (!button) return;
+    const icon = button.querySelector("span");
+    if (!icon) return;
+    icon.textContent = this.isMaximized ? "\u2750" : "\u25A1";
+  }
+  /**
+   * Set up application menu system
+   * Handles hover and click events for menu items
+   */
+  setupMenus() {
+    document.querySelectorAll(".menu-item").forEach((item) => {
+      item.addEventListener("mouseenter", (e) => {
+        this.closeAllMenus();
+        const menuId = e.currentTarget.getAttribute("data-menu") + "-menu";
+        const menu = document.getElementById(menuId);
+        if (menu) menu.style.display = "block";
+      });
+      item.addEventListener("click", (e) => {
+        const menuId = e.currentTarget.getAttribute("data-menu") + "-menu";
+        const menu = document.getElementById(menuId);
+        if (menu) {
+          const isVisible = menu.style.display === "block";
+          this.closeAllMenus();
+          if (!isVisible) menu.style.display = "block";
+        }
+      });
+    });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".menu-item") && !e.target.closest(".menu-dropdown")) {
+        this.closeAllMenus();
+      }
+    });
+    document.querySelectorAll(".menu-option").forEach((option) => {
+      option.addEventListener("click", (e) => {
+        const action = e.currentTarget.getAttribute("data-action");
+        this.handleMenuAction(action);
+        this.closeAllMenus();
+      });
+    });
+  }
+  /**
+   * Close all open menu dropdowns
+   */
+  closeAllMenus() {
+    document.querySelectorAll(".menu-dropdown").forEach((menu) => {
+      menu.style.display = "none";
+    });
+  }
+  /**
+   * Handle menu action selections
+   * @param {string} action - The action identifier from data-action attribute
+   */
+  handleMenuAction(action) {
+  }
+  /**
+   * Set up modal dialog listeners (placeholder for implementation)
+   */
+  setupModalListeners() {
+  }
+  /**
+   * Update login status UI (placeholder for implementation)
+   */
+  updateLoginStatus() {
+  }
+};
+window.addEventListener("DOMContentLoaded", () => {
+  const manager = new TitlebarManager();
+  window.titlebarManager = manager;
+});
+
+// src/status.js
+var StatusBarManager = class {
+  constructor() {
+    this.isOnline = true;
+    this.currentUser = null;
+    this.onlineStatusElement = document.getElementById("online-status");
+    this.userStatusElement = document.getElementById("user-status");
+    this.usernameDisplay = document.getElementById("username-display");
+  }
+  init() {
+    this.setupOnlineStatusChecker();
+    this.setupAuthListener();
+    console.log("\u{1F7E2} StatusBarManager initialized");
+  }
+  setupOnlineStatusChecker() {
+    this.checkOnlineStatus();
+    window.addEventListener("online", () => this.handleOnlineStatusChange(true));
+    window.addEventListener("offline", () => this.handleOnlineStatusChange(false));
+    setInterval(() => this.checkOnlineStatus(), 3e4);
+  }
+  async checkOnlineStatus() {
+    try {
+      const response = await fetch("https://www.google.com/favicon.ico", {
+        method: "HEAD",
+        cache: "no-cache"
+      });
+      this.handleOnlineStatusChange(response.ok);
+    } catch (error) {
+      this.handleOnlineStatusChange(false);
+    }
+  }
+  handleOnlineStatusChange(online) {
+    this.isOnline = online;
+    if (this.onlineStatusElement) {
+      if (online) {
+        this.onlineStatusElement.innerHTML = '<span class="status-icon">\u{1F310}</span><span class="status-text">Online</span>';
+        this.onlineStatusElement.classList.add("status-online");
+        this.onlineStatusElement.classList.remove("status-offline");
+      } else {
+        this.onlineStatusElement.innerHTML = '<span class="status-icon">\u{1F534}</span><span class="status-text">Offline</span>';
+        this.onlineStatusElement.classList.add("status-offline");
+        this.onlineStatusElement.classList.remove("status-online");
+      }
+    }
+    console.log(`Network status: ${online ? "Online" : "Offline"}`);
+  }
+  setupAuthListener() {
+    this.checkAuthState();
+    setInterval(() => this.checkAuthState(), 5e3);
+  }
+  checkAuthState() {
+    const userData = localStorage.getItem("currentUser");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.setUser(user);
+      } catch (error) {
+        this.clearUser();
+      }
+    } else {
+      this.clearUser();
+    }
+  }
+  setUser(user) {
+    this.currentUser = user;
+    if (this.userStatusElement && this.usernameDisplay) {
+      this.usernameDisplay.textContent = user.username || user.email || "User";
+      this.userStatusElement.style.display = "flex";
+    }
+    this.updateMenuItems(true);
+    console.log(`\u{1F464} User logged in: ${user.username}`);
+  }
+  clearUser() {
+    this.currentUser = null;
+    if (this.userStatusElement) {
+      this.userStatusElement.style.display = "none";
+    }
+    this.updateMenuItems(false);
+    console.log("\u{1F464} User logged out");
+  }
+  updateMenuItems(isLoggedIn) {
+    const loginItem = document.getElementById("login-menu-item");
+    const logoutItem = document.getElementById("logout-menu-item");
+    if (loginItem && logoutItem) {
+      if (isLoggedIn) {
+        loginItem.style.display = "none";
+        logoutItem.style.display = "flex";
+      } else {
+        loginItem.style.display = "flex";
+        logoutItem.style.display = "none";
+      }
+    }
+  }
+  // Method to manually trigger user login (call this when your auth completes)
+  loginUser(userData) {
+    localStorage.setItem("currentUser", JSON.stringify(userData));
+    this.setUser(userData);
+  }
+  // Method to manually trigger user logout
+  logoutUser() {
+    localStorage.removeItem("currentUser");
+    this.clearUser();
+  }
+};
+window.addEventListener("DOMContentLoaded", () => {
+  const statusBarManager = new StatusBarManager();
+  statusBarManager.init();
+  window.statusBarManager = statusBarManager;
+  setTimeout(() => {
+  }, 3e3);
+});
+
+// src/auth.js
+document.addEventListener("click", (e) => {
+  if (e.target === document.getElementById("login-modal")) {
+    closeLoginModal();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !document.getElementById("login-modal").classList.contains("hidden")) {
+    closeLoginModal();
+  }
+});
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("login-form");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+      const errorEl = document.getElementById("login-error");
+      const submitBtn = form.querySelector('button[type="submit"]');
+      errorEl.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-icons">hourglass_empty</span> Logging in...';
+      try {
+        const res = await fetch("https://api.cancerreg.org/v1/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.token) {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("username", username);
+          localStorage.setItem("authToken", data.token);
+          updateLoginStatus();
+          showNotification(`Welcome ${username}!`);
+          closeLoginModal();
+          if (window.tabManager && window.tabManager.currentTab) {
+            const currentTab = window.tabManager.currentTab;
+            if (currentTab.includes("home.html") || currentTab.includes("patients.html")) {
+              const activeButton = document.querySelector(".tab-button.active");
+              if (activeButton) {
+                window.tabManager.switchTab(activeButton);
+              }
+            }
+          }
+        } else {
+          errorEl.textContent = data.message || "Invalid credentials";
+          errorEl.classList.remove("hidden");
+        }
+      } catch (err) {
+        errorEl.textContent = "Network error: Unable to connect to server";
+        errorEl.classList.remove("hidden");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-icons">login</span> Login';
+      }
+    });
+  }
+});
+function updateLoginStatus() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const username = localStorage.getItem("username");
+  const loginItem = document.getElementById("login-menu-item");
+  const logoutItem = document.getElementById("logout-menu-item");
+  if (loginItem && logoutItem) {
+    if (isLoggedIn) {
+      loginItem.style.display = "none";
+      logoutItem.style.display = "flex";
+      const appTitle = document.querySelector(".app-title");
+      if (appTitle) {
+        appTitle.textContent = `My Tauri App (${username})`;
+      }
+    } else {
+      loginItem.style.display = "flex";
+      logoutItem.style.display = "none";
+      const appTitle = document.querySelector(".app-title");
+      if (appTitle) {
+        appTitle.textContent = "My Tauri App";
+      }
+    }
+  }
+}
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+        <span class="notification-message">${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <span class="material-icons">close</span>
+        </button>
+    `;
+  if (!document.querySelector("#notification-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "notification-styles";
+    styles.textContent = `
+            .notification {
+                position: fixed;
+                top: 60px;
+                right: 20px;
+                background: #333;
+                color: white;
+                padding: 12px 16px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+            .notification-success { background: #4CAF50; }
+            .notification-error { background: #f44336; }
+            .notification-warning { background: #ff9800; }
+            .notification-close {
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                padding: 0;
+                display: flex;
+                align-items: center;
+            }
+        `;
+    document.head.appendChild(styles);
+  }
+  document.body.appendChild(notification);
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5e3);
+}
+document.addEventListener("DOMContentLoaded", () => {
+  updateLoginStatus();
 });
 
 // node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
+var lim = (v, l, h) => Math.max(Math.min(v, h), l);
 function p2b(v) {
   return lim(round(v * 2.55), 0, 255);
 }
@@ -2250,6 +425,12 @@ function b2n(v) {
 function n2p(v) {
   return lim(round(v * 100), 0, 100);
 }
+var map$1 = { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, A: 10, B: 11, C: 12, D: 13, E: 14, F: 15, a: 10, b: 11, c: 12, d: 13, e: 14, f: 15 };
+var hex = [..."0123456789ABCDEF"];
+var h1 = (b) => hex[b & 15];
+var h2 = (b) => hex[(b & 240) >> 4] + hex[b & 15];
+var eq = (b) => (b & 240) >> 4 === (b & 15);
+var isShort = (v) => eq(v.r) && eq(v.g) && eq(v.b) && eq(v.a);
 function hexParse(str) {
   var len = str.length;
   var ret;
@@ -2272,10 +453,12 @@ function hexParse(str) {
   }
   return ret;
 }
+var alpha = (a, f) => a < 255 ? f(a) : "";
 function hexString(v) {
   var f = isShort(v) ? h1 : h2;
   return v ? "#" + f(v.r) + f(v.g) + f(v.b) + alpha(v.a, f) : void 0;
 }
+var HUE_RE = /^(hsla?|hwb|hsv)\(\s*([-+.e\d]+)(?:deg)?[\s,]+([-+.e\d]+)%[\s,]+([-+.e\d]+)%(?:[\s,]+([-+.e\d]+)(%)?)?\s*\)$/;
 function hsl2rgbn(h, s, l) {
   const a = s * Math.min(l, 1 - l);
   const f = (n, k = (n + h / 30) % 12) => l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
@@ -2385,6 +568,185 @@ function hslString(v) {
   const l = n2p(a[2]);
   return v.a < 255 ? `hsla(${h}, ${s}%, ${l}%, ${b2n(v.a)})` : `hsl(${h}, ${s}%, ${l}%)`;
 }
+var map = {
+  x: "dark",
+  Z: "light",
+  Y: "re",
+  X: "blu",
+  W: "gr",
+  V: "medium",
+  U: "slate",
+  A: "ee",
+  T: "ol",
+  S: "or",
+  B: "ra",
+  C: "lateg",
+  D: "ights",
+  R: "in",
+  Q: "turquois",
+  E: "hi",
+  P: "ro",
+  O: "al",
+  N: "le",
+  M: "de",
+  L: "yello",
+  F: "en",
+  K: "ch",
+  G: "arks",
+  H: "ea",
+  I: "ightg",
+  J: "wh"
+};
+var names$1 = {
+  OiceXe: "f0f8ff",
+  antiquewEte: "faebd7",
+  aqua: "ffff",
+  aquamarRe: "7fffd4",
+  azuY: "f0ffff",
+  beige: "f5f5dc",
+  bisque: "ffe4c4",
+  black: "0",
+  blanKedOmond: "ffebcd",
+  Xe: "ff",
+  XeviTet: "8a2be2",
+  bPwn: "a52a2a",
+  burlywood: "deb887",
+  caMtXe: "5f9ea0",
+  KartYuse: "7fff00",
+  KocTate: "d2691e",
+  cSO: "ff7f50",
+  cSnflowerXe: "6495ed",
+  cSnsilk: "fff8dc",
+  crimson: "dc143c",
+  cyan: "ffff",
+  xXe: "8b",
+  xcyan: "8b8b",
+  xgTMnPd: "b8860b",
+  xWay: "a9a9a9",
+  xgYF: "6400",
+  xgYy: "a9a9a9",
+  xkhaki: "bdb76b",
+  xmagFta: "8b008b",
+  xTivegYF: "556b2f",
+  xSange: "ff8c00",
+  xScEd: "9932cc",
+  xYd: "8b0000",
+  xsOmon: "e9967a",
+  xsHgYF: "8fbc8f",
+  xUXe: "483d8b",
+  xUWay: "2f4f4f",
+  xUgYy: "2f4f4f",
+  xQe: "ced1",
+  xviTet: "9400d3",
+  dAppRk: "ff1493",
+  dApskyXe: "bfff",
+  dimWay: "696969",
+  dimgYy: "696969",
+  dodgerXe: "1e90ff",
+  fiYbrick: "b22222",
+  flSOwEte: "fffaf0",
+  foYstWAn: "228b22",
+  fuKsia: "ff00ff",
+  gaRsbSo: "dcdcdc",
+  ghostwEte: "f8f8ff",
+  gTd: "ffd700",
+  gTMnPd: "daa520",
+  Way: "808080",
+  gYF: "8000",
+  gYFLw: "adff2f",
+  gYy: "808080",
+  honeyMw: "f0fff0",
+  hotpRk: "ff69b4",
+  RdianYd: "cd5c5c",
+  Rdigo: "4b0082",
+  ivSy: "fffff0",
+  khaki: "f0e68c",
+  lavFMr: "e6e6fa",
+  lavFMrXsh: "fff0f5",
+  lawngYF: "7cfc00",
+  NmoncEffon: "fffacd",
+  ZXe: "add8e6",
+  ZcSO: "f08080",
+  Zcyan: "e0ffff",
+  ZgTMnPdLw: "fafad2",
+  ZWay: "d3d3d3",
+  ZgYF: "90ee90",
+  ZgYy: "d3d3d3",
+  ZpRk: "ffb6c1",
+  ZsOmon: "ffa07a",
+  ZsHgYF: "20b2aa",
+  ZskyXe: "87cefa",
+  ZUWay: "778899",
+  ZUgYy: "778899",
+  ZstAlXe: "b0c4de",
+  ZLw: "ffffe0",
+  lime: "ff00",
+  limegYF: "32cd32",
+  lRF: "faf0e6",
+  magFta: "ff00ff",
+  maPon: "800000",
+  VaquamarRe: "66cdaa",
+  VXe: "cd",
+  VScEd: "ba55d3",
+  VpurpN: "9370db",
+  VsHgYF: "3cb371",
+  VUXe: "7b68ee",
+  VsprRggYF: "fa9a",
+  VQe: "48d1cc",
+  VviTetYd: "c71585",
+  midnightXe: "191970",
+  mRtcYam: "f5fffa",
+  mistyPse: "ffe4e1",
+  moccasR: "ffe4b5",
+  navajowEte: "ffdead",
+  navy: "80",
+  Tdlace: "fdf5e6",
+  Tive: "808000",
+  TivedBb: "6b8e23",
+  Sange: "ffa500",
+  SangeYd: "ff4500",
+  ScEd: "da70d6",
+  pOegTMnPd: "eee8aa",
+  pOegYF: "98fb98",
+  pOeQe: "afeeee",
+  pOeviTetYd: "db7093",
+  papayawEp: "ffefd5",
+  pHKpuff: "ffdab9",
+  peru: "cd853f",
+  pRk: "ffc0cb",
+  plum: "dda0dd",
+  powMrXe: "b0e0e6",
+  purpN: "800080",
+  YbeccapurpN: "663399",
+  Yd: "ff0000",
+  Psybrown: "bc8f8f",
+  PyOXe: "4169e1",
+  saddNbPwn: "8b4513",
+  sOmon: "fa8072",
+  sandybPwn: "f4a460",
+  sHgYF: "2e8b57",
+  sHshell: "fff5ee",
+  siFna: "a0522d",
+  silver: "c0c0c0",
+  skyXe: "87ceeb",
+  UXe: "6a5acd",
+  UWay: "708090",
+  UgYy: "708090",
+  snow: "fffafa",
+  sprRggYF: "ff7f",
+  stAlXe: "4682b4",
+  tan: "d2b48c",
+  teO: "8080",
+  tEstN: "d8bfd8",
+  tomato: "ff6347",
+  Qe: "40e0d0",
+  viTet: "ee82ee",
+  JHt: "f5deb3",
+  wEte: "ffffff",
+  wEtesmoke: "f5f5f5",
+  Lw: "ffff00",
+  LwgYF: "9acd32"
+};
 function unpack() {
   const unpacked = {};
   const keys = Object.keys(names$1);
@@ -2401,6 +763,7 @@ function unpack() {
   }
   return unpacked;
 }
+var names;
 function nameParse(str) {
   if (!names) {
     names = unpack();
@@ -2414,6 +777,7 @@ function nameParse(str) {
     a: a.length === 4 ? a[3] : 255
   };
 }
+var RGB_RE = /^rgba?\(\s*([-+.\d]+)(%)?[\s,]+([-+.e\d]+)(%)?[\s,]+([-+.e\d]+)(%)?(?:[\s,/]+([-+.e\d]+)(%)?)?\s*\)$/;
 function rgbParse(str) {
   const m = RGB_RE.exec(str);
   let a = 255;
@@ -2441,6 +805,8 @@ function rgbParse(str) {
 function rgbString(v) {
   return v && (v.a < 255 ? `rgba(${v.r}, ${v.g}, ${v.b}, ${b2n(v.a)})` : `rgb(${v.r}, ${v.g}, ${v.b})`);
 }
+var to = (v) => v <= 31308e-7 ? v * 12.92 : Math.pow(v, 1 / 2.4) * 1.055 - 0.055;
+var from = (v) => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 function interpolate(rgb1, rgb2, t) {
   const r = from(b2n(rgb1.r));
   const g = from(b2n(rgb1.g));
@@ -2486,318 +852,126 @@ function functionParse(str) {
   }
   return hueParse(str);
 }
-var lim, map$1, hex, h1, h2, eq, isShort, alpha, HUE_RE, map, names$1, names, RGB_RE, to, from, Color;
-var init_color_esm = __esm({
-  "node_modules/@kurkle/color/dist/color.esm.js"() {
-    lim = (v, l, h) => Math.max(Math.min(v, h), l);
-    map$1 = { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, A: 10, B: 11, C: 12, D: 13, E: 14, F: 15, a: 10, b: 11, c: 12, d: 13, e: 14, f: 15 };
-    hex = [..."0123456789ABCDEF"];
-    h1 = (b) => hex[b & 15];
-    h2 = (b) => hex[(b & 240) >> 4] + hex[b & 15];
-    eq = (b) => (b & 240) >> 4 === (b & 15);
-    isShort = (v) => eq(v.r) && eq(v.g) && eq(v.b) && eq(v.a);
-    alpha = (a, f) => a < 255 ? f(a) : "";
-    HUE_RE = /^(hsla?|hwb|hsv)\(\s*([-+.e\d]+)(?:deg)?[\s,]+([-+.e\d]+)%[\s,]+([-+.e\d]+)%(?:[\s,]+([-+.e\d]+)(%)?)?\s*\)$/;
-    map = {
-      x: "dark",
-      Z: "light",
-      Y: "re",
-      X: "blu",
-      W: "gr",
-      V: "medium",
-      U: "slate",
-      A: "ee",
-      T: "ol",
-      S: "or",
-      B: "ra",
-      C: "lateg",
-      D: "ights",
-      R: "in",
-      Q: "turquois",
-      E: "hi",
-      P: "ro",
-      O: "al",
-      N: "le",
-      M: "de",
-      L: "yello",
-      F: "en",
-      K: "ch",
-      G: "arks",
-      H: "ea",
-      I: "ightg",
-      J: "wh"
-    };
-    names$1 = {
-      OiceXe: "f0f8ff",
-      antiquewEte: "faebd7",
-      aqua: "ffff",
-      aquamarRe: "7fffd4",
-      azuY: "f0ffff",
-      beige: "f5f5dc",
-      bisque: "ffe4c4",
-      black: "0",
-      blanKedOmond: "ffebcd",
-      Xe: "ff",
-      XeviTet: "8a2be2",
-      bPwn: "a52a2a",
-      burlywood: "deb887",
-      caMtXe: "5f9ea0",
-      KartYuse: "7fff00",
-      KocTate: "d2691e",
-      cSO: "ff7f50",
-      cSnflowerXe: "6495ed",
-      cSnsilk: "fff8dc",
-      crimson: "dc143c",
-      cyan: "ffff",
-      xXe: "8b",
-      xcyan: "8b8b",
-      xgTMnPd: "b8860b",
-      xWay: "a9a9a9",
-      xgYF: "6400",
-      xgYy: "a9a9a9",
-      xkhaki: "bdb76b",
-      xmagFta: "8b008b",
-      xTivegYF: "556b2f",
-      xSange: "ff8c00",
-      xScEd: "9932cc",
-      xYd: "8b0000",
-      xsOmon: "e9967a",
-      xsHgYF: "8fbc8f",
-      xUXe: "483d8b",
-      xUWay: "2f4f4f",
-      xUgYy: "2f4f4f",
-      xQe: "ced1",
-      xviTet: "9400d3",
-      dAppRk: "ff1493",
-      dApskyXe: "bfff",
-      dimWay: "696969",
-      dimgYy: "696969",
-      dodgerXe: "1e90ff",
-      fiYbrick: "b22222",
-      flSOwEte: "fffaf0",
-      foYstWAn: "228b22",
-      fuKsia: "ff00ff",
-      gaRsbSo: "dcdcdc",
-      ghostwEte: "f8f8ff",
-      gTd: "ffd700",
-      gTMnPd: "daa520",
-      Way: "808080",
-      gYF: "8000",
-      gYFLw: "adff2f",
-      gYy: "808080",
-      honeyMw: "f0fff0",
-      hotpRk: "ff69b4",
-      RdianYd: "cd5c5c",
-      Rdigo: "4b0082",
-      ivSy: "fffff0",
-      khaki: "f0e68c",
-      lavFMr: "e6e6fa",
-      lavFMrXsh: "fff0f5",
-      lawngYF: "7cfc00",
-      NmoncEffon: "fffacd",
-      ZXe: "add8e6",
-      ZcSO: "f08080",
-      Zcyan: "e0ffff",
-      ZgTMnPdLw: "fafad2",
-      ZWay: "d3d3d3",
-      ZgYF: "90ee90",
-      ZgYy: "d3d3d3",
-      ZpRk: "ffb6c1",
-      ZsOmon: "ffa07a",
-      ZsHgYF: "20b2aa",
-      ZskyXe: "87cefa",
-      ZUWay: "778899",
-      ZUgYy: "778899",
-      ZstAlXe: "b0c4de",
-      ZLw: "ffffe0",
-      lime: "ff00",
-      limegYF: "32cd32",
-      lRF: "faf0e6",
-      magFta: "ff00ff",
-      maPon: "800000",
-      VaquamarRe: "66cdaa",
-      VXe: "cd",
-      VScEd: "ba55d3",
-      VpurpN: "9370db",
-      VsHgYF: "3cb371",
-      VUXe: "7b68ee",
-      VsprRggYF: "fa9a",
-      VQe: "48d1cc",
-      VviTetYd: "c71585",
-      midnightXe: "191970",
-      mRtcYam: "f5fffa",
-      mistyPse: "ffe4e1",
-      moccasR: "ffe4b5",
-      navajowEte: "ffdead",
-      navy: "80",
-      Tdlace: "fdf5e6",
-      Tive: "808000",
-      TivedBb: "6b8e23",
-      Sange: "ffa500",
-      SangeYd: "ff4500",
-      ScEd: "da70d6",
-      pOegTMnPd: "eee8aa",
-      pOegYF: "98fb98",
-      pOeQe: "afeeee",
-      pOeviTetYd: "db7093",
-      papayawEp: "ffefd5",
-      pHKpuff: "ffdab9",
-      peru: "cd853f",
-      pRk: "ffc0cb",
-      plum: "dda0dd",
-      powMrXe: "b0e0e6",
-      purpN: "800080",
-      YbeccapurpN: "663399",
-      Yd: "ff0000",
-      Psybrown: "bc8f8f",
-      PyOXe: "4169e1",
-      saddNbPwn: "8b4513",
-      sOmon: "fa8072",
-      sandybPwn: "f4a460",
-      sHgYF: "2e8b57",
-      sHshell: "fff5ee",
-      siFna: "a0522d",
-      silver: "c0c0c0",
-      skyXe: "87ceeb",
-      UXe: "6a5acd",
-      UWay: "708090",
-      UgYy: "708090",
-      snow: "fffafa",
-      sprRggYF: "ff7f",
-      stAlXe: "4682b4",
-      tan: "d2b48c",
-      teO: "8080",
-      tEstN: "d8bfd8",
-      tomato: "ff6347",
-      Qe: "40e0d0",
-      viTet: "ee82ee",
-      JHt: "f5deb3",
-      wEte: "ffffff",
-      wEtesmoke: "f5f5f5",
-      Lw: "ffff00",
-      LwgYF: "9acd32"
-    };
-    RGB_RE = /^rgba?\(\s*([-+.\d]+)(%)?[\s,]+([-+.e\d]+)(%)?[\s,]+([-+.e\d]+)(%)?(?:[\s,/]+([-+.e\d]+)(%)?)?\s*\)$/;
-    to = (v) => v <= 31308e-7 ? v * 12.92 : Math.pow(v, 1 / 2.4) * 1.055 - 0.055;
-    from = (v) => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-    Color = class _Color {
-      constructor(input) {
-        if (input instanceof _Color) {
-          return input;
-        }
-        const type = typeof input;
-        let v;
-        if (type === "object") {
-          v = fromObject(input);
-        } else if (type === "string") {
-          v = hexParse(input) || nameParse(input) || functionParse(input);
-        }
-        this._rgb = v;
-        this._valid = !!v;
-      }
-      get valid() {
-        return this._valid;
-      }
-      get rgb() {
-        var v = clone(this._rgb);
-        if (v) {
-          v.a = b2n(v.a);
-        }
-        return v;
-      }
-      set rgb(obj) {
-        this._rgb = fromObject(obj);
-      }
-      rgbString() {
-        return this._valid ? rgbString(this._rgb) : void 0;
-      }
-      hexString() {
-        return this._valid ? hexString(this._rgb) : void 0;
-      }
-      hslString() {
-        return this._valid ? hslString(this._rgb) : void 0;
-      }
-      mix(color2, weight) {
-        if (color2) {
-          const c1 = this.rgb;
-          const c2 = color2.rgb;
-          let w2;
-          const p = weight === w2 ? 0.5 : weight;
-          const w = 2 * p - 1;
-          const a = c1.a - c2.a;
-          const w1 = ((w * a === -1 ? w : (w + a) / (1 + w * a)) + 1) / 2;
-          w2 = 1 - w1;
-          c1.r = 255 & w1 * c1.r + w2 * c2.r + 0.5;
-          c1.g = 255 & w1 * c1.g + w2 * c2.g + 0.5;
-          c1.b = 255 & w1 * c1.b + w2 * c2.b + 0.5;
-          c1.a = p * c1.a + (1 - p) * c2.a;
-          this.rgb = c1;
-        }
-        return this;
-      }
-      interpolate(color2, t) {
-        if (color2) {
-          this._rgb = interpolate(this._rgb, color2._rgb, t);
-        }
-        return this;
-      }
-      clone() {
-        return new _Color(this.rgb);
-      }
-      alpha(a) {
-        this._rgb.a = n2b(a);
-        return this;
-      }
-      clearer(ratio) {
-        const rgb = this._rgb;
-        rgb.a *= 1 - ratio;
-        return this;
-      }
-      greyscale() {
-        const rgb = this._rgb;
-        const val = round(rgb.r * 0.3 + rgb.g * 0.59 + rgb.b * 0.11);
-        rgb.r = rgb.g = rgb.b = val;
-        return this;
-      }
-      opaquer(ratio) {
-        const rgb = this._rgb;
-        rgb.a *= 1 + ratio;
-        return this;
-      }
-      negate() {
-        const v = this._rgb;
-        v.r = 255 - v.r;
-        v.g = 255 - v.g;
-        v.b = 255 - v.b;
-        return this;
-      }
-      lighten(ratio) {
-        modHSL(this._rgb, 2, ratio);
-        return this;
-      }
-      darken(ratio) {
-        modHSL(this._rgb, 2, -ratio);
-        return this;
-      }
-      saturate(ratio) {
-        modHSL(this._rgb, 1, ratio);
-        return this;
-      }
-      desaturate(ratio) {
-        modHSL(this._rgb, 1, -ratio);
-        return this;
-      }
-      rotate(deg) {
-        rotate(this._rgb, deg);
-        return this;
-      }
-    };
+var Color = class _Color {
+  constructor(input) {
+    if (input instanceof _Color) {
+      return input;
+    }
+    const type = typeof input;
+    let v;
+    if (type === "object") {
+      v = fromObject(input);
+    } else if (type === "string") {
+      v = hexParse(input) || nameParse(input) || functionParse(input);
+    }
+    this._rgb = v;
+    this._valid = !!v;
   }
-});
+  get valid() {
+    return this._valid;
+  }
+  get rgb() {
+    var v = clone(this._rgb);
+    if (v) {
+      v.a = b2n(v.a);
+    }
+    return v;
+  }
+  set rgb(obj) {
+    this._rgb = fromObject(obj);
+  }
+  rgbString() {
+    return this._valid ? rgbString(this._rgb) : void 0;
+  }
+  hexString() {
+    return this._valid ? hexString(this._rgb) : void 0;
+  }
+  hslString() {
+    return this._valid ? hslString(this._rgb) : void 0;
+  }
+  mix(color2, weight) {
+    if (color2) {
+      const c1 = this.rgb;
+      const c2 = color2.rgb;
+      let w2;
+      const p = weight === w2 ? 0.5 : weight;
+      const w = 2 * p - 1;
+      const a = c1.a - c2.a;
+      const w1 = ((w * a === -1 ? w : (w + a) / (1 + w * a)) + 1) / 2;
+      w2 = 1 - w1;
+      c1.r = 255 & w1 * c1.r + w2 * c2.r + 0.5;
+      c1.g = 255 & w1 * c1.g + w2 * c2.g + 0.5;
+      c1.b = 255 & w1 * c1.b + w2 * c2.b + 0.5;
+      c1.a = p * c1.a + (1 - p) * c2.a;
+      this.rgb = c1;
+    }
+    return this;
+  }
+  interpolate(color2, t) {
+    if (color2) {
+      this._rgb = interpolate(this._rgb, color2._rgb, t);
+    }
+    return this;
+  }
+  clone() {
+    return new _Color(this.rgb);
+  }
+  alpha(a) {
+    this._rgb.a = n2b(a);
+    return this;
+  }
+  clearer(ratio) {
+    const rgb = this._rgb;
+    rgb.a *= 1 - ratio;
+    return this;
+  }
+  greyscale() {
+    const rgb = this._rgb;
+    const val = round(rgb.r * 0.3 + rgb.g * 0.59 + rgb.b * 0.11);
+    rgb.r = rgb.g = rgb.b = val;
+    return this;
+  }
+  opaquer(ratio) {
+    const rgb = this._rgb;
+    rgb.a *= 1 + ratio;
+    return this;
+  }
+  negate() {
+    const v = this._rgb;
+    v.r = 255 - v.r;
+    v.g = 255 - v.g;
+    v.b = 255 - v.b;
+    return this;
+  }
+  lighten(ratio) {
+    modHSL(this._rgb, 2, ratio);
+    return this;
+  }
+  darken(ratio) {
+    modHSL(this._rgb, 2, -ratio);
+    return this;
+  }
+  saturate(ratio) {
+    modHSL(this._rgb, 1, ratio);
+    return this;
+  }
+  desaturate(ratio) {
+    modHSL(this._rgb, 1, -ratio);
+    return this;
+  }
+  rotate(deg) {
+    rotate(this._rgb, deg);
+    return this;
+  }
+};
 
 // node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
+var uid = /* @__PURE__ */ (() => {
+  let id = 0;
+  return () => id++;
+})();
 function isNullOrUndef(value) {
   return value === null || value === void 0;
 }
@@ -2823,6 +997,8 @@ function finiteOrDefault(value, defaultValue) {
 function valueOrDefault(value, defaultValue) {
   return typeof value === "undefined" ? defaultValue : value;
 }
+var toPercentage = (value, dimension) => typeof value === "string" && value.endsWith("%") ? parseFloat(value) / 100 : +value / dimension;
+var toDimension = (value, dimension) => typeof value === "string" && value.endsWith("%") ? parseFloat(value) / 100 * dimension : +value;
 function callback(fn, args, thisArg) {
   if (fn && typeof fn.call === "function") {
     return fn.apply(thisArg, args);
@@ -2938,6 +1114,13 @@ function _mergerIf(key, target, source) {
     target[key] = clone2(sval);
   }
 }
+var keyResolvers = {
+  // Chart.helpers.core resolveObjectKey should resolve empty key to root object
+  "": (v) => v,
+  // default resolvers
+  x: (o) => o.x,
+  y: (o) => o.y
+};
 function _splitKey(key) {
   const parts = key.split(".");
   const keys = [];
@@ -2972,9 +1155,32 @@ function resolveObjectKey(obj, key) {
 function _capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+var defined = (value) => typeof value !== "undefined";
+var isFunction = (value) => typeof value === "function";
+var setsEqual = (a, b) => {
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const item of a) {
+    if (!b.has(item)) {
+      return false;
+    }
+  }
+  return true;
+};
 function _isClickEvent(e) {
   return e.type === "mouseup" || e.type === "click" || e.type === "contextmenu";
 }
+var PI = Math.PI;
+var TAU = 2 * PI;
+var PITAU = TAU + PI;
+var INFINITY = Number.POSITIVE_INFINITY;
+var RAD_PER_DEG = PI / 180;
+var HALF_PI = PI / 2;
+var QUARTER_PI = PI / 4;
+var TWO_THIRDS_PI = PI * 2 / 3;
+var log10 = Math.log10;
+var sign = Math.sign;
 function almostEquals(x, y, epsilon) {
   return Math.abs(x - y) < epsilon;
 }
@@ -3099,6 +1305,11 @@ function _lookup(table, value, cmp) {
     hi
   };
 }
+var _lookupByKey = (table, key, value, last) => _lookup(table, value, last ? (index2) => {
+  const ti = table[index2][key];
+  return ti < value || ti === value && table[index2 + 1][key] === value;
+} : (index2) => table[index2][key] < value);
+var _rlookupByKey = (table, key, value) => _lookup(table, value, (index2) => table[index2][key] >= value);
 function _filterBetween(values, min, max) {
   let start = 0;
   let end = values.length;
@@ -3110,6 +1321,13 @@ function _filterBetween(values, min, max) {
   }
   return start > 0 || end < values.length ? values.slice(start, end) : values;
 }
+var arrayEvents = [
+  "push",
+  "pop",
+  "shift",
+  "splice",
+  "unshift"
+];
 function listenArrayEvents(array, listener) {
   if (array._chartjs) {
     array._chartjs.listeners.push(listener);
@@ -3167,6 +1385,14 @@ function _arrayUnique(items) {
   }
   return Array.from(set2);
 }
+var requestAnimFrame = (function() {
+  if (typeof window === "undefined") {
+    return function(callback2) {
+      return callback2();
+    };
+  }
+  return window.requestAnimationFrame;
+})();
 function throttled(fn, thisArg) {
   let argsToUse = [];
   let ticking = false;
@@ -3193,6 +1419,12 @@ function debounce(fn, delay) {
     return delay;
   };
 }
+var _toLeftRightCenter = (align) => align === "start" ? "left" : align === "end" ? "right" : "center";
+var _alignStartEnd = (align, start, end) => align === "start" ? start : align === "end" ? end : (start + end) / 2;
+var _textX = (align, left, right, rtl) => {
+  const check = rtl ? "left" : "right";
+  return align === check ? right : align === "center" ? (left + right) / 2 : left;
+};
 function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
   const pointCount = points.length;
   let start = 0;
@@ -3252,6 +1484,71 @@ function _scaleRangesChanged(meta) {
   Object.assign(_scaleRanges, newRanges);
   return changed;
 }
+var atEdge = (t) => t === 0 || t === 1;
+var elasticIn = (t, s, p) => -(Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * TAU / p));
+var elasticOut = (t, s, p) => Math.pow(2, -10 * t) * Math.sin((t - s) * TAU / p) + 1;
+var effects = {
+  linear: (t) => t,
+  easeInQuad: (t) => t * t,
+  easeOutQuad: (t) => -t * (t - 2),
+  easeInOutQuad: (t) => (t /= 0.5) < 1 ? 0.5 * t * t : -0.5 * (--t * (t - 2) - 1),
+  easeInCubic: (t) => t * t * t,
+  easeOutCubic: (t) => (t -= 1) * t * t + 1,
+  easeInOutCubic: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t : 0.5 * ((t -= 2) * t * t + 2),
+  easeInQuart: (t) => t * t * t * t,
+  easeOutQuart: (t) => -((t -= 1) * t * t * t - 1),
+  easeInOutQuart: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t * t : -0.5 * ((t -= 2) * t * t * t - 2),
+  easeInQuint: (t) => t * t * t * t * t,
+  easeOutQuint: (t) => (t -= 1) * t * t * t * t + 1,
+  easeInOutQuint: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t * t * t : 0.5 * ((t -= 2) * t * t * t * t + 2),
+  easeInSine: (t) => -Math.cos(t * HALF_PI) + 1,
+  easeOutSine: (t) => Math.sin(t * HALF_PI),
+  easeInOutSine: (t) => -0.5 * (Math.cos(PI * t) - 1),
+  easeInExpo: (t) => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),
+  easeOutExpo: (t) => t === 1 ? 1 : -Math.pow(2, -10 * t) + 1,
+  easeInOutExpo: (t) => atEdge(t) ? t : t < 0.5 ? 0.5 * Math.pow(2, 10 * (t * 2 - 1)) : 0.5 * (-Math.pow(2, -10 * (t * 2 - 1)) + 2),
+  easeInCirc: (t) => t >= 1 ? t : -(Math.sqrt(1 - t * t) - 1),
+  easeOutCirc: (t) => Math.sqrt(1 - (t -= 1) * t),
+  easeInOutCirc: (t) => (t /= 0.5) < 1 ? -0.5 * (Math.sqrt(1 - t * t) - 1) : 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1),
+  easeInElastic: (t) => atEdge(t) ? t : elasticIn(t, 0.075, 0.3),
+  easeOutElastic: (t) => atEdge(t) ? t : elasticOut(t, 0.075, 0.3),
+  easeInOutElastic(t) {
+    const s = 0.1125;
+    const p = 0.45;
+    return atEdge(t) ? t : t < 0.5 ? 0.5 * elasticIn(t * 2, s, p) : 0.5 + 0.5 * elasticOut(t * 2 - 1, s, p);
+  },
+  easeInBack(t) {
+    const s = 1.70158;
+    return t * t * ((s + 1) * t - s);
+  },
+  easeOutBack(t) {
+    const s = 1.70158;
+    return (t -= 1) * t * ((s + 1) * t + s) + 1;
+  },
+  easeInOutBack(t) {
+    let s = 1.70158;
+    if ((t /= 0.5) < 1) {
+      return 0.5 * (t * t * (((s *= 1.525) + 1) * t - s));
+    }
+    return 0.5 * ((t -= 2) * t * (((s *= 1.525) + 1) * t + s) + 2);
+  },
+  easeInBounce: (t) => 1 - effects.easeOutBounce(1 - t),
+  easeOutBounce(t) {
+    const m = 7.5625;
+    const d = 2.75;
+    if (t < 1 / d) {
+      return m * t * t;
+    }
+    if (t < 2 / d) {
+      return m * (t -= 1.5 / d) * t + 0.75;
+    }
+    if (t < 2.5 / d) {
+      return m * (t -= 2.25 / d) * t + 0.9375;
+    }
+    return m * (t -= 2.625 / d) * t + 0.984375;
+  },
+  easeInOutBounce: (t) => t < 0.5 ? effects.easeInBounce(t * 2) * 0.5 : effects.easeOutBounce(t * 2 - 1) * 0.5 + 0.5
+};
 function isPatternOrGradient(value) {
   if (value && typeof value === "object") {
     const type = value.toString();
@@ -3265,6 +1562,18 @@ function color(value) {
 function getHoverColor(value) {
   return isPatternOrGradient(value) ? value : new Color(value).saturate(0.5).darken(0.1).hexString();
 }
+var numbers = [
+  "x",
+  "y",
+  "borderWidth",
+  "radius",
+  "tension"
+];
+var colors = [
+  "color",
+  "borderColor",
+  "backgroundColor"
+];
 function applyAnimationsDefaults(defaults2) {
   defaults2.set("animation", {
     delay: void 0,
@@ -3341,6 +1650,7 @@ function applyLayoutsDefaults(defaults2) {
     }
   });
 }
+var intlCache = /* @__PURE__ */ new Map();
 function getNumberFormat(locale, options) {
   options = options || {};
   const cacheKey = locale + JSON.stringify(options);
@@ -3354,6 +1664,52 @@ function getNumberFormat(locale, options) {
 function formatNumber(num, locale, options) {
   return getNumberFormat(locale, options).format(num);
 }
+var formatters = {
+  values(value) {
+    return isArray(value) ? value : "" + value;
+  },
+  numeric(tickValue, index2, ticks) {
+    if (tickValue === 0) {
+      return "0";
+    }
+    const locale = this.chart.options.locale;
+    let notation;
+    let delta = tickValue;
+    if (ticks.length > 1) {
+      const maxTick = Math.max(Math.abs(ticks[0].value), Math.abs(ticks[ticks.length - 1].value));
+      if (maxTick < 1e-4 || maxTick > 1e15) {
+        notation = "scientific";
+      }
+      delta = calculateDelta(tickValue, ticks);
+    }
+    const logDelta = log10(Math.abs(delta));
+    const numDecimal = isNaN(logDelta) ? 1 : Math.max(Math.min(-1 * Math.floor(logDelta), 20), 0);
+    const options = {
+      notation,
+      minimumFractionDigits: numDecimal,
+      maximumFractionDigits: numDecimal
+    };
+    Object.assign(options, this.options.ticks.format);
+    return formatNumber(tickValue, locale, options);
+  },
+  logarithmic(tickValue, index2, ticks) {
+    if (tickValue === 0) {
+      return "0";
+    }
+    const remain = ticks[index2].significand || tickValue / Math.pow(10, Math.floor(log10(tickValue)));
+    if ([
+      1,
+      2,
+      3,
+      5,
+      10,
+      15
+    ].includes(remain) || index2 > 0.8 * ticks.length) {
+      return formatters.numeric.call(this, tickValue, index2, ticks);
+    }
+    return "";
+  }
+};
 function calculateDelta(tickValue, ticks) {
   let delta = ticks.length > 3 ? ticks[2].value - ticks[1].value : ticks[1].value - ticks[0].value;
   if (Math.abs(delta) >= 1 && tickValue !== Math.floor(tickValue)) {
@@ -3361,6 +1717,9 @@ function calculateDelta(tickValue, ticks) {
   }
   return delta;
 }
+var Ticks = {
+  formatters
+};
 function applyScaleDefaults(defaults2) {
   defaults2.set("scale", {
     display: true,
@@ -3432,6 +1791,8 @@ function applyScaleDefaults(defaults2) {
     _indexable: (name) => name !== "backdropPadding"
   });
 }
+var overrides = /* @__PURE__ */ Object.create(null);
+var descriptors = /* @__PURE__ */ Object.create(null);
 function getScope$1(node, key) {
   if (!key) {
     return node;
@@ -3449,6 +1810,108 @@ function set(root, scope, values) {
   }
   return merge(getScope$1(root, ""), scope);
 }
+var Defaults = class {
+  constructor(_descriptors2, _appliers) {
+    this.animation = void 0;
+    this.backgroundColor = "rgba(0,0,0,0.1)";
+    this.borderColor = "rgba(0,0,0,0.1)";
+    this.color = "#666";
+    this.datasets = {};
+    this.devicePixelRatio = (context) => context.chart.platform.getDevicePixelRatio();
+    this.elements = {};
+    this.events = [
+      "mousemove",
+      "mouseout",
+      "click",
+      "touchstart",
+      "touchmove"
+    ];
+    this.font = {
+      family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      size: 12,
+      style: "normal",
+      lineHeight: 1.2,
+      weight: null
+    };
+    this.hover = {};
+    this.hoverBackgroundColor = (ctx, options) => getHoverColor(options.backgroundColor);
+    this.hoverBorderColor = (ctx, options) => getHoverColor(options.borderColor);
+    this.hoverColor = (ctx, options) => getHoverColor(options.color);
+    this.indexAxis = "x";
+    this.interaction = {
+      mode: "nearest",
+      intersect: true,
+      includeInvisible: false
+    };
+    this.maintainAspectRatio = true;
+    this.onHover = null;
+    this.onClick = null;
+    this.parsing = true;
+    this.plugins = {};
+    this.responsive = true;
+    this.scale = void 0;
+    this.scales = {};
+    this.showLine = true;
+    this.drawActiveElementsOnTop = true;
+    this.describe(_descriptors2);
+    this.apply(_appliers);
+  }
+  set(scope, values) {
+    return set(this, scope, values);
+  }
+  get(scope) {
+    return getScope$1(this, scope);
+  }
+  describe(scope, values) {
+    return set(descriptors, scope, values);
+  }
+  override(scope, values) {
+    return set(overrides, scope, values);
+  }
+  route(scope, name, targetScope, targetName) {
+    const scopeObject = getScope$1(this, scope);
+    const targetScopeObject = getScope$1(this, targetScope);
+    const privateName = "_" + name;
+    Object.defineProperties(scopeObject, {
+      [privateName]: {
+        value: scopeObject[name],
+        writable: true
+      },
+      [name]: {
+        enumerable: true,
+        get() {
+          const local = this[privateName];
+          const target = targetScopeObject[targetName];
+          if (isObject(local)) {
+            return Object.assign({}, target, local);
+          }
+          return valueOrDefault(local, target);
+        },
+        set(value) {
+          this[privateName] = value;
+        }
+      }
+    });
+  }
+  apply(appliers) {
+    appliers.forEach((apply) => apply(this));
+  }
+};
+var defaults = /* @__PURE__ */ new Defaults({
+  _scriptable: (name) => !name.startsWith("on"),
+  _indexable: (name) => name !== "events",
+  hover: {
+    _fallback: "interaction"
+  },
+  interaction: {
+    _scriptable: false,
+    _indexable: false
+  }
+}, [
+  applyAnimationsDefaults,
+  applyLayoutsDefaults,
+  applyScaleDefaults
+]);
 function toFontString(font) {
   if (!font || isNullOrUndef(font.size) || isNullOrUndef(font.family)) {
     return null;
@@ -3523,17 +1986,17 @@ function drawPoint(ctx, options, x, y) {
 }
 function drawPointLegend(ctx, options, x, y, w) {
   let type, xOffset, yOffset, size, cornerRadius, width, xOffsetW, yOffsetW;
-  const style2 = options.pointStyle;
+  const style = options.pointStyle;
   const rotation = options.rotation;
   const radius = options.radius;
   let rad = (rotation || 0) * RAD_PER_DEG;
-  if (style2 && typeof style2 === "object") {
-    type = style2.toString();
+  if (style && typeof style === "object") {
+    type = style.toString();
     if (type === "[object HTMLImageElement]" || type === "[object HTMLCanvasElement]") {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(rad);
-      ctx.drawImage(style2, -style2.width / 2, -style2.height / 2, style2.width, style2.height);
+      ctx.drawImage(style, -style.width / 2, -style.height / 2, style.width, style.height);
       ctx.restore();
       return;
     }
@@ -3542,7 +2005,7 @@ function drawPointLegend(ctx, options, x, y, w) {
     return;
   }
   ctx.beginPath();
-  switch (style2) {
+  switch (style) {
     // Default includes circle
     default:
       if (w) {
@@ -3758,6 +2221,8 @@ function addRoundedRectPath(ctx, rect) {
   ctx.arc(x + w - radius.topRight, y + radius.topRight, radius.topRight, 0, -HALF_PI, true);
   ctx.lineTo(x + radius.topLeft, y);
 }
+var LINE_HEIGHT = /^(normal|(\d+(?:\.\d+)?)(px|em|%)?)$/;
+var FONT_STYLE = /^(normal|italic|initial|inherit|unset|(oblique( -?[0-9]?[0-9]deg)?))$/;
 function toLineHeight(value, size) {
   const matches = ("" + value).match(LINE_HEIGHT);
   if (!matches || matches[1] === "normal") {
@@ -3773,6 +2238,7 @@ function toLineHeight(value, size) {
   }
   return size * value;
 }
+var numberOrZero = (v) => +v || 0;
 function _readValueToProps(value, props) {
   const ret = {};
   const objProps = isObject(props);
@@ -3812,16 +2278,16 @@ function toFont(options, fallback) {
   if (typeof size === "string") {
     size = parseInt(size, 10);
   }
-  let style2 = valueOrDefault(options.style, fallback.style);
-  if (style2 && !("" + style2).match(FONT_STYLE)) {
-    console.warn('Invalid font style specified: "' + style2 + '"');
-    style2 = void 0;
+  let style = valueOrDefault(options.style, fallback.style);
+  if (style && !("" + style).match(FONT_STYLE)) {
+    console.warn('Invalid font style specified: "' + style + '"');
+    style = void 0;
   }
   const font = {
     family: valueOrDefault(options.family, fallback.family),
     lineHeight: toLineHeight(valueOrDefault(options.lineHeight, fallback.lineHeight), size),
     size,
-    style: style2,
+    style,
     weight: valueOrDefault(options.weight, fallback.weight),
     string: ""
   };
@@ -4012,6 +2478,8 @@ function _descriptors(proxy, defaults2 = {
     isIndexable: isFunction(_indexable) ? _indexable : () => _indexable
   };
 }
+var readKey = (prefix, name) => prefix ? prefix + _capitalize(name) : name;
+var needsSubResolver = (prop, value) => isObject(value) && prop !== "adapters" && (Object.getPrototypeOf(value) === null || value.constructor === Object);
 function _cached(target, prop, resolve2) {
   if (Object.prototype.hasOwnProperty.call(target, prop) || prop === "constructor") {
     return target[prop];
@@ -4065,6 +2533,7 @@ function _resolveArray(prop, value, target, isIndexable) {
 function resolveFallback(fallback, prop, value) {
   return isFunction(fallback) ? fallback(prop, value) : fallback;
 }
+var getScope = (key, parent) => key === true ? parent : typeof key === "string" ? resolveObjectKey(parent, key) : void 0;
 function addScopes(set2, parentScopes, key, parentFallback, value) {
   for (const parent of parentScopes) {
     const scope = getScope(key, parent);
@@ -4170,6 +2639,9 @@ function _parseObjectDataRadialScale(meta, data, start, count) {
   }
   return parsed;
 }
+var EPSILON = Number.EPSILON || 1e-14;
+var getPoint = (points, i) => i < points.length && !points[i].skip && points[i];
+var getValueAxis = (indexAxis) => indexAxis === "x" ? "y" : "x";
 function splineCurve(firstPoint, middlePoint, afterPoint, t) {
   const previous = firstPoint.skip ? middlePoint : firstPoint;
   const current = middlePoint;
@@ -4336,20 +2808,28 @@ function parseMaxStyle(styleValue, node, parentProperty) {
   }
   return valueInPixels;
 }
+var getComputedStyle = (element) => element.ownerDocument.defaultView.getComputedStyle(element, null);
 function getStyle(el, property) {
   return getComputedStyle(el).getPropertyValue(property);
 }
-function getPositionedStyle(styles, style2, suffix) {
+var positions = [
+  "top",
+  "right",
+  "bottom",
+  "left"
+];
+function getPositionedStyle(styles, style, suffix) {
   const result = {};
   suffix = suffix ? "-" + suffix : "";
   for (let i = 0; i < 4; i++) {
     const pos = positions[i];
-    result[pos] = parseFloat(styles[style2 + "-" + pos + suffix]) || 0;
+    result[pos] = parseFloat(styles[style + "-" + pos + suffix]) || 0;
   }
   result.width = result.left + result.right;
   result.height = result.top + result.bottom;
   return result;
 }
+var useOffsetPos = (x, y, target) => (x > 0 || y > 0) && (!target || !target.shadowRoot);
 function getCanvasPosition(e, canvas) {
   const touches = e.touches;
   const source = touches && touches.length ? touches[0] : e;
@@ -4376,10 +2856,10 @@ function getRelativePosition(event, chart) {
     return event;
   }
   const { canvas, currentDevicePixelRatio } = chart;
-  const style2 = getComputedStyle(canvas);
-  const borderBox = style2.boxSizing === "border-box";
-  const paddings = getPositionedStyle(style2, "padding");
-  const borders = getPositionedStyle(style2, "border", "width");
+  const style = getComputedStyle(canvas);
+  const borderBox = style.boxSizing === "border-box";
+  const paddings = getPositionedStyle(style, "padding");
+  const borders = getPositionedStyle(style, "border", "width");
   const { x, y, box } = getCanvasPosition(event, canvas);
   const xOffset = paddings.left + (box && borders.left);
   const yOffset = paddings.top + (box && borders.top);
@@ -4418,16 +2898,17 @@ function getContainerSize(canvas, width, height) {
     maxHeight: maxHeight || INFINITY
   };
 }
+var round1 = (v) => Math.round(v * 10) / 10;
 function getMaximumSize(canvas, bbWidth, bbHeight, aspectRatio) {
-  const style2 = getComputedStyle(canvas);
-  const margins = getPositionedStyle(style2, "margin");
-  const maxWidth = parseMaxStyle(style2.maxWidth, canvas, "clientWidth") || INFINITY;
-  const maxHeight = parseMaxStyle(style2.maxHeight, canvas, "clientHeight") || INFINITY;
+  const style = getComputedStyle(canvas);
+  const margins = getPositionedStyle(style, "margin");
+  const maxWidth = parseMaxStyle(style.maxWidth, canvas, "clientWidth") || INFINITY;
+  const maxHeight = parseMaxStyle(style.maxHeight, canvas, "clientHeight") || INFINITY;
   const containerSize = getContainerSize(canvas, bbWidth, bbHeight);
   let { width, height } = containerSize;
-  if (style2.boxSizing === "content-box") {
-    const borders = getPositionedStyle(style2, "border", "width");
-    const paddings = getPositionedStyle(style2, "padding");
+  if (style.boxSizing === "content-box") {
+    const borders = getPositionedStyle(style, "border", "width");
+    const paddings = getPositionedStyle(style, "padding");
     width -= paddings.width + borders.width;
     height -= paddings.height + borders.height;
   }
@@ -4468,6 +2949,23 @@ function retinaScale(chart, forceRatio, forceStyle) {
   }
   return false;
 }
+var supportsEventListenerOptions = (function() {
+  let passiveSupported = false;
+  try {
+    const options = {
+      get passive() {
+        passiveSupported = true;
+        return false;
+      }
+    };
+    if (_isDomSupported()) {
+      window.addEventListener("test", null, options);
+      window.removeEventListener("test", null, options);
+    }
+  } catch (e) {
+  }
+  return passiveSupported;
+})();
 function readUsedSize(element, property) {
   const value = getStyle(element, property);
   const matches = value && value.match(/^(\d+)(\.\d+)?px$/);
@@ -4501,18 +2999,58 @@ function _bezierInterpolation(p1, p2, t, mode) {
   const e = _pointInLine(b, c, t);
   return _pointInLine(d, e, t);
 }
+var getRightToLeftAdapter = function(rectX, width) {
+  return {
+    x(x) {
+      return rectX + rectX + width - x;
+    },
+    setWidth(w) {
+      width = w;
+    },
+    textAlign(align) {
+      if (align === "center") {
+        return align;
+      }
+      return align === "right" ? "left" : "right";
+    },
+    xPlus(x, value) {
+      return x - value;
+    },
+    leftForLtr(x, itemWidth) {
+      return x - itemWidth;
+    }
+  };
+};
+var getLeftToRightAdapter = function() {
+  return {
+    x(x) {
+      return x;
+    },
+    setWidth(w) {
+    },
+    textAlign(align) {
+      return align;
+    },
+    xPlus(x, value) {
+      return x + value;
+    },
+    leftForLtr(x, _itemWidth) {
+      return x;
+    }
+  };
+};
 function getRtlAdapter(rtl, rectX, width) {
   return rtl ? getRightToLeftAdapter(rectX, width) : getLeftToRightAdapter();
 }
 function overrideTextDirection(ctx, direction) {
-  let style2, original;
+  let style, original;
   if (direction === "ltr" || direction === "rtl") {
-    style2 = ctx.canvas.style;
+    style = ctx.canvas.style;
     original = [
-      style2.getPropertyValue("direction"),
-      style2.getPropertyPriority("direction")
+      style.getPropertyValue("direction"),
+      style.getPropertyPriority("direction")
     ];
-    style2.setProperty("direction", direction, "important");
+    style.setProperty("direction", direction, "important");
     ctx.prevTextDirection = original;
   }
 }
@@ -4536,12 +3074,12 @@ function propertyFn(property) {
     normalize: (x) => x
   };
 }
-function normalizeSegment({ start, end, count, loop, style: style2 }) {
+function normalizeSegment({ start, end, count, loop, style }) {
   return {
     start: start % count,
     end: end % count,
     loop: loop && (end - start + 1) % count === 0,
-    style: style2
+    style
   };
 }
 function getSegment(segment, points, bounds) {
@@ -4582,7 +3120,7 @@ function _boundSegment(segment, points, bounds) {
   const { property, start: startBound, end: endBound } = bounds;
   const count = points.length;
   const { compare, between, normalize } = propertyFn(property);
-  const { start, end, loop, style: style2 } = getSegment(segment, points, bounds);
+  const { start, end, loop, style } = getSegment(segment, points, bounds);
   const result = [];
   let inside = false;
   let subStart = null;
@@ -4610,7 +3148,7 @@ function _boundSegment(segment, points, bounds) {
         end: i,
         loop,
         count,
-        style: style2
+        style
       }));
       subStart = null;
     }
@@ -4623,7 +3161,7 @@ function _boundSegment(segment, points, bounds) {
       end,
       loop,
       count,
-      style: style2
+      style
     }));
   }
   return result;
@@ -4761,10 +3299,10 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
   for (const segment of segments) {
     start = spanGaps ? start : segment.start;
     let prev = points[start % count];
-    let style2;
+    let style;
     for (i = start + 1; i <= segment.end; i++) {
       const pt = points[i % count];
-      style2 = readStyle(segmentOptions.setContext(createContext(chartContext, {
+      style = readStyle(segmentOptions.setContext(createContext(chartContext, {
         type: "segment",
         p0: prev,
         p1: pt,
@@ -4772,11 +3310,11 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
         p1DataIndex: i % count,
         datasetIndex
       })));
-      if (styleChanged(style2, prevStyle)) {
+      if (styleChanged(style, prevStyle)) {
         addStyle(start, i - 1, segment.loop, prevStyle);
       }
       prev = pt;
-      prevStyle = style2;
+      prevStyle = style;
     }
     if (start < i - 1) {
       addStyle(start, i - 1, segment.loop, prevStyle);
@@ -4795,7 +3333,7 @@ function readStyle(options) {
     borderColor: options.borderColor
   };
 }
-function styleChanged(style2, prevStyle) {
+function styleChanged(style, prevStyle) {
   if (!prevStyle) {
     return false;
   }
@@ -4809,7 +3347,7 @@ function styleChanged(style2, prevStyle) {
     }
     return cache.indexOf(value);
   };
-  return JSON.stringify(style2, replacer) !== JSON.stringify(prevStyle, replacer);
+  return JSON.stringify(style, replacer) !== JSON.stringify(prevStyle, replacer);
 }
 function getSizeForArea(scale, chartArea, field) {
   return scale.options.clip ? scale[field] : chartArea[field];
@@ -4839,382 +3377,350 @@ function getDatasetClipArea(chart, meta) {
     bottom: clip.bottom === false ? chart.height : area.bottom + (clip.bottom === true ? 0 : clip.bottom)
   };
 }
-var uid, toPercentage, toDimension, keyResolvers, defined, isFunction, setsEqual, PI, TAU, PITAU, INFINITY, RAD_PER_DEG, HALF_PI, QUARTER_PI, TWO_THIRDS_PI, log10, sign, _lookupByKey, _rlookupByKey, arrayEvents, requestAnimFrame, _toLeftRightCenter, _alignStartEnd, _textX, atEdge, elasticIn, elasticOut, effects, numbers, colors, intlCache, formatters, Ticks, overrides, descriptors, Defaults, defaults, LINE_HEIGHT, FONT_STYLE, numberOrZero, readKey, needsSubResolver, getScope, EPSILON, getPoint, getValueAxis, getComputedStyle, positions, useOffsetPos, round1, supportsEventListenerOptions, getRightToLeftAdapter, getLeftToRightAdapter;
-var init_helpers_dataset = __esm({
-  "node_modules/chart.js/dist/chunks/helpers.dataset.js"() {
-    init_color_esm();
-    uid = /* @__PURE__ */ (() => {
-      let id = 0;
-      return () => id++;
-    })();
-    toPercentage = (value, dimension) => typeof value === "string" && value.endsWith("%") ? parseFloat(value) / 100 : +value / dimension;
-    toDimension = (value, dimension) => typeof value === "string" && value.endsWith("%") ? parseFloat(value) / 100 * dimension : +value;
-    keyResolvers = {
-      // Chart.helpers.core resolveObjectKey should resolve empty key to root object
-      "": (v) => v,
-      // default resolvers
-      x: (o) => o.x,
-      y: (o) => o.y
-    };
-    defined = (value) => typeof value !== "undefined";
-    isFunction = (value) => typeof value === "function";
-    setsEqual = (a, b) => {
-      if (a.size !== b.size) {
-        return false;
-      }
-      for (const item of a) {
-        if (!b.has(item)) {
-          return false;
-        }
-      }
-      return true;
-    };
-    PI = Math.PI;
-    TAU = 2 * PI;
-    PITAU = TAU + PI;
-    INFINITY = Number.POSITIVE_INFINITY;
-    RAD_PER_DEG = PI / 180;
-    HALF_PI = PI / 2;
-    QUARTER_PI = PI / 4;
-    TWO_THIRDS_PI = PI * 2 / 3;
-    log10 = Math.log10;
-    sign = Math.sign;
-    _lookupByKey = (table, key, value, last) => _lookup(table, value, last ? (index2) => {
-      const ti = table[index2][key];
-      return ti < value || ti === value && table[index2 + 1][key] === value;
-    } : (index2) => table[index2][key] < value);
-    _rlookupByKey = (table, key, value) => _lookup(table, value, (index2) => table[index2][key] >= value);
-    arrayEvents = [
-      "push",
-      "pop",
-      "shift",
-      "splice",
-      "unshift"
-    ];
-    requestAnimFrame = (function() {
-      if (typeof window === "undefined") {
-        return function(callback2) {
-          return callback2();
-        };
-      }
-      return window.requestAnimationFrame;
-    })();
-    _toLeftRightCenter = (align) => align === "start" ? "left" : align === "end" ? "right" : "center";
-    _alignStartEnd = (align, start, end) => align === "start" ? start : align === "end" ? end : (start + end) / 2;
-    _textX = (align, left, right, rtl) => {
-      const check = rtl ? "left" : "right";
-      return align === check ? right : align === "center" ? (left + right) / 2 : left;
-    };
-    atEdge = (t) => t === 0 || t === 1;
-    elasticIn = (t, s, p) => -(Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * TAU / p));
-    elasticOut = (t, s, p) => Math.pow(2, -10 * t) * Math.sin((t - s) * TAU / p) + 1;
-    effects = {
-      linear: (t) => t,
-      easeInQuad: (t) => t * t,
-      easeOutQuad: (t) => -t * (t - 2),
-      easeInOutQuad: (t) => (t /= 0.5) < 1 ? 0.5 * t * t : -0.5 * (--t * (t - 2) - 1),
-      easeInCubic: (t) => t * t * t,
-      easeOutCubic: (t) => (t -= 1) * t * t + 1,
-      easeInOutCubic: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t : 0.5 * ((t -= 2) * t * t + 2),
-      easeInQuart: (t) => t * t * t * t,
-      easeOutQuart: (t) => -((t -= 1) * t * t * t - 1),
-      easeInOutQuart: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t * t : -0.5 * ((t -= 2) * t * t * t - 2),
-      easeInQuint: (t) => t * t * t * t * t,
-      easeOutQuint: (t) => (t -= 1) * t * t * t * t + 1,
-      easeInOutQuint: (t) => (t /= 0.5) < 1 ? 0.5 * t * t * t * t * t : 0.5 * ((t -= 2) * t * t * t * t + 2),
-      easeInSine: (t) => -Math.cos(t * HALF_PI) + 1,
-      easeOutSine: (t) => Math.sin(t * HALF_PI),
-      easeInOutSine: (t) => -0.5 * (Math.cos(PI * t) - 1),
-      easeInExpo: (t) => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),
-      easeOutExpo: (t) => t === 1 ? 1 : -Math.pow(2, -10 * t) + 1,
-      easeInOutExpo: (t) => atEdge(t) ? t : t < 0.5 ? 0.5 * Math.pow(2, 10 * (t * 2 - 1)) : 0.5 * (-Math.pow(2, -10 * (t * 2 - 1)) + 2),
-      easeInCirc: (t) => t >= 1 ? t : -(Math.sqrt(1 - t * t) - 1),
-      easeOutCirc: (t) => Math.sqrt(1 - (t -= 1) * t),
-      easeInOutCirc: (t) => (t /= 0.5) < 1 ? -0.5 * (Math.sqrt(1 - t * t) - 1) : 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1),
-      easeInElastic: (t) => atEdge(t) ? t : elasticIn(t, 0.075, 0.3),
-      easeOutElastic: (t) => atEdge(t) ? t : elasticOut(t, 0.075, 0.3),
-      easeInOutElastic(t) {
-        const s = 0.1125;
-        const p = 0.45;
-        return atEdge(t) ? t : t < 0.5 ? 0.5 * elasticIn(t * 2, s, p) : 0.5 + 0.5 * elasticOut(t * 2 - 1, s, p);
-      },
-      easeInBack(t) {
-        const s = 1.70158;
-        return t * t * ((s + 1) * t - s);
-      },
-      easeOutBack(t) {
-        const s = 1.70158;
-        return (t -= 1) * t * ((s + 1) * t + s) + 1;
-      },
-      easeInOutBack(t) {
-        let s = 1.70158;
-        if ((t /= 0.5) < 1) {
-          return 0.5 * (t * t * (((s *= 1.525) + 1) * t - s));
-        }
-        return 0.5 * ((t -= 2) * t * (((s *= 1.525) + 1) * t + s) + 2);
-      },
-      easeInBounce: (t) => 1 - effects.easeOutBounce(1 - t),
-      easeOutBounce(t) {
-        const m = 7.5625;
-        const d = 2.75;
-        if (t < 1 / d) {
-          return m * t * t;
-        }
-        if (t < 2 / d) {
-          return m * (t -= 1.5 / d) * t + 0.75;
-        }
-        if (t < 2.5 / d) {
-          return m * (t -= 2.25 / d) * t + 0.9375;
-        }
-        return m * (t -= 2.625 / d) * t + 0.984375;
-      },
-      easeInOutBounce: (t) => t < 0.5 ? effects.easeInBounce(t * 2) * 0.5 : effects.easeOutBounce(t * 2 - 1) * 0.5 + 0.5
-    };
-    numbers = [
-      "x",
-      "y",
-      "borderWidth",
-      "radius",
-      "tension"
-    ];
-    colors = [
-      "color",
-      "borderColor",
-      "backgroundColor"
-    ];
-    intlCache = /* @__PURE__ */ new Map();
-    formatters = {
-      values(value) {
-        return isArray(value) ? value : "" + value;
-      },
-      numeric(tickValue, index2, ticks) {
-        if (tickValue === 0) {
-          return "0";
-        }
-        const locale = this.chart.options.locale;
-        let notation;
-        let delta = tickValue;
-        if (ticks.length > 1) {
-          const maxTick = Math.max(Math.abs(ticks[0].value), Math.abs(ticks[ticks.length - 1].value));
-          if (maxTick < 1e-4 || maxTick > 1e15) {
-            notation = "scientific";
-          }
-          delta = calculateDelta(tickValue, ticks);
-        }
-        const logDelta = log10(Math.abs(delta));
-        const numDecimal = isNaN(logDelta) ? 1 : Math.max(Math.min(-1 * Math.floor(logDelta), 20), 0);
-        const options = {
-          notation,
-          minimumFractionDigits: numDecimal,
-          maximumFractionDigits: numDecimal
-        };
-        Object.assign(options, this.options.ticks.format);
-        return formatNumber(tickValue, locale, options);
-      },
-      logarithmic(tickValue, index2, ticks) {
-        if (tickValue === 0) {
-          return "0";
-        }
-        const remain = ticks[index2].significand || tickValue / Math.pow(10, Math.floor(log10(tickValue)));
-        if ([
-          1,
-          2,
-          3,
-          5,
-          10,
-          15
-        ].includes(remain) || index2 > 0.8 * ticks.length) {
-          return formatters.numeric.call(this, tickValue, index2, ticks);
-        }
-        return "";
-      }
-    };
-    Ticks = {
-      formatters
-    };
-    overrides = /* @__PURE__ */ Object.create(null);
-    descriptors = /* @__PURE__ */ Object.create(null);
-    Defaults = class {
-      constructor(_descriptors2, _appliers) {
-        this.animation = void 0;
-        this.backgroundColor = "rgba(0,0,0,0.1)";
-        this.borderColor = "rgba(0,0,0,0.1)";
-        this.color = "#666";
-        this.datasets = {};
-        this.devicePixelRatio = (context) => context.chart.platform.getDevicePixelRatio();
-        this.elements = {};
-        this.events = [
-          "mousemove",
-          "mouseout",
-          "click",
-          "touchstart",
-          "touchmove"
-        ];
-        this.font = {
-          family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-          size: 12,
-          style: "normal",
-          lineHeight: 1.2,
-          weight: null
-        };
-        this.hover = {};
-        this.hoverBackgroundColor = (ctx, options) => getHoverColor(options.backgroundColor);
-        this.hoverBorderColor = (ctx, options) => getHoverColor(options.borderColor);
-        this.hoverColor = (ctx, options) => getHoverColor(options.color);
-        this.indexAxis = "x";
-        this.interaction = {
-          mode: "nearest",
-          intersect: true,
-          includeInvisible: false
-        };
-        this.maintainAspectRatio = true;
-        this.onHover = null;
-        this.onClick = null;
-        this.parsing = true;
-        this.plugins = {};
-        this.responsive = true;
-        this.scale = void 0;
-        this.scales = {};
-        this.showLine = true;
-        this.drawActiveElementsOnTop = true;
-        this.describe(_descriptors2);
-        this.apply(_appliers);
-      }
-      set(scope, values) {
-        return set(this, scope, values);
-      }
-      get(scope) {
-        return getScope$1(this, scope);
-      }
-      describe(scope, values) {
-        return set(descriptors, scope, values);
-      }
-      override(scope, values) {
-        return set(overrides, scope, values);
-      }
-      route(scope, name, targetScope, targetName) {
-        const scopeObject = getScope$1(this, scope);
-        const targetScopeObject = getScope$1(this, targetScope);
-        const privateName = "_" + name;
-        Object.defineProperties(scopeObject, {
-          [privateName]: {
-            value: scopeObject[name],
-            writable: true
-          },
-          [name]: {
-            enumerable: true,
-            get() {
-              const local = this[privateName];
-              const target = targetScopeObject[targetName];
-              if (isObject(local)) {
-                return Object.assign({}, target, local);
-              }
-              return valueOrDefault(local, target);
-            },
-            set(value) {
-              this[privateName] = value;
-            }
-          }
-        });
-      }
-      apply(appliers) {
-        appliers.forEach((apply) => apply(this));
-      }
-    };
-    defaults = /* @__PURE__ */ new Defaults({
-      _scriptable: (name) => !name.startsWith("on"),
-      _indexable: (name) => name !== "events",
-      hover: {
-        _fallback: "interaction"
-      },
-      interaction: {
-        _scriptable: false,
-        _indexable: false
-      }
-    }, [
-      applyAnimationsDefaults,
-      applyLayoutsDefaults,
-      applyScaleDefaults
-    ]);
-    LINE_HEIGHT = /^(normal|(\d+(?:\.\d+)?)(px|em|%)?)$/;
-    FONT_STYLE = /^(normal|italic|initial|inherit|unset|(oblique( -?[0-9]?[0-9]deg)?))$/;
-    numberOrZero = (v) => +v || 0;
-    readKey = (prefix, name) => prefix ? prefix + _capitalize(name) : name;
-    needsSubResolver = (prop, value) => isObject(value) && prop !== "adapters" && (Object.getPrototypeOf(value) === null || value.constructor === Object);
-    getScope = (key, parent) => key === true ? parent : typeof key === "string" ? resolveObjectKey(parent, key) : void 0;
-    EPSILON = Number.EPSILON || 1e-14;
-    getPoint = (points, i) => i < points.length && !points[i].skip && points[i];
-    getValueAxis = (indexAxis) => indexAxis === "x" ? "y" : "x";
-    getComputedStyle = (element) => element.ownerDocument.defaultView.getComputedStyle(element, null);
-    positions = [
-      "top",
-      "right",
-      "bottom",
-      "left"
-    ];
-    useOffsetPos = (x, y, target) => (x > 0 || y > 0) && (!target || !target.shadowRoot);
-    round1 = (v) => Math.round(v * 10) / 10;
-    supportsEventListenerOptions = (function() {
-      let passiveSupported = false;
-      try {
-        const options = {
-          get passive() {
-            passiveSupported = true;
-            return false;
-          }
-        };
-        if (_isDomSupported()) {
-          window.addEventListener("test", null, options);
-          window.removeEventListener("test", null, options);
-        }
-      } catch (e) {
-      }
-      return passiveSupported;
-    })();
-    getRightToLeftAdapter = function(rectX, width) {
-      return {
-        x(x) {
-          return rectX + rectX + width - x;
-        },
-        setWidth(w) {
-          width = w;
-        },
-        textAlign(align) {
-          if (align === "center") {
-            return align;
-          }
-          return align === "right" ? "left" : "right";
-        },
-        xPlus(x, value) {
-          return x - value;
-        },
-        leftForLtr(x, itemWidth) {
-          return x - itemWidth;
-        }
-      };
-    };
-    getLeftToRightAdapter = function() {
-      return {
-        x(x) {
-          return x;
-        },
-        setWidth(w) {
-        },
-        textAlign(align) {
-          return align;
-        },
-        xPlus(x, value) {
-          return x + value;
-        },
-        leftForLtr(x, _itemWidth) {
-          return x;
-        }
-      };
-    };
-  }
-});
 
 // node_modules/chart.js/dist/chart.js
+var Animator = class {
+  constructor() {
+    this._request = null;
+    this._charts = /* @__PURE__ */ new Map();
+    this._running = false;
+    this._lastDate = void 0;
+  }
+  _notify(chart, anims, date, type) {
+    const callbacks = anims.listeners[type];
+    const numSteps = anims.duration;
+    callbacks.forEach((fn) => fn({
+      chart,
+      initial: anims.initial,
+      numSteps,
+      currentStep: Math.min(date - anims.start, numSteps)
+    }));
+  }
+  _refresh() {
+    if (this._request) {
+      return;
+    }
+    this._running = true;
+    this._request = requestAnimFrame.call(window, () => {
+      this._update();
+      this._request = null;
+      if (this._running) {
+        this._refresh();
+      }
+    });
+  }
+  _update(date = Date.now()) {
+    let remaining = 0;
+    this._charts.forEach((anims, chart) => {
+      if (!anims.running || !anims.items.length) {
+        return;
+      }
+      const items = anims.items;
+      let i = items.length - 1;
+      let draw2 = false;
+      let item;
+      for (; i >= 0; --i) {
+        item = items[i];
+        if (item._active) {
+          if (item._total > anims.duration) {
+            anims.duration = item._total;
+          }
+          item.tick(date);
+          draw2 = true;
+        } else {
+          items[i] = items[items.length - 1];
+          items.pop();
+        }
+      }
+      if (draw2) {
+        chart.draw();
+        this._notify(chart, anims, date, "progress");
+      }
+      if (!items.length) {
+        anims.running = false;
+        this._notify(chart, anims, date, "complete");
+        anims.initial = false;
+      }
+      remaining += items.length;
+    });
+    this._lastDate = date;
+    if (remaining === 0) {
+      this._running = false;
+    }
+  }
+  _getAnims(chart) {
+    const charts = this._charts;
+    let anims = charts.get(chart);
+    if (!anims) {
+      anims = {
+        running: false,
+        initial: true,
+        items: [],
+        listeners: {
+          complete: [],
+          progress: []
+        }
+      };
+      charts.set(chart, anims);
+    }
+    return anims;
+  }
+  listen(chart, event, cb) {
+    this._getAnims(chart).listeners[event].push(cb);
+  }
+  add(chart, items) {
+    if (!items || !items.length) {
+      return;
+    }
+    this._getAnims(chart).items.push(...items);
+  }
+  has(chart) {
+    return this._getAnims(chart).items.length > 0;
+  }
+  start(chart) {
+    const anims = this._charts.get(chart);
+    if (!anims) {
+      return;
+    }
+    anims.running = true;
+    anims.start = Date.now();
+    anims.duration = anims.items.reduce((acc, cur) => Math.max(acc, cur._duration), 0);
+    this._refresh();
+  }
+  running(chart) {
+    if (!this._running) {
+      return false;
+    }
+    const anims = this._charts.get(chart);
+    if (!anims || !anims.running || !anims.items.length) {
+      return false;
+    }
+    return true;
+  }
+  stop(chart) {
+    const anims = this._charts.get(chart);
+    if (!anims || !anims.items.length) {
+      return;
+    }
+    const items = anims.items;
+    let i = items.length - 1;
+    for (; i >= 0; --i) {
+      items[i].cancel();
+    }
+    anims.items = [];
+    this._notify(chart, anims, Date.now(), "complete");
+  }
+  remove(chart) {
+    return this._charts.delete(chart);
+  }
+};
+var animator = /* @__PURE__ */ new Animator();
+var transparent = "transparent";
+var interpolators = {
+  boolean(from2, to2, factor) {
+    return factor > 0.5 ? to2 : from2;
+  },
+  color(from2, to2, factor) {
+    const c0 = color(from2 || transparent);
+    const c1 = c0.valid && color(to2 || transparent);
+    return c1 && c1.valid ? c1.mix(c0, factor).hexString() : to2;
+  },
+  number(from2, to2, factor) {
+    return from2 + (to2 - from2) * factor;
+  }
+};
+var Animation = class {
+  constructor(cfg, target, prop, to2) {
+    const currentValue = target[prop];
+    to2 = resolve([
+      cfg.to,
+      to2,
+      currentValue,
+      cfg.from
+    ]);
+    const from2 = resolve([
+      cfg.from,
+      currentValue,
+      to2
+    ]);
+    this._active = true;
+    this._fn = cfg.fn || interpolators[cfg.type || typeof from2];
+    this._easing = effects[cfg.easing] || effects.linear;
+    this._start = Math.floor(Date.now() + (cfg.delay || 0));
+    this._duration = this._total = Math.floor(cfg.duration);
+    this._loop = !!cfg.loop;
+    this._target = target;
+    this._prop = prop;
+    this._from = from2;
+    this._to = to2;
+    this._promises = void 0;
+  }
+  active() {
+    return this._active;
+  }
+  update(cfg, to2, date) {
+    if (this._active) {
+      this._notify(false);
+      const currentValue = this._target[this._prop];
+      const elapsed = date - this._start;
+      const remain = this._duration - elapsed;
+      this._start = date;
+      this._duration = Math.floor(Math.max(remain, cfg.duration));
+      this._total += elapsed;
+      this._loop = !!cfg.loop;
+      this._to = resolve([
+        cfg.to,
+        to2,
+        currentValue,
+        cfg.from
+      ]);
+      this._from = resolve([
+        cfg.from,
+        currentValue,
+        to2
+      ]);
+    }
+  }
+  cancel() {
+    if (this._active) {
+      this.tick(Date.now());
+      this._active = false;
+      this._notify(false);
+    }
+  }
+  tick(date) {
+    const elapsed = date - this._start;
+    const duration = this._duration;
+    const prop = this._prop;
+    const from2 = this._from;
+    const loop = this._loop;
+    const to2 = this._to;
+    let factor;
+    this._active = from2 !== to2 && (loop || elapsed < duration);
+    if (!this._active) {
+      this._target[prop] = to2;
+      this._notify(true);
+      return;
+    }
+    if (elapsed < 0) {
+      this._target[prop] = from2;
+      return;
+    }
+    factor = elapsed / duration % 2;
+    factor = loop && factor > 1 ? 2 - factor : factor;
+    factor = this._easing(Math.min(1, Math.max(0, factor)));
+    this._target[prop] = this._fn(from2, to2, factor);
+  }
+  wait() {
+    const promises = this._promises || (this._promises = []);
+    return new Promise((res, rej) => {
+      promises.push({
+        res,
+        rej
+      });
+    });
+  }
+  _notify(resolved) {
+    const method = resolved ? "res" : "rej";
+    const promises = this._promises || [];
+    for (let i = 0; i < promises.length; i++) {
+      promises[i][method]();
+    }
+  }
+};
+var Animations = class {
+  constructor(chart, config) {
+    this._chart = chart;
+    this._properties = /* @__PURE__ */ new Map();
+    this.configure(config);
+  }
+  configure(config) {
+    if (!isObject(config)) {
+      return;
+    }
+    const animationOptions = Object.keys(defaults.animation);
+    const animatedProps = this._properties;
+    Object.getOwnPropertyNames(config).forEach((key) => {
+      const cfg = config[key];
+      if (!isObject(cfg)) {
+        return;
+      }
+      const resolved = {};
+      for (const option of animationOptions) {
+        resolved[option] = cfg[option];
+      }
+      (isArray(cfg.properties) && cfg.properties || [
+        key
+      ]).forEach((prop) => {
+        if (prop === key || !animatedProps.has(prop)) {
+          animatedProps.set(prop, resolved);
+        }
+      });
+    });
+  }
+  _animateOptions(target, values) {
+    const newOptions = values.options;
+    const options = resolveTargetOptions(target, newOptions);
+    if (!options) {
+      return [];
+    }
+    const animations = this._createAnimations(options, newOptions);
+    if (newOptions.$shared) {
+      awaitAll(target.options.$animations, newOptions).then(() => {
+        target.options = newOptions;
+      }, () => {
+      });
+    }
+    return animations;
+  }
+  _createAnimations(target, values) {
+    const animatedProps = this._properties;
+    const animations = [];
+    const running = target.$animations || (target.$animations = {});
+    const props = Object.keys(values);
+    const date = Date.now();
+    let i;
+    for (i = props.length - 1; i >= 0; --i) {
+      const prop = props[i];
+      if (prop.charAt(0) === "$") {
+        continue;
+      }
+      if (prop === "options") {
+        animations.push(...this._animateOptions(target, values));
+        continue;
+      }
+      const value = values[prop];
+      let animation = running[prop];
+      const cfg = animatedProps.get(prop);
+      if (animation) {
+        if (cfg && animation.active()) {
+          animation.update(cfg, value, date);
+          continue;
+        } else {
+          animation.cancel();
+        }
+      }
+      if (!cfg || !cfg.duration) {
+        target[prop] = value;
+        continue;
+      }
+      running[prop] = animation = new Animation(cfg, target, prop, value);
+      animations.push(animation);
+    }
+    return animations;
+  }
+  update(target, values) {
+    if (this._properties.size === 0) {
+      Object.assign(target, values);
+      return;
+    }
+    const animations = this._createAnimations(target, values);
+    if (animations.length) {
+      animator.add(this._chart, animations);
+      return true;
+    }
+  }
+};
 function awaitAll(animations, properties) {
   const running = [];
   const keys = Object.keys(properties);
@@ -5428,6 +3934,608 @@ function clearStacks(meta, items) {
     }
   }
 }
+var isDirectUpdateMode = (mode) => mode === "reset" || mode === "none";
+var cloneIfNotShared = (cached, shared) => shared ? cached : Object.assign({}, cached);
+var createStack = (canStack, meta, chart) => canStack && !meta.hidden && meta._stacked && {
+  keys: getSortedDatasetIndices(chart, true),
+  values: null
+};
+var DatasetController = class {
+  static defaults = {};
+  static datasetElementType = null;
+  static dataElementType = null;
+  constructor(chart, datasetIndex) {
+    this.chart = chart;
+    this._ctx = chart.ctx;
+    this.index = datasetIndex;
+    this._cachedDataOpts = {};
+    this._cachedMeta = this.getMeta();
+    this._type = this._cachedMeta.type;
+    this.options = void 0;
+    this._parsing = false;
+    this._data = void 0;
+    this._objectData = void 0;
+    this._sharedOptions = void 0;
+    this._drawStart = void 0;
+    this._drawCount = void 0;
+    this.enableOptionSharing = false;
+    this.supportsDecimation = false;
+    this.$context = void 0;
+    this._syncList = [];
+    this.datasetElementType = new.target.datasetElementType;
+    this.dataElementType = new.target.dataElementType;
+    this.initialize();
+  }
+  initialize() {
+    const meta = this._cachedMeta;
+    this.configure();
+    this.linkScales();
+    meta._stacked = isStacked(meta.vScale, meta);
+    this.addElements();
+    if (this.options.fill && !this.chart.isPluginEnabled("filler")) {
+      console.warn("Tried to use the 'fill' option without the 'Filler' plugin enabled. Please import and register the 'Filler' plugin and make sure it is not disabled in the options");
+    }
+  }
+  updateIndex(datasetIndex) {
+    if (this.index !== datasetIndex) {
+      clearStacks(this._cachedMeta);
+    }
+    this.index = datasetIndex;
+  }
+  linkScales() {
+    const chart = this.chart;
+    const meta = this._cachedMeta;
+    const dataset = this.getDataset();
+    const chooseId = (axis, x, y, r) => axis === "x" ? x : axis === "r" ? r : y;
+    const xid = meta.xAxisID = valueOrDefault(dataset.xAxisID, getFirstScaleId(chart, "x"));
+    const yid = meta.yAxisID = valueOrDefault(dataset.yAxisID, getFirstScaleId(chart, "y"));
+    const rid = meta.rAxisID = valueOrDefault(dataset.rAxisID, getFirstScaleId(chart, "r"));
+    const indexAxis = meta.indexAxis;
+    const iid = meta.iAxisID = chooseId(indexAxis, xid, yid, rid);
+    const vid = meta.vAxisID = chooseId(indexAxis, yid, xid, rid);
+    meta.xScale = this.getScaleForId(xid);
+    meta.yScale = this.getScaleForId(yid);
+    meta.rScale = this.getScaleForId(rid);
+    meta.iScale = this.getScaleForId(iid);
+    meta.vScale = this.getScaleForId(vid);
+  }
+  getDataset() {
+    return this.chart.data.datasets[this.index];
+  }
+  getMeta() {
+    return this.chart.getDatasetMeta(this.index);
+  }
+  getScaleForId(scaleID) {
+    return this.chart.scales[scaleID];
+  }
+  _getOtherScale(scale) {
+    const meta = this._cachedMeta;
+    return scale === meta.iScale ? meta.vScale : meta.iScale;
+  }
+  reset() {
+    this._update("reset");
+  }
+  _destroy() {
+    const meta = this._cachedMeta;
+    if (this._data) {
+      unlistenArrayEvents(this._data, this);
+    }
+    if (meta._stacked) {
+      clearStacks(meta);
+    }
+  }
+  _dataCheck() {
+    const dataset = this.getDataset();
+    const data = dataset.data || (dataset.data = []);
+    const _data = this._data;
+    if (isObject(data)) {
+      const meta = this._cachedMeta;
+      this._data = convertObjectDataToArray(data, meta);
+    } else if (_data !== data) {
+      if (_data) {
+        unlistenArrayEvents(_data, this);
+        const meta = this._cachedMeta;
+        clearStacks(meta);
+        meta._parsed = [];
+      }
+      if (data && Object.isExtensible(data)) {
+        listenArrayEvents(data, this);
+      }
+      this._syncList = [];
+      this._data = data;
+    }
+  }
+  addElements() {
+    const meta = this._cachedMeta;
+    this._dataCheck();
+    if (this.datasetElementType) {
+      meta.dataset = new this.datasetElementType();
+    }
+  }
+  buildOrUpdateElements(resetNewElements) {
+    const meta = this._cachedMeta;
+    const dataset = this.getDataset();
+    let stackChanged = false;
+    this._dataCheck();
+    const oldStacked = meta._stacked;
+    meta._stacked = isStacked(meta.vScale, meta);
+    if (meta.stack !== dataset.stack) {
+      stackChanged = true;
+      clearStacks(meta);
+      meta.stack = dataset.stack;
+    }
+    this._resyncElements(resetNewElements);
+    if (stackChanged || oldStacked !== meta._stacked) {
+      updateStacks(this, meta._parsed);
+      meta._stacked = isStacked(meta.vScale, meta);
+    }
+  }
+  configure() {
+    const config = this.chart.config;
+    const scopeKeys = config.datasetScopeKeys(this._type);
+    const scopes = config.getOptionScopes(this.getDataset(), scopeKeys, true);
+    this.options = config.createResolver(scopes, this.getContext());
+    this._parsing = this.options.parsing;
+    this._cachedDataOpts = {};
+  }
+  parse(start, count) {
+    const { _cachedMeta: meta, _data: data } = this;
+    const { iScale, _stacked } = meta;
+    const iAxis = iScale.axis;
+    let sorted = start === 0 && count === data.length ? true : meta._sorted;
+    let prev = start > 0 && meta._parsed[start - 1];
+    let i, cur, parsed;
+    if (this._parsing === false) {
+      meta._parsed = data;
+      meta._sorted = true;
+      parsed = data;
+    } else {
+      if (isArray(data[start])) {
+        parsed = this.parseArrayData(meta, data, start, count);
+      } else if (isObject(data[start])) {
+        parsed = this.parseObjectData(meta, data, start, count);
+      } else {
+        parsed = this.parsePrimitiveData(meta, data, start, count);
+      }
+      const isNotInOrderComparedToPrev = () => cur[iAxis] === null || prev && cur[iAxis] < prev[iAxis];
+      for (i = 0; i < count; ++i) {
+        meta._parsed[i + start] = cur = parsed[i];
+        if (sorted) {
+          if (isNotInOrderComparedToPrev()) {
+            sorted = false;
+          }
+          prev = cur;
+        }
+      }
+      meta._sorted = sorted;
+    }
+    if (_stacked) {
+      updateStacks(this, parsed);
+    }
+  }
+  parsePrimitiveData(meta, data, start, count) {
+    const { iScale, vScale } = meta;
+    const iAxis = iScale.axis;
+    const vAxis = vScale.axis;
+    const labels = iScale.getLabels();
+    const singleScale = iScale === vScale;
+    const parsed = new Array(count);
+    let i, ilen, index2;
+    for (i = 0, ilen = count; i < ilen; ++i) {
+      index2 = i + start;
+      parsed[i] = {
+        [iAxis]: singleScale || iScale.parse(labels[index2], index2),
+        [vAxis]: vScale.parse(data[index2], index2)
+      };
+    }
+    return parsed;
+  }
+  parseArrayData(meta, data, start, count) {
+    const { xScale, yScale } = meta;
+    const parsed = new Array(count);
+    let i, ilen, index2, item;
+    for (i = 0, ilen = count; i < ilen; ++i) {
+      index2 = i + start;
+      item = data[index2];
+      parsed[i] = {
+        x: xScale.parse(item[0], index2),
+        y: yScale.parse(item[1], index2)
+      };
+    }
+    return parsed;
+  }
+  parseObjectData(meta, data, start, count) {
+    const { xScale, yScale } = meta;
+    const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
+    const parsed = new Array(count);
+    let i, ilen, index2, item;
+    for (i = 0, ilen = count; i < ilen; ++i) {
+      index2 = i + start;
+      item = data[index2];
+      parsed[i] = {
+        x: xScale.parse(resolveObjectKey(item, xAxisKey), index2),
+        y: yScale.parse(resolveObjectKey(item, yAxisKey), index2)
+      };
+    }
+    return parsed;
+  }
+  getParsed(index2) {
+    return this._cachedMeta._parsed[index2];
+  }
+  getDataElement(index2) {
+    return this._cachedMeta.data[index2];
+  }
+  applyStack(scale, parsed, mode) {
+    const chart = this.chart;
+    const meta = this._cachedMeta;
+    const value = parsed[scale.axis];
+    const stack = {
+      keys: getSortedDatasetIndices(chart, true),
+      values: parsed._stacks[scale.axis]._visualValues
+    };
+    return applyStack(stack, value, meta.index, {
+      mode
+    });
+  }
+  updateRangeFromParsed(range, scale, parsed, stack) {
+    const parsedValue = parsed[scale.axis];
+    let value = parsedValue === null ? NaN : parsedValue;
+    const values = stack && parsed._stacks[scale.axis];
+    if (stack && values) {
+      stack.values = values;
+      value = applyStack(stack, parsedValue, this._cachedMeta.index);
+    }
+    range.min = Math.min(range.min, value);
+    range.max = Math.max(range.max, value);
+  }
+  getMinMax(scale, canStack) {
+    const meta = this._cachedMeta;
+    const _parsed = meta._parsed;
+    const sorted = meta._sorted && scale === meta.iScale;
+    const ilen = _parsed.length;
+    const otherScale = this._getOtherScale(scale);
+    const stack = createStack(canStack, meta, this.chart);
+    const range = {
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY
+    };
+    const { min: otherMin, max: otherMax } = getUserBounds(otherScale);
+    let i, parsed;
+    function _skip() {
+      parsed = _parsed[i];
+      const otherValue = parsed[otherScale.axis];
+      return !isNumberFinite(parsed[scale.axis]) || otherMin > otherValue || otherMax < otherValue;
+    }
+    for (i = 0; i < ilen; ++i) {
+      if (_skip()) {
+        continue;
+      }
+      this.updateRangeFromParsed(range, scale, parsed, stack);
+      if (sorted) {
+        break;
+      }
+    }
+    if (sorted) {
+      for (i = ilen - 1; i >= 0; --i) {
+        if (_skip()) {
+          continue;
+        }
+        this.updateRangeFromParsed(range, scale, parsed, stack);
+        break;
+      }
+    }
+    return range;
+  }
+  getAllParsedValues(scale) {
+    const parsed = this._cachedMeta._parsed;
+    const values = [];
+    let i, ilen, value;
+    for (i = 0, ilen = parsed.length; i < ilen; ++i) {
+      value = parsed[i][scale.axis];
+      if (isNumberFinite(value)) {
+        values.push(value);
+      }
+    }
+    return values;
+  }
+  getMaxOverflow() {
+    return false;
+  }
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const iScale = meta.iScale;
+    const vScale = meta.vScale;
+    const parsed = this.getParsed(index2);
+    return {
+      label: iScale ? "" + iScale.getLabelForValue(parsed[iScale.axis]) : "",
+      value: vScale ? "" + vScale.getLabelForValue(parsed[vScale.axis]) : ""
+    };
+  }
+  _update(mode) {
+    const meta = this._cachedMeta;
+    this.update(mode || "default");
+    meta._clip = toClip(valueOrDefault(this.options.clip, defaultClip(meta.xScale, meta.yScale, this.getMaxOverflow())));
+  }
+  update(mode) {
+  }
+  draw() {
+    const ctx = this._ctx;
+    const chart = this.chart;
+    const meta = this._cachedMeta;
+    const elements2 = meta.data || [];
+    const area = chart.chartArea;
+    const active = [];
+    const start = this._drawStart || 0;
+    const count = this._drawCount || elements2.length - start;
+    const drawActiveElementsOnTop = this.options.drawActiveElementsOnTop;
+    let i;
+    if (meta.dataset) {
+      meta.dataset.draw(ctx, area, start, count);
+    }
+    for (i = start; i < start + count; ++i) {
+      const element = elements2[i];
+      if (element.hidden) {
+        continue;
+      }
+      if (element.active && drawActiveElementsOnTop) {
+        active.push(element);
+      } else {
+        element.draw(ctx, area);
+      }
+    }
+    for (i = 0; i < active.length; ++i) {
+      active[i].draw(ctx, area);
+    }
+  }
+  getStyle(index2, active) {
+    const mode = active ? "active" : "default";
+    return index2 === void 0 && this._cachedMeta.dataset ? this.resolveDatasetElementOptions(mode) : this.resolveDataElementOptions(index2 || 0, mode);
+  }
+  getContext(index2, active, mode) {
+    const dataset = this.getDataset();
+    let context;
+    if (index2 >= 0 && index2 < this._cachedMeta.data.length) {
+      const element = this._cachedMeta.data[index2];
+      context = element.$context || (element.$context = createDataContext(this.getContext(), index2, element));
+      context.parsed = this.getParsed(index2);
+      context.raw = dataset.data[index2];
+      context.index = context.dataIndex = index2;
+    } else {
+      context = this.$context || (this.$context = createDatasetContext(this.chart.getContext(), this.index));
+      context.dataset = dataset;
+      context.index = context.datasetIndex = this.index;
+    }
+    context.active = !!active;
+    context.mode = mode;
+    return context;
+  }
+  resolveDatasetElementOptions(mode) {
+    return this._resolveElementOptions(this.datasetElementType.id, mode);
+  }
+  resolveDataElementOptions(index2, mode) {
+    return this._resolveElementOptions(this.dataElementType.id, mode, index2);
+  }
+  _resolveElementOptions(elementType, mode = "default", index2) {
+    const active = mode === "active";
+    const cache = this._cachedDataOpts;
+    const cacheKey = elementType + "-" + mode;
+    const cached = cache[cacheKey];
+    const sharing = this.enableOptionSharing && defined(index2);
+    if (cached) {
+      return cloneIfNotShared(cached, sharing);
+    }
+    const config = this.chart.config;
+    const scopeKeys = config.datasetElementScopeKeys(this._type, elementType);
+    const prefixes = active ? [
+      `${elementType}Hover`,
+      "hover",
+      elementType,
+      ""
+    ] : [
+      elementType,
+      ""
+    ];
+    const scopes = config.getOptionScopes(this.getDataset(), scopeKeys);
+    const names2 = Object.keys(defaults.elements[elementType]);
+    const context = () => this.getContext(index2, active, mode);
+    const values = config.resolveNamedOptions(scopes, names2, context, prefixes);
+    if (values.$shared) {
+      values.$shared = sharing;
+      cache[cacheKey] = Object.freeze(cloneIfNotShared(values, sharing));
+    }
+    return values;
+  }
+  _resolveAnimations(index2, transition, active) {
+    const chart = this.chart;
+    const cache = this._cachedDataOpts;
+    const cacheKey = `animation-${transition}`;
+    const cached = cache[cacheKey];
+    if (cached) {
+      return cached;
+    }
+    let options;
+    if (chart.options.animation !== false) {
+      const config = this.chart.config;
+      const scopeKeys = config.datasetAnimationScopeKeys(this._type, transition);
+      const scopes = config.getOptionScopes(this.getDataset(), scopeKeys);
+      options = config.createResolver(scopes, this.getContext(index2, active, transition));
+    }
+    const animations = new Animations(chart, options && options.animations);
+    if (options && options._cacheable) {
+      cache[cacheKey] = Object.freeze(animations);
+    }
+    return animations;
+  }
+  getSharedOptions(options) {
+    if (!options.$shared) {
+      return;
+    }
+    return this._sharedOptions || (this._sharedOptions = Object.assign({}, options));
+  }
+  includeOptions(mode, sharedOptions) {
+    return !sharedOptions || isDirectUpdateMode(mode) || this.chart._animationsDisabled;
+  }
+  _getSharedOptions(start, mode) {
+    const firstOpts = this.resolveDataElementOptions(start, mode);
+    const previouslySharedOptions = this._sharedOptions;
+    const sharedOptions = this.getSharedOptions(firstOpts);
+    const includeOptions = this.includeOptions(mode, sharedOptions) || sharedOptions !== previouslySharedOptions;
+    this.updateSharedOptions(sharedOptions, mode, firstOpts);
+    return {
+      sharedOptions,
+      includeOptions
+    };
+  }
+  updateElement(element, index2, properties, mode) {
+    if (isDirectUpdateMode(mode)) {
+      Object.assign(element, properties);
+    } else {
+      this._resolveAnimations(index2, mode).update(element, properties);
+    }
+  }
+  updateSharedOptions(sharedOptions, mode, newOptions) {
+    if (sharedOptions && !isDirectUpdateMode(mode)) {
+      this._resolveAnimations(void 0, mode).update(sharedOptions, newOptions);
+    }
+  }
+  _setStyle(element, index2, mode, active) {
+    element.active = active;
+    const options = this.getStyle(index2, active);
+    this._resolveAnimations(index2, mode, active).update(element, {
+      options: !active && this.getSharedOptions(options) || options
+    });
+  }
+  removeHoverStyle(element, datasetIndex, index2) {
+    this._setStyle(element, index2, "active", false);
+  }
+  setHoverStyle(element, datasetIndex, index2) {
+    this._setStyle(element, index2, "active", true);
+  }
+  _removeDatasetHoverStyle() {
+    const element = this._cachedMeta.dataset;
+    if (element) {
+      this._setStyle(element, void 0, "active", false);
+    }
+  }
+  _setDatasetHoverStyle() {
+    const element = this._cachedMeta.dataset;
+    if (element) {
+      this._setStyle(element, void 0, "active", true);
+    }
+  }
+  _resyncElements(resetNewElements) {
+    const data = this._data;
+    const elements2 = this._cachedMeta.data;
+    for (const [method, arg1, arg2] of this._syncList) {
+      this[method](arg1, arg2);
+    }
+    this._syncList = [];
+    const numMeta = elements2.length;
+    const numData = data.length;
+    const count = Math.min(numData, numMeta);
+    if (count) {
+      this.parse(0, count);
+    }
+    if (numData > numMeta) {
+      this._insertElements(numMeta, numData - numMeta, resetNewElements);
+    } else if (numData < numMeta) {
+      this._removeElements(numData, numMeta - numData);
+    }
+  }
+  _insertElements(start, count, resetNewElements = true) {
+    const meta = this._cachedMeta;
+    const data = meta.data;
+    const end = start + count;
+    let i;
+    const move = (arr) => {
+      arr.length += count;
+      for (i = arr.length - 1; i >= end; i--) {
+        arr[i] = arr[i - count];
+      }
+    };
+    move(data);
+    for (i = start; i < end; ++i) {
+      data[i] = new this.dataElementType();
+    }
+    if (this._parsing) {
+      move(meta._parsed);
+    }
+    this.parse(start, count);
+    if (resetNewElements) {
+      this.updateElements(data, start, count, "reset");
+    }
+  }
+  updateElements(element, start, count, mode) {
+  }
+  _removeElements(start, count) {
+    const meta = this._cachedMeta;
+    if (this._parsing) {
+      const removed = meta._parsed.splice(start, count);
+      if (meta._stacked) {
+        clearStacks(meta, removed);
+      }
+    }
+    meta.data.splice(start, count);
+  }
+  _sync(args) {
+    if (this._parsing) {
+      this._syncList.push(args);
+    } else {
+      const [method, arg1, arg2] = args;
+      this[method](arg1, arg2);
+    }
+    this.chart._dataChanges.push([
+      this.index,
+      ...args
+    ]);
+  }
+  _onDataPush() {
+    const count = arguments.length;
+    this._sync([
+      "_insertElements",
+      this.getDataset().data.length - count,
+      count
+    ]);
+  }
+  _onDataPop() {
+    this._sync([
+      "_removeElements",
+      this._cachedMeta.data.length - 1,
+      1
+    ]);
+  }
+  _onDataShift() {
+    this._sync([
+      "_removeElements",
+      0,
+      1
+    ]);
+  }
+  _onDataSplice(start, count) {
+    if (count) {
+      this._sync([
+        "_removeElements",
+        start,
+        count
+      ]);
+    }
+    const newCount = arguments.length - 2;
+    if (newCount) {
+      this._sync([
+        "_insertElements",
+        start,
+        newCount
+      ]);
+    }
+  }
+  _onDataUnshift() {
+    this._sync([
+      "_insertElements",
+      0,
+      arguments.length
+    ]);
+  }
+};
 function getAllScaleValues(scale, type) {
   if (!scale._cache.$bar) {
     const visibleMetas = scale.getMatchingVisibleMetas(type);
@@ -5628,6 +4736,417 @@ function startEnd(v, start, end) {
 function setInflateAmount(properties, { inflateAmount }, ratio) {
   properties.inflateAmount = inflateAmount === "auto" ? ratio === 1 ? 0.33 : 0 : inflateAmount;
 }
+var BarController = class extends DatasetController {
+  static id = "bar";
+  static defaults = {
+    datasetElementType: false,
+    dataElementType: "bar",
+    categoryPercentage: 0.8,
+    barPercentage: 0.9,
+    grouped: true,
+    animations: {
+      numbers: {
+        type: "number",
+        properties: [
+          "x",
+          "y",
+          "base",
+          "width",
+          "height"
+        ]
+      }
+    }
+  };
+  static overrides = {
+    scales: {
+      _index_: {
+        type: "category",
+        offset: true,
+        grid: {
+          offset: true
+        }
+      },
+      _value_: {
+        type: "linear",
+        beginAtZero: true
+      }
+    }
+  };
+  parsePrimitiveData(meta, data, start, count) {
+    return parseArrayOrPrimitive(meta, data, start, count);
+  }
+  parseArrayData(meta, data, start, count) {
+    return parseArrayOrPrimitive(meta, data, start, count);
+  }
+  parseObjectData(meta, data, start, count) {
+    const { iScale, vScale } = meta;
+    const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
+    const iAxisKey = iScale.axis === "x" ? xAxisKey : yAxisKey;
+    const vAxisKey = vScale.axis === "x" ? xAxisKey : yAxisKey;
+    const parsed = [];
+    let i, ilen, item, obj;
+    for (i = start, ilen = start + count; i < ilen; ++i) {
+      obj = data[i];
+      item = {};
+      item[iScale.axis] = iScale.parse(resolveObjectKey(obj, iAxisKey), i);
+      parsed.push(parseValue(resolveObjectKey(obj, vAxisKey), item, vScale, i));
+    }
+    return parsed;
+  }
+  updateRangeFromParsed(range, scale, parsed, stack) {
+    super.updateRangeFromParsed(range, scale, parsed, stack);
+    const custom = parsed._custom;
+    if (custom && scale === this._cachedMeta.vScale) {
+      range.min = Math.min(range.min, custom.min);
+      range.max = Math.max(range.max, custom.max);
+    }
+  }
+  getMaxOverflow() {
+    return 0;
+  }
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const { iScale, vScale } = meta;
+    const parsed = this.getParsed(index2);
+    const custom = parsed._custom;
+    const value = isFloatBar(custom) ? "[" + custom.start + ", " + custom.end + "]" : "" + vScale.getLabelForValue(parsed[vScale.axis]);
+    return {
+      label: "" + iScale.getLabelForValue(parsed[iScale.axis]),
+      value
+    };
+  }
+  initialize() {
+    this.enableOptionSharing = true;
+    super.initialize();
+    const meta = this._cachedMeta;
+    meta.stack = this.getDataset().stack;
+  }
+  update(mode) {
+    const meta = this._cachedMeta;
+    this.updateElements(meta.data, 0, meta.data.length, mode);
+  }
+  updateElements(bars, start, count, mode) {
+    const reset = mode === "reset";
+    const { index: index2, _cachedMeta: { vScale } } = this;
+    const base = vScale.getBasePixel();
+    const horizontal = vScale.isHorizontal();
+    const ruler = this._getRuler();
+    const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
+    for (let i = start; i < start + count; i++) {
+      const parsed = this.getParsed(i);
+      const vpixels = reset || isNullOrUndef(parsed[vScale.axis]) ? {
+        base,
+        head: base
+      } : this._calculateBarValuePixels(i);
+      const ipixels = this._calculateBarIndexPixels(i, ruler);
+      const stack = (parsed._stacks || {})[vScale.axis];
+      const properties = {
+        horizontal,
+        base: vpixels.base,
+        enableBorderRadius: !stack || isFloatBar(parsed._custom) || index2 === stack._top || index2 === stack._bottom,
+        x: horizontal ? vpixels.head : ipixels.center,
+        y: horizontal ? ipixels.center : vpixels.head,
+        height: horizontal ? ipixels.size : Math.abs(vpixels.size),
+        width: horizontal ? Math.abs(vpixels.size) : ipixels.size
+      };
+      if (includeOptions) {
+        properties.options = sharedOptions || this.resolveDataElementOptions(i, bars[i].active ? "active" : mode);
+      }
+      const options = properties.options || bars[i].options;
+      setBorderSkipped(properties, options, stack, index2);
+      setInflateAmount(properties, options, ruler.ratio);
+      this.updateElement(bars[i], i, properties, mode);
+    }
+  }
+  _getStacks(last, dataIndex) {
+    const { iScale } = this._cachedMeta;
+    const metasets = iScale.getMatchingVisibleMetas(this._type).filter((meta) => meta.controller.options.grouped);
+    const stacked = iScale.options.stacked;
+    const stacks = [];
+    const currentParsed = this._cachedMeta.controller.getParsed(dataIndex);
+    const iScaleValue = currentParsed && currentParsed[iScale.axis];
+    const skipNull = (meta) => {
+      const parsed = meta._parsed.find((item) => item[iScale.axis] === iScaleValue);
+      const val = parsed && parsed[meta.vScale.axis];
+      if (isNullOrUndef(val) || isNaN(val)) {
+        return true;
+      }
+    };
+    for (const meta of metasets) {
+      if (dataIndex !== void 0 && skipNull(meta)) {
+        continue;
+      }
+      if (stacked === false || stacks.indexOf(meta.stack) === -1 || stacked === void 0 && meta.stack === void 0) {
+        stacks.push(meta.stack);
+      }
+      if (meta.index === last) {
+        break;
+      }
+    }
+    if (!stacks.length) {
+      stacks.push(void 0);
+    }
+    return stacks;
+  }
+  _getStackCount(index2) {
+    return this._getStacks(void 0, index2).length;
+  }
+  _getAxisCount() {
+    return this._getAxis().length;
+  }
+  getFirstScaleIdForIndexAxis() {
+    const scales2 = this.chart.scales;
+    const indexScaleId = this.chart.options.indexAxis;
+    return Object.keys(scales2).filter((key) => scales2[key].axis === indexScaleId).shift();
+  }
+  _getAxis() {
+    const axis = {};
+    const firstScaleAxisId = this.getFirstScaleIdForIndexAxis();
+    for (const dataset of this.chart.data.datasets) {
+      axis[valueOrDefault(this.chart.options.indexAxis === "x" ? dataset.xAxisID : dataset.yAxisID, firstScaleAxisId)] = true;
+    }
+    return Object.keys(axis);
+  }
+  _getStackIndex(datasetIndex, name, dataIndex) {
+    const stacks = this._getStacks(datasetIndex, dataIndex);
+    const index2 = name !== void 0 ? stacks.indexOf(name) : -1;
+    return index2 === -1 ? stacks.length - 1 : index2;
+  }
+  _getRuler() {
+    const opts = this.options;
+    const meta = this._cachedMeta;
+    const iScale = meta.iScale;
+    const pixels = [];
+    let i, ilen;
+    for (i = 0, ilen = meta.data.length; i < ilen; ++i) {
+      pixels.push(iScale.getPixelForValue(this.getParsed(i)[iScale.axis], i));
+    }
+    const barThickness = opts.barThickness;
+    const min = barThickness || computeMinSampleSize(meta);
+    return {
+      min,
+      pixels,
+      start: iScale._startPixel,
+      end: iScale._endPixel,
+      stackCount: this._getStackCount(),
+      scale: iScale,
+      grouped: opts.grouped,
+      ratio: barThickness ? 1 : opts.categoryPercentage * opts.barPercentage
+    };
+  }
+  _calculateBarValuePixels(index2) {
+    const { _cachedMeta: { vScale, _stacked, index: datasetIndex }, options: { base: baseValue, minBarLength } } = this;
+    const actualBase = baseValue || 0;
+    const parsed = this.getParsed(index2);
+    const custom = parsed._custom;
+    const floating = isFloatBar(custom);
+    let value = parsed[vScale.axis];
+    let start = 0;
+    let length = _stacked ? this.applyStack(vScale, parsed, _stacked) : value;
+    let head, size;
+    if (length !== value) {
+      start = length - value;
+      length = value;
+    }
+    if (floating) {
+      value = custom.barStart;
+      length = custom.barEnd - custom.barStart;
+      if (value !== 0 && sign(value) !== sign(custom.barEnd)) {
+        start = 0;
+      }
+      start += value;
+    }
+    const startValue = !isNullOrUndef(baseValue) && !floating ? baseValue : start;
+    let base = vScale.getPixelForValue(startValue);
+    if (this.chart.getDataVisibility(index2)) {
+      head = vScale.getPixelForValue(start + length);
+    } else {
+      head = base;
+    }
+    size = head - base;
+    if (Math.abs(size) < minBarLength) {
+      size = barSign(size, vScale, actualBase) * minBarLength;
+      if (value === actualBase) {
+        base -= size / 2;
+      }
+      const startPixel = vScale.getPixelForDecimal(0);
+      const endPixel = vScale.getPixelForDecimal(1);
+      const min = Math.min(startPixel, endPixel);
+      const max = Math.max(startPixel, endPixel);
+      base = Math.max(Math.min(base, max), min);
+      head = base + size;
+      if (_stacked && !floating) {
+        parsed._stacks[vScale.axis]._visualValues[datasetIndex] = vScale.getValueForPixel(head) - vScale.getValueForPixel(base);
+      }
+    }
+    if (base === vScale.getPixelForValue(actualBase)) {
+      const halfGrid = sign(size) * vScale.getLineWidthForValue(actualBase) / 2;
+      base += halfGrid;
+      size -= halfGrid;
+    }
+    return {
+      size,
+      base,
+      head,
+      center: head + size / 2
+    };
+  }
+  _calculateBarIndexPixels(index2, ruler) {
+    const scale = ruler.scale;
+    const options = this.options;
+    const skipNull = options.skipNull;
+    const maxBarThickness = valueOrDefault(options.maxBarThickness, Infinity);
+    let center, size;
+    const axisCount = this._getAxisCount();
+    if (ruler.grouped) {
+      const stackCount = skipNull ? this._getStackCount(index2) : ruler.stackCount;
+      const range = options.barThickness === "flex" ? computeFlexCategoryTraits(index2, ruler, options, stackCount * axisCount) : computeFitCategoryTraits(index2, ruler, options, stackCount * axisCount);
+      const axisID = this.chart.options.indexAxis === "x" ? this.getDataset().xAxisID : this.getDataset().yAxisID;
+      const axisNumber = this._getAxis().indexOf(valueOrDefault(axisID, this.getFirstScaleIdForIndexAxis()));
+      const stackIndex = this._getStackIndex(this.index, this._cachedMeta.stack, skipNull ? index2 : void 0) + axisNumber;
+      center = range.start + range.chunk * stackIndex + range.chunk / 2;
+      size = Math.min(maxBarThickness, range.chunk * range.ratio);
+    } else {
+      center = scale.getPixelForValue(this.getParsed(index2)[scale.axis], index2);
+      size = Math.min(maxBarThickness, ruler.min * ruler.ratio);
+    }
+    return {
+      base: center - size / 2,
+      head: center + size / 2,
+      center,
+      size
+    };
+  }
+  draw() {
+    const meta = this._cachedMeta;
+    const vScale = meta.vScale;
+    const rects = meta.data;
+    const ilen = rects.length;
+    let i = 0;
+    for (; i < ilen; ++i) {
+      if (this.getParsed(i)[vScale.axis] !== null && !rects[i].hidden) {
+        rects[i].draw(this._ctx);
+      }
+    }
+  }
+};
+var BubbleController = class extends DatasetController {
+  static id = "bubble";
+  static defaults = {
+    datasetElementType: false,
+    dataElementType: "point",
+    animations: {
+      numbers: {
+        type: "number",
+        properties: [
+          "x",
+          "y",
+          "borderWidth",
+          "radius"
+        ]
+      }
+    }
+  };
+  static overrides = {
+    scales: {
+      x: {
+        type: "linear"
+      },
+      y: {
+        type: "linear"
+      }
+    }
+  };
+  initialize() {
+    this.enableOptionSharing = true;
+    super.initialize();
+  }
+  parsePrimitiveData(meta, data, start, count) {
+    const parsed = super.parsePrimitiveData(meta, data, start, count);
+    for (let i = 0; i < parsed.length; i++) {
+      parsed[i]._custom = this.resolveDataElementOptions(i + start).radius;
+    }
+    return parsed;
+  }
+  parseArrayData(meta, data, start, count) {
+    const parsed = super.parseArrayData(meta, data, start, count);
+    for (let i = 0; i < parsed.length; i++) {
+      const item = data[start + i];
+      parsed[i]._custom = valueOrDefault(item[2], this.resolveDataElementOptions(i + start).radius);
+    }
+    return parsed;
+  }
+  parseObjectData(meta, data, start, count) {
+    const parsed = super.parseObjectData(meta, data, start, count);
+    for (let i = 0; i < parsed.length; i++) {
+      const item = data[start + i];
+      parsed[i]._custom = valueOrDefault(item && item.r && +item.r, this.resolveDataElementOptions(i + start).radius);
+    }
+    return parsed;
+  }
+  getMaxOverflow() {
+    const data = this._cachedMeta.data;
+    let max = 0;
+    for (let i = data.length - 1; i >= 0; --i) {
+      max = Math.max(max, data[i].size(this.resolveDataElementOptions(i)) / 2);
+    }
+    return max > 0 && max;
+  }
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const labels = this.chart.data.labels || [];
+    const { xScale, yScale } = meta;
+    const parsed = this.getParsed(index2);
+    const x = xScale.getLabelForValue(parsed.x);
+    const y = yScale.getLabelForValue(parsed.y);
+    const r = parsed._custom;
+    return {
+      label: labels[index2] || "",
+      value: "(" + x + ", " + y + (r ? ", " + r : "") + ")"
+    };
+  }
+  update(mode) {
+    const points = this._cachedMeta.data;
+    this.updateElements(points, 0, points.length, mode);
+  }
+  updateElements(points, start, count, mode) {
+    const reset = mode === "reset";
+    const { iScale, vScale } = this._cachedMeta;
+    const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
+    const iAxis = iScale.axis;
+    const vAxis = vScale.axis;
+    for (let i = start; i < start + count; i++) {
+      const point = points[i];
+      const parsed = !reset && this.getParsed(i);
+      const properties = {};
+      const iPixel = properties[iAxis] = reset ? iScale.getPixelForDecimal(0.5) : iScale.getPixelForValue(parsed[iAxis]);
+      const vPixel = properties[vAxis] = reset ? vScale.getBasePixel() : vScale.getPixelForValue(parsed[vAxis]);
+      properties.skip = isNaN(iPixel) || isNaN(vPixel);
+      if (includeOptions) {
+        properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
+        if (reset) {
+          properties.options.radius = 0;
+        }
+      }
+      this.updateElement(point, i, properties, mode);
+    }
+  }
+  resolveDataElementOptions(index2, mode) {
+    const parsed = this.getParsed(index2);
+    let values = super.resolveDataElementOptions(index2, mode);
+    if (values.$shared) {
+      values = Object.assign({}, values, {
+        $shared: false
+      });
+    }
+    const radius = values.radius;
+    if (mode !== "active") {
+      values.radius = 0;
+    }
+    values.radius += valueOrDefault(parsed && parsed._custom, radius);
+    return values;
+  }
+};
 function getRatioAndOffset(rotation, circumference, cutout) {
   let ratioX = 1;
   let ratioY = 1;
@@ -5658,9 +5177,835 @@ function getRatioAndOffset(rotation, circumference, cutout) {
     offsetY
   };
 }
+var DoughnutController = class extends DatasetController {
+  static id = "doughnut";
+  static defaults = {
+    datasetElementType: false,
+    dataElementType: "arc",
+    animation: {
+      animateRotate: true,
+      animateScale: false
+    },
+    animations: {
+      numbers: {
+        type: "number",
+        properties: [
+          "circumference",
+          "endAngle",
+          "innerRadius",
+          "outerRadius",
+          "startAngle",
+          "x",
+          "y",
+          "offset",
+          "borderWidth",
+          "spacing"
+        ]
+      }
+    },
+    cutout: "50%",
+    rotation: 0,
+    circumference: 360,
+    radius: "100%",
+    spacing: 0,
+    indexAxis: "r"
+  };
+  static descriptors = {
+    _scriptable: (name) => name !== "spacing",
+    _indexable: (name) => name !== "spacing" && !name.startsWith("borderDash") && !name.startsWith("hoverBorderDash")
+  };
+  static overrides = {
+    aspectRatio: 1,
+    plugins: {
+      legend: {
+        labels: {
+          generateLabels(chart) {
+            const data = chart.data;
+            const { labels: { pointStyle, textAlign, color: color2, useBorderRadius, borderRadius } } = chart.legend.options;
+            if (data.labels.length && data.datasets.length) {
+              return data.labels.map((label, i) => {
+                const meta = chart.getDatasetMeta(0);
+                const style = meta.controller.getStyle(i);
+                return {
+                  text: label,
+                  fillStyle: style.backgroundColor,
+                  fontColor: color2,
+                  hidden: !chart.getDataVisibility(i),
+                  lineDash: style.borderDash,
+                  lineDashOffset: style.borderDashOffset,
+                  lineJoin: style.borderJoinStyle,
+                  lineWidth: style.borderWidth,
+                  strokeStyle: style.borderColor,
+                  textAlign,
+                  pointStyle,
+                  borderRadius: useBorderRadius && (borderRadius || style.borderRadius),
+                  index: i
+                };
+              });
+            }
+            return [];
+          }
+        },
+        onClick(e, legendItem, legend) {
+          legend.chart.toggleDataVisibility(legendItem.index);
+          legend.chart.update();
+        }
+      }
+    }
+  };
+  constructor(chart, datasetIndex) {
+    super(chart, datasetIndex);
+    this.enableOptionSharing = true;
+    this.innerRadius = void 0;
+    this.outerRadius = void 0;
+    this.offsetX = void 0;
+    this.offsetY = void 0;
+  }
+  linkScales() {
+  }
+  parse(start, count) {
+    const data = this.getDataset().data;
+    const meta = this._cachedMeta;
+    if (this._parsing === false) {
+      meta._parsed = data;
+    } else {
+      let getter = (i2) => +data[i2];
+      if (isObject(data[start])) {
+        const { key = "value" } = this._parsing;
+        getter = (i2) => +resolveObjectKey(data[i2], key);
+      }
+      let i, ilen;
+      for (i = start, ilen = start + count; i < ilen; ++i) {
+        meta._parsed[i] = getter(i);
+      }
+    }
+  }
+  _getRotation() {
+    return toRadians(this.options.rotation - 90);
+  }
+  _getCircumference() {
+    return toRadians(this.options.circumference);
+  }
+  _getRotationExtents() {
+    let min = TAU;
+    let max = -TAU;
+    for (let i = 0; i < this.chart.data.datasets.length; ++i) {
+      if (this.chart.isDatasetVisible(i) && this.chart.getDatasetMeta(i).type === this._type) {
+        const controller = this.chart.getDatasetMeta(i).controller;
+        const rotation = controller._getRotation();
+        const circumference = controller._getCircumference();
+        min = Math.min(min, rotation);
+        max = Math.max(max, rotation + circumference);
+      }
+    }
+    return {
+      rotation: min,
+      circumference: max - min
+    };
+  }
+  update(mode) {
+    const chart = this.chart;
+    const { chartArea } = chart;
+    const meta = this._cachedMeta;
+    const arcs = meta.data;
+    const spacing = this.getMaxBorderWidth() + this.getMaxOffset(arcs) + this.options.spacing;
+    const maxSize = Math.max((Math.min(chartArea.width, chartArea.height) - spacing) / 2, 0);
+    const cutout = Math.min(toPercentage(this.options.cutout, maxSize), 1);
+    const chartWeight = this._getRingWeight(this.index);
+    const { circumference, rotation } = this._getRotationExtents();
+    const { ratioX, ratioY, offsetX, offsetY } = getRatioAndOffset(rotation, circumference, cutout);
+    const maxWidth = (chartArea.width - spacing) / ratioX;
+    const maxHeight = (chartArea.height - spacing) / ratioY;
+    const maxRadius = Math.max(Math.min(maxWidth, maxHeight) / 2, 0);
+    const outerRadius = toDimension(this.options.radius, maxRadius);
+    const innerRadius = Math.max(outerRadius * cutout, 0);
+    const radiusLength = (outerRadius - innerRadius) / this._getVisibleDatasetWeightTotal();
+    this.offsetX = offsetX * outerRadius;
+    this.offsetY = offsetY * outerRadius;
+    meta.total = this.calculateTotal();
+    this.outerRadius = outerRadius - radiusLength * this._getRingWeightOffset(this.index);
+    this.innerRadius = Math.max(this.outerRadius - radiusLength * chartWeight, 0);
+    this.updateElements(arcs, 0, arcs.length, mode);
+  }
+  _circumference(i, reset) {
+    const opts = this.options;
+    const meta = this._cachedMeta;
+    const circumference = this._getCircumference();
+    if (reset && opts.animation.animateRotate || !this.chart.getDataVisibility(i) || meta._parsed[i] === null || meta.data[i].hidden) {
+      return 0;
+    }
+    return this.calculateCircumference(meta._parsed[i] * circumference / TAU);
+  }
+  updateElements(arcs, start, count, mode) {
+    const reset = mode === "reset";
+    const chart = this.chart;
+    const chartArea = chart.chartArea;
+    const opts = chart.options;
+    const animationOpts = opts.animation;
+    const centerX = (chartArea.left + chartArea.right) / 2;
+    const centerY = (chartArea.top + chartArea.bottom) / 2;
+    const animateScale = reset && animationOpts.animateScale;
+    const innerRadius = animateScale ? 0 : this.innerRadius;
+    const outerRadius = animateScale ? 0 : this.outerRadius;
+    const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
+    let startAngle = this._getRotation();
+    let i;
+    for (i = 0; i < start; ++i) {
+      startAngle += this._circumference(i, reset);
+    }
+    for (i = start; i < start + count; ++i) {
+      const circumference = this._circumference(i, reset);
+      const arc = arcs[i];
+      const properties = {
+        x: centerX + this.offsetX,
+        y: centerY + this.offsetY,
+        startAngle,
+        endAngle: startAngle + circumference,
+        circumference,
+        outerRadius,
+        innerRadius
+      };
+      if (includeOptions) {
+        properties.options = sharedOptions || this.resolveDataElementOptions(i, arc.active ? "active" : mode);
+      }
+      startAngle += circumference;
+      this.updateElement(arc, i, properties, mode);
+    }
+  }
+  calculateTotal() {
+    const meta = this._cachedMeta;
+    const metaData = meta.data;
+    let total = 0;
+    let i;
+    for (i = 0; i < metaData.length; i++) {
+      const value = meta._parsed[i];
+      if (value !== null && !isNaN(value) && this.chart.getDataVisibility(i) && !metaData[i].hidden) {
+        total += Math.abs(value);
+      }
+    }
+    return total;
+  }
+  calculateCircumference(value) {
+    const total = this._cachedMeta.total;
+    if (total > 0 && !isNaN(value)) {
+      return TAU * (Math.abs(value) / total);
+    }
+    return 0;
+  }
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const chart = this.chart;
+    const labels = chart.data.labels || [];
+    const value = formatNumber(meta._parsed[index2], chart.options.locale);
+    return {
+      label: labels[index2] || "",
+      value
+    };
+  }
+  getMaxBorderWidth(arcs) {
+    let max = 0;
+    const chart = this.chart;
+    let i, ilen, meta, controller, options;
+    if (!arcs) {
+      for (i = 0, ilen = chart.data.datasets.length; i < ilen; ++i) {
+        if (chart.isDatasetVisible(i)) {
+          meta = chart.getDatasetMeta(i);
+          arcs = meta.data;
+          controller = meta.controller;
+          break;
+        }
+      }
+    }
+    if (!arcs) {
+      return 0;
+    }
+    for (i = 0, ilen = arcs.length; i < ilen; ++i) {
+      options = controller.resolveDataElementOptions(i);
+      if (options.borderAlign !== "inner") {
+        max = Math.max(max, options.borderWidth || 0, options.hoverBorderWidth || 0);
+      }
+    }
+    return max;
+  }
+  getMaxOffset(arcs) {
+    let max = 0;
+    for (let i = 0, ilen = arcs.length; i < ilen; ++i) {
+      const options = this.resolveDataElementOptions(i);
+      max = Math.max(max, options.offset || 0, options.hoverOffset || 0);
+    }
+    return max;
+  }
+  _getRingWeightOffset(datasetIndex) {
+    let ringWeightOffset = 0;
+    for (let i = 0; i < datasetIndex; ++i) {
+      if (this.chart.isDatasetVisible(i)) {
+        ringWeightOffset += this._getRingWeight(i);
+      }
+    }
+    return ringWeightOffset;
+  }
+  _getRingWeight(datasetIndex) {
+    return Math.max(valueOrDefault(this.chart.data.datasets[datasetIndex].weight, 1), 0);
+  }
+  _getVisibleDatasetWeightTotal() {
+    return this._getRingWeightOffset(this.chart.data.datasets.length) || 1;
+  }
+};
+var LineController = class extends DatasetController {
+  static id = "line";
+  static defaults = {
+    datasetElementType: "line",
+    dataElementType: "point",
+    showLine: true,
+    spanGaps: false
+  };
+  static overrides = {
+    scales: {
+      _index_: {
+        type: "category"
+      },
+      _value_: {
+        type: "linear"
+      }
+    }
+  };
+  initialize() {
+    this.enableOptionSharing = true;
+    this.supportsDecimation = true;
+    super.initialize();
+  }
+  update(mode) {
+    const meta = this._cachedMeta;
+    const { dataset: line, data: points = [], _dataset } = meta;
+    const animationsDisabled = this.chart._animationsDisabled;
+    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    this._drawStart = start;
+    this._drawCount = count;
+    if (_scaleRangesChanged(meta)) {
+      start = 0;
+      count = points.length;
+    }
+    line._chart = this.chart;
+    line._datasetIndex = this.index;
+    line._decimated = !!_dataset._decimated;
+    line.points = points;
+    const options = this.resolveDatasetElementOptions(mode);
+    if (!this.options.showLine) {
+      options.borderWidth = 0;
+    }
+    options.segment = this.options.segment;
+    this.updateElement(line, void 0, {
+      animated: !animationsDisabled,
+      options
+    }, mode);
+    this.updateElements(points, start, count, mode);
+  }
+  updateElements(points, start, count, mode) {
+    const reset = mode === "reset";
+    const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
+    const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
+    const iAxis = iScale.axis;
+    const vAxis = vScale.axis;
+    const { spanGaps, segment } = this.options;
+    const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
+    const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
+    const end = start + count;
+    const pointsCount = points.length;
+    let prevParsed = start > 0 && this.getParsed(start - 1);
+    for (let i = 0; i < pointsCount; ++i) {
+      const point = points[i];
+      const properties = directUpdate ? point : {};
+      if (i < start || i >= end) {
+        properties.skip = true;
+        continue;
+      }
+      const parsed = this.getParsed(i);
+      const nullData = isNullOrUndef(parsed[vAxis]);
+      const iPixel = properties[iAxis] = iScale.getPixelForValue(parsed[iAxis], i);
+      const vPixel = properties[vAxis] = reset || nullData ? vScale.getBasePixel() : vScale.getPixelForValue(_stacked ? this.applyStack(vScale, parsed, _stacked) : parsed[vAxis], i);
+      properties.skip = isNaN(iPixel) || isNaN(vPixel) || nullData;
+      properties.stop = i > 0 && Math.abs(parsed[iAxis] - prevParsed[iAxis]) > maxGapLength;
+      if (segment) {
+        properties.parsed = parsed;
+        properties.raw = _dataset.data[i];
+      }
+      if (includeOptions) {
+        properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
+      }
+      if (!directUpdate) {
+        this.updateElement(point, i, properties, mode);
+      }
+      prevParsed = parsed;
+    }
+  }
+  getMaxOverflow() {
+    const meta = this._cachedMeta;
+    const dataset = meta.dataset;
+    const border = dataset.options && dataset.options.borderWidth || 0;
+    const data = meta.data || [];
+    if (!data.length) {
+      return border;
+    }
+    const firstPoint = data[0].size(this.resolveDataElementOptions(0));
+    const lastPoint = data[data.length - 1].size(this.resolveDataElementOptions(data.length - 1));
+    return Math.max(border, firstPoint, lastPoint) / 2;
+  }
+  draw() {
+    const meta = this._cachedMeta;
+    meta.dataset.updateControlPoints(this.chart.chartArea, meta.iScale.axis);
+    super.draw();
+  }
+};
+var PolarAreaController = class extends DatasetController {
+  static id = "polarArea";
+  static defaults = {
+    dataElementType: "arc",
+    animation: {
+      animateRotate: true,
+      animateScale: true
+    },
+    animations: {
+      numbers: {
+        type: "number",
+        properties: [
+          "x",
+          "y",
+          "startAngle",
+          "endAngle",
+          "innerRadius",
+          "outerRadius"
+        ]
+      }
+    },
+    indexAxis: "r",
+    startAngle: 0
+  };
+  static overrides = {
+    aspectRatio: 1,
+    plugins: {
+      legend: {
+        labels: {
+          generateLabels(chart) {
+            const data = chart.data;
+            if (data.labels.length && data.datasets.length) {
+              const { labels: { pointStyle, color: color2 } } = chart.legend.options;
+              return data.labels.map((label, i) => {
+                const meta = chart.getDatasetMeta(0);
+                const style = meta.controller.getStyle(i);
+                return {
+                  text: label,
+                  fillStyle: style.backgroundColor,
+                  strokeStyle: style.borderColor,
+                  fontColor: color2,
+                  lineWidth: style.borderWidth,
+                  pointStyle,
+                  hidden: !chart.getDataVisibility(i),
+                  index: i
+                };
+              });
+            }
+            return [];
+          }
+        },
+        onClick(e, legendItem, legend) {
+          legend.chart.toggleDataVisibility(legendItem.index);
+          legend.chart.update();
+        }
+      }
+    },
+    scales: {
+      r: {
+        type: "radialLinear",
+        angleLines: {
+          display: false
+        },
+        beginAtZero: true,
+        grid: {
+          circular: true
+        },
+        pointLabels: {
+          display: false
+        },
+        startAngle: 0
+      }
+    }
+  };
+  constructor(chart, datasetIndex) {
+    super(chart, datasetIndex);
+    this.innerRadius = void 0;
+    this.outerRadius = void 0;
+  }
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const chart = this.chart;
+    const labels = chart.data.labels || [];
+    const value = formatNumber(meta._parsed[index2].r, chart.options.locale);
+    return {
+      label: labels[index2] || "",
+      value
+    };
+  }
+  parseObjectData(meta, data, start, count) {
+    return _parseObjectDataRadialScale.bind(this)(meta, data, start, count);
+  }
+  update(mode) {
+    const arcs = this._cachedMeta.data;
+    this._updateRadius();
+    this.updateElements(arcs, 0, arcs.length, mode);
+  }
+  getMinMax() {
+    const meta = this._cachedMeta;
+    const range = {
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY
+    };
+    meta.data.forEach((element, index2) => {
+      const parsed = this.getParsed(index2).r;
+      if (!isNaN(parsed) && this.chart.getDataVisibility(index2)) {
+        if (parsed < range.min) {
+          range.min = parsed;
+        }
+        if (parsed > range.max) {
+          range.max = parsed;
+        }
+      }
+    });
+    return range;
+  }
+  _updateRadius() {
+    const chart = this.chart;
+    const chartArea = chart.chartArea;
+    const opts = chart.options;
+    const minSize = Math.min(chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+    const outerRadius = Math.max(minSize / 2, 0);
+    const innerRadius = Math.max(opts.cutoutPercentage ? outerRadius / 100 * opts.cutoutPercentage : 1, 0);
+    const radiusLength = (outerRadius - innerRadius) / chart.getVisibleDatasetCount();
+    this.outerRadius = outerRadius - radiusLength * this.index;
+    this.innerRadius = this.outerRadius - radiusLength;
+  }
+  updateElements(arcs, start, count, mode) {
+    const reset = mode === "reset";
+    const chart = this.chart;
+    const opts = chart.options;
+    const animationOpts = opts.animation;
+    const scale = this._cachedMeta.rScale;
+    const centerX = scale.xCenter;
+    const centerY = scale.yCenter;
+    const datasetStartAngle = scale.getIndexAngle(0) - 0.5 * PI;
+    let angle = datasetStartAngle;
+    let i;
+    const defaultAngle = 360 / this.countVisibleElements();
+    for (i = 0; i < start; ++i) {
+      angle += this._computeAngle(i, mode, defaultAngle);
+    }
+    for (i = start; i < start + count; i++) {
+      const arc = arcs[i];
+      let startAngle = angle;
+      let endAngle = angle + this._computeAngle(i, mode, defaultAngle);
+      let outerRadius = chart.getDataVisibility(i) ? scale.getDistanceFromCenterForValue(this.getParsed(i).r) : 0;
+      angle = endAngle;
+      if (reset) {
+        if (animationOpts.animateScale) {
+          outerRadius = 0;
+        }
+        if (animationOpts.animateRotate) {
+          startAngle = endAngle = datasetStartAngle;
+        }
+      }
+      const properties = {
+        x: centerX,
+        y: centerY,
+        innerRadius: 0,
+        outerRadius,
+        startAngle,
+        endAngle,
+        options: this.resolveDataElementOptions(i, arc.active ? "active" : mode)
+      };
+      this.updateElement(arc, i, properties, mode);
+    }
+  }
+  countVisibleElements() {
+    const meta = this._cachedMeta;
+    let count = 0;
+    meta.data.forEach((element, index2) => {
+      if (!isNaN(this.getParsed(index2).r) && this.chart.getDataVisibility(index2)) {
+        count++;
+      }
+    });
+    return count;
+  }
+  _computeAngle(index2, mode, defaultAngle) {
+    return this.chart.getDataVisibility(index2) ? toRadians(this.resolveDataElementOptions(index2, mode).angle || defaultAngle) : 0;
+  }
+};
+var PieController = class extends DoughnutController {
+  static id = "pie";
+  static defaults = {
+    cutout: 0,
+    rotation: 0,
+    circumference: 360,
+    radius: "100%"
+  };
+};
+var RadarController = class extends DatasetController {
+  static id = "radar";
+  static defaults = {
+    datasetElementType: "line",
+    dataElementType: "point",
+    indexAxis: "r",
+    showLine: true,
+    elements: {
+      line: {
+        fill: "start"
+      }
+    }
+  };
+  static overrides = {
+    aspectRatio: 1,
+    scales: {
+      r: {
+        type: "radialLinear"
+      }
+    }
+  };
+  getLabelAndValue(index2) {
+    const vScale = this._cachedMeta.vScale;
+    const parsed = this.getParsed(index2);
+    return {
+      label: vScale.getLabels()[index2],
+      value: "" + vScale.getLabelForValue(parsed[vScale.axis])
+    };
+  }
+  parseObjectData(meta, data, start, count) {
+    return _parseObjectDataRadialScale.bind(this)(meta, data, start, count);
+  }
+  update(mode) {
+    const meta = this._cachedMeta;
+    const line = meta.dataset;
+    const points = meta.data || [];
+    const labels = meta.iScale.getLabels();
+    line.points = points;
+    if (mode !== "resize") {
+      const options = this.resolveDatasetElementOptions(mode);
+      if (!this.options.showLine) {
+        options.borderWidth = 0;
+      }
+      const properties = {
+        _loop: true,
+        _fullLoop: labels.length === points.length,
+        options
+      };
+      this.updateElement(line, void 0, properties, mode);
+    }
+    this.updateElements(points, 0, points.length, mode);
+  }
+  updateElements(points, start, count, mode) {
+    const scale = this._cachedMeta.rScale;
+    const reset = mode === "reset";
+    for (let i = start; i < start + count; i++) {
+      const point = points[i];
+      const options = this.resolveDataElementOptions(i, point.active ? "active" : mode);
+      const pointPosition = scale.getPointPositionForValue(i, this.getParsed(i).r);
+      const x = reset ? scale.xCenter : pointPosition.x;
+      const y = reset ? scale.yCenter : pointPosition.y;
+      const properties = {
+        x,
+        y,
+        angle: pointPosition.angle,
+        skip: isNaN(x) || isNaN(y),
+        options
+      };
+      this.updateElement(point, i, properties, mode);
+    }
+  }
+};
+var ScatterController = class extends DatasetController {
+  static id = "scatter";
+  static defaults = {
+    datasetElementType: false,
+    dataElementType: "point",
+    showLine: false,
+    fill: false
+  };
+  static overrides = {
+    interaction: {
+      mode: "point"
+    },
+    scales: {
+      x: {
+        type: "linear"
+      },
+      y: {
+        type: "linear"
+      }
+    }
+  };
+  getLabelAndValue(index2) {
+    const meta = this._cachedMeta;
+    const labels = this.chart.data.labels || [];
+    const { xScale, yScale } = meta;
+    const parsed = this.getParsed(index2);
+    const x = xScale.getLabelForValue(parsed.x);
+    const y = yScale.getLabelForValue(parsed.y);
+    return {
+      label: labels[index2] || "",
+      value: "(" + x + ", " + y + ")"
+    };
+  }
+  update(mode) {
+    const meta = this._cachedMeta;
+    const { data: points = [] } = meta;
+    const animationsDisabled = this.chart._animationsDisabled;
+    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    this._drawStart = start;
+    this._drawCount = count;
+    if (_scaleRangesChanged(meta)) {
+      start = 0;
+      count = points.length;
+    }
+    if (this.options.showLine) {
+      if (!this.datasetElementType) {
+        this.addElements();
+      }
+      const { dataset: line, _dataset } = meta;
+      line._chart = this.chart;
+      line._datasetIndex = this.index;
+      line._decimated = !!_dataset._decimated;
+      line.points = points;
+      const options = this.resolveDatasetElementOptions(mode);
+      options.segment = this.options.segment;
+      this.updateElement(line, void 0, {
+        animated: !animationsDisabled,
+        options
+      }, mode);
+    } else if (this.datasetElementType) {
+      delete meta.dataset;
+      this.datasetElementType = false;
+    }
+    this.updateElements(points, start, count, mode);
+  }
+  addElements() {
+    const { showLine } = this.options;
+    if (!this.datasetElementType && showLine) {
+      this.datasetElementType = this.chart.registry.getElement("line");
+    }
+    super.addElements();
+  }
+  updateElements(points, start, count, mode) {
+    const reset = mode === "reset";
+    const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
+    const firstOpts = this.resolveDataElementOptions(start, mode);
+    const sharedOptions = this.getSharedOptions(firstOpts);
+    const includeOptions = this.includeOptions(mode, sharedOptions);
+    const iAxis = iScale.axis;
+    const vAxis = vScale.axis;
+    const { spanGaps, segment } = this.options;
+    const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
+    const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
+    let prevParsed = start > 0 && this.getParsed(start - 1);
+    for (let i = start; i < start + count; ++i) {
+      const point = points[i];
+      const parsed = this.getParsed(i);
+      const properties = directUpdate ? point : {};
+      const nullData = isNullOrUndef(parsed[vAxis]);
+      const iPixel = properties[iAxis] = iScale.getPixelForValue(parsed[iAxis], i);
+      const vPixel = properties[vAxis] = reset || nullData ? vScale.getBasePixel() : vScale.getPixelForValue(_stacked ? this.applyStack(vScale, parsed, _stacked) : parsed[vAxis], i);
+      properties.skip = isNaN(iPixel) || isNaN(vPixel) || nullData;
+      properties.stop = i > 0 && Math.abs(parsed[iAxis] - prevParsed[iAxis]) > maxGapLength;
+      if (segment) {
+        properties.parsed = parsed;
+        properties.raw = _dataset.data[i];
+      }
+      if (includeOptions) {
+        properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
+      }
+      if (!directUpdate) {
+        this.updateElement(point, i, properties, mode);
+      }
+      prevParsed = parsed;
+    }
+    this.updateSharedOptions(sharedOptions, mode, firstOpts);
+  }
+  getMaxOverflow() {
+    const meta = this._cachedMeta;
+    const data = meta.data || [];
+    if (!this.options.showLine) {
+      let max = 0;
+      for (let i = data.length - 1; i >= 0; --i) {
+        max = Math.max(max, data[i].size(this.resolveDataElementOptions(i)) / 2);
+      }
+      return max > 0 && max;
+    }
+    const dataset = meta.dataset;
+    const border = dataset.options && dataset.options.borderWidth || 0;
+    if (!data.length) {
+      return border;
+    }
+    const firstPoint = data[0].size(this.resolveDataElementOptions(0));
+    const lastPoint = data[data.length - 1].size(this.resolveDataElementOptions(data.length - 1));
+    return Math.max(border, firstPoint, lastPoint) / 2;
+  }
+};
+var controllers = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  BarController,
+  BubbleController,
+  DoughnutController,
+  LineController,
+  PieController,
+  PolarAreaController,
+  RadarController,
+  ScatterController
+});
 function abstract() {
   throw new Error("This method is not implemented: Check that a complete date adapter is provided.");
 }
+var DateAdapterBase = class _DateAdapterBase {
+  /**
+  * Override default date adapter methods.
+  * Accepts type parameter to define options type.
+  * @example
+  * Chart._adapters._date.override<{myAdapterOption: string}>({
+  *   init() {
+  *     console.log(this.options.myAdapterOption);
+  *   }
+  * })
+  */
+  static override(members) {
+    Object.assign(_DateAdapterBase.prototype, members);
+  }
+  options;
+  constructor(options) {
+    this.options = options || {};
+  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  init() {
+  }
+  formats() {
+    return abstract();
+  }
+  parse() {
+    return abstract();
+  }
+  format() {
+    return abstract();
+  }
+  add() {
+    return abstract();
+  }
+  diff() {
+    return abstract();
+  }
+  startOf() {
+    return abstract();
+  }
+  endOf() {
+    return abstract();
+  }
+};
+var adapters = {
+  _date: DateAdapterBase
+};
 function binarySearch(metaset, axis, value, intersect) {
   const { controller, data, _sorted } = metaset;
   const iScale = controller._cachedMeta.iScale;
@@ -5821,6 +6166,78 @@ function getAxisItems(chart, position, axis, intersect, useFinalPosition) {
   }
   return items;
 }
+var Interaction = {
+  evaluateInteractionItems,
+  modes: {
+    index(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      const axis = options.axis || "x";
+      const includeInvisible = options.includeInvisible || false;
+      const items = options.intersect ? getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible) : getNearestItems(chart, position, axis, false, useFinalPosition, includeInvisible);
+      const elements2 = [];
+      if (!items.length) {
+        return [];
+      }
+      chart.getSortedVisibleDatasetMetas().forEach((meta) => {
+        const index2 = items[0].index;
+        const element = meta.data[index2];
+        if (element && !element.skip) {
+          elements2.push({
+            element,
+            datasetIndex: meta.index,
+            index: index2
+          });
+        }
+      });
+      return elements2;
+    },
+    dataset(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      const axis = options.axis || "xy";
+      const includeInvisible = options.includeInvisible || false;
+      let items = options.intersect ? getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible) : getNearestItems(chart, position, axis, false, useFinalPosition, includeInvisible);
+      if (items.length > 0) {
+        const datasetIndex = items[0].datasetIndex;
+        const data = chart.getDatasetMeta(datasetIndex).data;
+        items = [];
+        for (let i = 0; i < data.length; ++i) {
+          items.push({
+            element: data[i],
+            datasetIndex,
+            index: i
+          });
+        }
+      }
+      return items;
+    },
+    point(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      const axis = options.axis || "xy";
+      const includeInvisible = options.includeInvisible || false;
+      return getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible);
+    },
+    nearest(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      const axis = options.axis || "xy";
+      const includeInvisible = options.includeInvisible || false;
+      return getNearestItems(chart, position, axis, options.intersect, useFinalPosition, includeInvisible);
+    },
+    x(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      return getAxisItems(chart, position, "x", options.intersect, useFinalPosition);
+    },
+    y(chart, e, options, useFinalPosition) {
+      const position = getRelativePosition(e, chart);
+      return getAxisItems(chart, position, "y", options.intersect, useFinalPosition);
+    }
+  }
+};
+var STATIC_POSITIONS = [
+  "left",
+  "top",
+  "right",
+  "bottom"
+];
 function filterByPosition(array, position) {
   return array.filter((v) => v.pos === position);
 }
@@ -6050,8 +6467,152 @@ function placeBoxes(boxes, chartArea, params, stacks) {
   chartArea.x = x;
   chartArea.y = y;
 }
+var layouts = {
+  addBox(chart, item) {
+    if (!chart.boxes) {
+      chart.boxes = [];
+    }
+    item.fullSize = item.fullSize || false;
+    item.position = item.position || "top";
+    item.weight = item.weight || 0;
+    item._layers = item._layers || function() {
+      return [
+        {
+          z: 0,
+          draw(chartArea) {
+            item.draw(chartArea);
+          }
+        }
+      ];
+    };
+    chart.boxes.push(item);
+  },
+  removeBox(chart, layoutItem) {
+    const index2 = chart.boxes ? chart.boxes.indexOf(layoutItem) : -1;
+    if (index2 !== -1) {
+      chart.boxes.splice(index2, 1);
+    }
+  },
+  configure(chart, item, options) {
+    item.fullSize = options.fullSize;
+    item.position = options.position;
+    item.weight = options.weight;
+  },
+  update(chart, width, height, minPadding) {
+    if (!chart) {
+      return;
+    }
+    const padding = toPadding(chart.options.layout.padding);
+    const availableWidth = Math.max(width - padding.width, 0);
+    const availableHeight = Math.max(height - padding.height, 0);
+    const boxes = buildLayoutBoxes(chart.boxes);
+    const verticalBoxes = boxes.vertical;
+    const horizontalBoxes = boxes.horizontal;
+    each(chart.boxes, (box) => {
+      if (typeof box.beforeLayout === "function") {
+        box.beforeLayout();
+      }
+    });
+    const visibleVerticalBoxCount = verticalBoxes.reduce((total, wrap) => wrap.box.options && wrap.box.options.display === false ? total : total + 1, 0) || 1;
+    const params = Object.freeze({
+      outerWidth: width,
+      outerHeight: height,
+      padding,
+      availableWidth,
+      availableHeight,
+      vBoxMaxWidth: availableWidth / 2 / visibleVerticalBoxCount,
+      hBoxMaxHeight: availableHeight / 2
+    });
+    const maxPadding = Object.assign({}, padding);
+    updateMaxPadding(maxPadding, toPadding(minPadding));
+    const chartArea = Object.assign({
+      maxPadding,
+      w: availableWidth,
+      h: availableHeight,
+      x: padding.left,
+      y: padding.top
+    }, padding);
+    const stacks = setLayoutDims(verticalBoxes.concat(horizontalBoxes), params);
+    fitBoxes(boxes.fullSize, chartArea, params, stacks);
+    fitBoxes(verticalBoxes, chartArea, params, stacks);
+    if (fitBoxes(horizontalBoxes, chartArea, params, stacks)) {
+      fitBoxes(verticalBoxes, chartArea, params, stacks);
+    }
+    handleMaxPadding(chartArea);
+    placeBoxes(boxes.leftAndTop, chartArea, params, stacks);
+    chartArea.x += chartArea.w;
+    chartArea.y += chartArea.h;
+    placeBoxes(boxes.rightAndBottom, chartArea, params, stacks);
+    chart.chartArea = {
+      left: chartArea.left,
+      top: chartArea.top,
+      right: chartArea.left + chartArea.w,
+      bottom: chartArea.top + chartArea.h,
+      height: chartArea.h,
+      width: chartArea.w
+    };
+    each(boxes.chartArea, (layout) => {
+      const box = layout.box;
+      Object.assign(box, chart.chartArea);
+      box.update(chartArea.w, chartArea.h, {
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0
+      });
+    });
+  }
+};
+var BasePlatform = class {
+  acquireContext(canvas, aspectRatio) {
+  }
+  releaseContext(context) {
+    return false;
+  }
+  addEventListener(chart, type, listener) {
+  }
+  removeEventListener(chart, type, listener) {
+  }
+  getDevicePixelRatio() {
+    return 1;
+  }
+  getMaximumSize(element, width, height, aspectRatio) {
+    width = Math.max(0, width || element.width);
+    height = height || element.height;
+    return {
+      width,
+      height: Math.max(0, aspectRatio ? Math.floor(width / aspectRatio) : height)
+    };
+  }
+  isAttached(canvas) {
+    return true;
+  }
+  updateConfig(config) {
+  }
+};
+var BasicPlatform = class extends BasePlatform {
+  acquireContext(item) {
+    return item && item.getContext && item.getContext("2d") || null;
+  }
+  updateConfig(config) {
+    config.options.animation = false;
+  }
+};
+var EXPANDO_KEY = "$chartjs";
+var EVENT_TYPES = {
+  touchstart: "mousedown",
+  touchmove: "mousemove",
+  touchend: "mouseup",
+  pointerenter: "mouseenter",
+  pointerdown: "mousedown",
+  pointermove: "mousemove",
+  pointerup: "mouseup",
+  pointerleave: "mouseout",
+  pointerout: "mouseout"
+};
+var isNullOrEmpty = (value) => value === null || value === "";
 function initCanvas(canvas, aspectRatio) {
-  const style2 = canvas.style;
+  const style = canvas.style;
   const renderHeight = canvas.getAttribute("height");
   const renderWidth = canvas.getAttribute("width");
   canvas[EXPANDO_KEY] = {
@@ -6059,14 +6620,14 @@ function initCanvas(canvas, aspectRatio) {
       height: renderHeight,
       width: renderWidth,
       style: {
-        display: style2.display,
-        height: style2.height,
-        width: style2.width
+        display: style.display,
+        height: style.height,
+        width: style.width
       }
     }
   };
-  style2.display = style2.display || "block";
-  style2.boxSizing = style2.boxSizing || "border-box";
+  style.display = style.display || "block";
+  style.boxSizing = style.boxSizing || "border-box";
   if (isNullOrEmpty(renderWidth)) {
     const displayWidth = readUsedSize(canvas, "width");
     if (displayWidth !== void 0) {
@@ -6085,6 +6646,9 @@ function initCanvas(canvas, aspectRatio) {
   }
   return canvas;
 }
+var eventListenerOptions = supportsEventListenerOptions ? {
+  passive: true
+} : false;
 function addListener(node, type, listener) {
   if (node) {
     node.addEventListener(type, listener, eventListenerOptions);
@@ -6149,6 +6713,8 @@ function createDetachObserver(chart, type, listener) {
   });
   return observer;
 }
+var drpListeningCharts = /* @__PURE__ */ new Map();
+var oldDevicePixelRatio = 0;
 function onWindowResize() {
   const dpr = window.devicePixelRatio;
   if (dpr === oldDevicePixelRatio) {
@@ -6217,12 +6783,116 @@ function createProxyAndListen(chart, type, listener) {
   addListener(canvas, type, proxy);
   return proxy;
 }
+var DomPlatform = class extends BasePlatform {
+  acquireContext(canvas, aspectRatio) {
+    const context = canvas && canvas.getContext && canvas.getContext("2d");
+    if (context && context.canvas === canvas) {
+      initCanvas(canvas, aspectRatio);
+      return context;
+    }
+    return null;
+  }
+  releaseContext(context) {
+    const canvas = context.canvas;
+    if (!canvas[EXPANDO_KEY]) {
+      return false;
+    }
+    const initial = canvas[EXPANDO_KEY].initial;
+    [
+      "height",
+      "width"
+    ].forEach((prop) => {
+      const value = initial[prop];
+      if (isNullOrUndef(value)) {
+        canvas.removeAttribute(prop);
+      } else {
+        canvas.setAttribute(prop, value);
+      }
+    });
+    const style = initial.style || {};
+    Object.keys(style).forEach((key) => {
+      canvas.style[key] = style[key];
+    });
+    canvas.width = canvas.width;
+    delete canvas[EXPANDO_KEY];
+    return true;
+  }
+  addEventListener(chart, type, listener) {
+    this.removeEventListener(chart, type);
+    const proxies = chart.$proxies || (chart.$proxies = {});
+    const handlers = {
+      attach: createAttachObserver,
+      detach: createDetachObserver,
+      resize: createResizeObserver
+    };
+    const handler = handlers[type] || createProxyAndListen;
+    proxies[type] = handler(chart, type, listener);
+  }
+  removeEventListener(chart, type) {
+    const proxies = chart.$proxies || (chart.$proxies = {});
+    const proxy = proxies[type];
+    if (!proxy) {
+      return;
+    }
+    const handlers = {
+      attach: releaseObserver,
+      detach: releaseObserver,
+      resize: releaseObserver
+    };
+    const handler = handlers[type] || removeListener;
+    handler(chart, type, proxy);
+    proxies[type] = void 0;
+  }
+  getDevicePixelRatio() {
+    return window.devicePixelRatio;
+  }
+  getMaximumSize(canvas, width, height, aspectRatio) {
+    return getMaximumSize(canvas, width, height, aspectRatio);
+  }
+  isAttached(canvas) {
+    const container = canvas && _getParentNode(canvas);
+    return !!(container && container.isConnected);
+  }
+};
 function _detectPlatform(canvas) {
   if (!_isDomSupported() || typeof OffscreenCanvas !== "undefined" && canvas instanceof OffscreenCanvas) {
     return BasicPlatform;
   }
   return DomPlatform;
 }
+var Element = class {
+  static defaults = {};
+  static defaultRoutes = void 0;
+  x;
+  y;
+  active = false;
+  options;
+  $animations;
+  tooltipPosition(useFinalPosition) {
+    const { x, y } = this.getProps([
+      "x",
+      "y"
+    ], useFinalPosition);
+    return {
+      x,
+      y
+    };
+  }
+  hasValue() {
+    return isNumber(this.x) && isNumber(this.y);
+  }
+  getProps(props, final) {
+    const anims = this.$animations;
+    if (!final || !anims) {
+      return this;
+    }
+    const ret = {};
+    props.forEach((prop) => {
+      ret[prop] = anims[prop] && anims[prop].active() ? anims[prop]._to : this[prop];
+    });
+    return ret;
+  }
+};
 function autoSkip(scale, ticks) {
   const tickOpts = scale.options.ticks;
   const determinedMaxTicks = determineMaxTicks(scale);
@@ -6331,6 +7001,9 @@ function getEvenSpacing(arr) {
   }
   return diff;
 }
+var reverseAlign = (align) => align === "left" ? "right" : align === "right" ? "left" : align;
+var offsetFromEdge = (scale, edge, offset) => edge === "top" || edge === "left" ? scale[edge] + offset : scale[edge] - offset;
+var getTicksLimit = (ticksLength, maxTicksLimit) => Math.min(maxTicksLimit || ticksLength, ticksLength);
 function sample(arr, numItems) {
   const result = [];
   const increment = arr.length / numItems;
@@ -6448,6 +7121,1210 @@ function titleArgs(scale, offset, position, align) {
     rotation
   };
 }
+var Scale = class _Scale extends Element {
+  constructor(cfg) {
+    super();
+    this.id = cfg.id;
+    this.type = cfg.type;
+    this.options = void 0;
+    this.ctx = cfg.ctx;
+    this.chart = cfg.chart;
+    this.top = void 0;
+    this.bottom = void 0;
+    this.left = void 0;
+    this.right = void 0;
+    this.width = void 0;
+    this.height = void 0;
+    this._margins = {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    };
+    this.maxWidth = void 0;
+    this.maxHeight = void 0;
+    this.paddingTop = void 0;
+    this.paddingBottom = void 0;
+    this.paddingLeft = void 0;
+    this.paddingRight = void 0;
+    this.axis = void 0;
+    this.labelRotation = void 0;
+    this.min = void 0;
+    this.max = void 0;
+    this._range = void 0;
+    this.ticks = [];
+    this._gridLineItems = null;
+    this._labelItems = null;
+    this._labelSizes = null;
+    this._length = 0;
+    this._maxLength = 0;
+    this._longestTextCache = {};
+    this._startPixel = void 0;
+    this._endPixel = void 0;
+    this._reversePixels = false;
+    this._userMax = void 0;
+    this._userMin = void 0;
+    this._suggestedMax = void 0;
+    this._suggestedMin = void 0;
+    this._ticksLength = 0;
+    this._borderValue = 0;
+    this._cache = {};
+    this._dataLimitsCached = false;
+    this.$context = void 0;
+  }
+  init(options) {
+    this.options = options.setContext(this.getContext());
+    this.axis = options.axis;
+    this._userMin = this.parse(options.min);
+    this._userMax = this.parse(options.max);
+    this._suggestedMin = this.parse(options.suggestedMin);
+    this._suggestedMax = this.parse(options.suggestedMax);
+  }
+  parse(raw, index2) {
+    return raw;
+  }
+  getUserBounds() {
+    let { _userMin, _userMax, _suggestedMin, _suggestedMax } = this;
+    _userMin = finiteOrDefault(_userMin, Number.POSITIVE_INFINITY);
+    _userMax = finiteOrDefault(_userMax, Number.NEGATIVE_INFINITY);
+    _suggestedMin = finiteOrDefault(_suggestedMin, Number.POSITIVE_INFINITY);
+    _suggestedMax = finiteOrDefault(_suggestedMax, Number.NEGATIVE_INFINITY);
+    return {
+      min: finiteOrDefault(_userMin, _suggestedMin),
+      max: finiteOrDefault(_userMax, _suggestedMax),
+      minDefined: isNumberFinite(_userMin),
+      maxDefined: isNumberFinite(_userMax)
+    };
+  }
+  getMinMax(canStack) {
+    let { min, max, minDefined, maxDefined } = this.getUserBounds();
+    let range;
+    if (minDefined && maxDefined) {
+      return {
+        min,
+        max
+      };
+    }
+    const metas = this.getMatchingVisibleMetas();
+    for (let i = 0, ilen = metas.length; i < ilen; ++i) {
+      range = metas[i].controller.getMinMax(this, canStack);
+      if (!minDefined) {
+        min = Math.min(min, range.min);
+      }
+      if (!maxDefined) {
+        max = Math.max(max, range.max);
+      }
+    }
+    min = maxDefined && min > max ? max : min;
+    max = minDefined && min > max ? min : max;
+    return {
+      min: finiteOrDefault(min, finiteOrDefault(max, min)),
+      max: finiteOrDefault(max, finiteOrDefault(min, max))
+    };
+  }
+  getPadding() {
+    return {
+      left: this.paddingLeft || 0,
+      top: this.paddingTop || 0,
+      right: this.paddingRight || 0,
+      bottom: this.paddingBottom || 0
+    };
+  }
+  getTicks() {
+    return this.ticks;
+  }
+  getLabels() {
+    const data = this.chart.data;
+    return this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels || [];
+  }
+  getLabelItems(chartArea = this.chart.chartArea) {
+    const items = this._labelItems || (this._labelItems = this._computeLabelItems(chartArea));
+    return items;
+  }
+  beforeLayout() {
+    this._cache = {};
+    this._dataLimitsCached = false;
+  }
+  beforeUpdate() {
+    callback(this.options.beforeUpdate, [
+      this
+    ]);
+  }
+  update(maxWidth, maxHeight, margins) {
+    const { beginAtZero, grace, ticks: tickOpts } = this.options;
+    const sampleSize = tickOpts.sampleSize;
+    this.beforeUpdate();
+    this.maxWidth = maxWidth;
+    this.maxHeight = maxHeight;
+    this._margins = margins = Object.assign({
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    }, margins);
+    this.ticks = null;
+    this._labelSizes = null;
+    this._gridLineItems = null;
+    this._labelItems = null;
+    this.beforeSetDimensions();
+    this.setDimensions();
+    this.afterSetDimensions();
+    this._maxLength = this.isHorizontal() ? this.width + margins.left + margins.right : this.height + margins.top + margins.bottom;
+    if (!this._dataLimitsCached) {
+      this.beforeDataLimits();
+      this.determineDataLimits();
+      this.afterDataLimits();
+      this._range = _addGrace(this, grace, beginAtZero);
+      this._dataLimitsCached = true;
+    }
+    this.beforeBuildTicks();
+    this.ticks = this.buildTicks() || [];
+    this.afterBuildTicks();
+    const samplingEnabled = sampleSize < this.ticks.length;
+    this._convertTicksToLabels(samplingEnabled ? sample(this.ticks, sampleSize) : this.ticks);
+    this.configure();
+    this.beforeCalculateLabelRotation();
+    this.calculateLabelRotation();
+    this.afterCalculateLabelRotation();
+    if (tickOpts.display && (tickOpts.autoSkip || tickOpts.source === "auto")) {
+      this.ticks = autoSkip(this, this.ticks);
+      this._labelSizes = null;
+      this.afterAutoSkip();
+    }
+    if (samplingEnabled) {
+      this._convertTicksToLabels(this.ticks);
+    }
+    this.beforeFit();
+    this.fit();
+    this.afterFit();
+    this.afterUpdate();
+  }
+  configure() {
+    let reversePixels = this.options.reverse;
+    let startPixel, endPixel;
+    if (this.isHorizontal()) {
+      startPixel = this.left;
+      endPixel = this.right;
+    } else {
+      startPixel = this.top;
+      endPixel = this.bottom;
+      reversePixels = !reversePixels;
+    }
+    this._startPixel = startPixel;
+    this._endPixel = endPixel;
+    this._reversePixels = reversePixels;
+    this._length = endPixel - startPixel;
+    this._alignToPixels = this.options.alignToPixels;
+  }
+  afterUpdate() {
+    callback(this.options.afterUpdate, [
+      this
+    ]);
+  }
+  beforeSetDimensions() {
+    callback(this.options.beforeSetDimensions, [
+      this
+    ]);
+  }
+  setDimensions() {
+    if (this.isHorizontal()) {
+      this.width = this.maxWidth;
+      this.left = 0;
+      this.right = this.width;
+    } else {
+      this.height = this.maxHeight;
+      this.top = 0;
+      this.bottom = this.height;
+    }
+    this.paddingLeft = 0;
+    this.paddingTop = 0;
+    this.paddingRight = 0;
+    this.paddingBottom = 0;
+  }
+  afterSetDimensions() {
+    callback(this.options.afterSetDimensions, [
+      this
+    ]);
+  }
+  _callHooks(name) {
+    this.chart.notifyPlugins(name, this.getContext());
+    callback(this.options[name], [
+      this
+    ]);
+  }
+  beforeDataLimits() {
+    this._callHooks("beforeDataLimits");
+  }
+  determineDataLimits() {
+  }
+  afterDataLimits() {
+    this._callHooks("afterDataLimits");
+  }
+  beforeBuildTicks() {
+    this._callHooks("beforeBuildTicks");
+  }
+  buildTicks() {
+    return [];
+  }
+  afterBuildTicks() {
+    this._callHooks("afterBuildTicks");
+  }
+  beforeTickToLabelConversion() {
+    callback(this.options.beforeTickToLabelConversion, [
+      this
+    ]);
+  }
+  generateTickLabels(ticks) {
+    const tickOpts = this.options.ticks;
+    let i, ilen, tick;
+    for (i = 0, ilen = ticks.length; i < ilen; i++) {
+      tick = ticks[i];
+      tick.label = callback(tickOpts.callback, [
+        tick.value,
+        i,
+        ticks
+      ], this);
+    }
+  }
+  afterTickToLabelConversion() {
+    callback(this.options.afterTickToLabelConversion, [
+      this
+    ]);
+  }
+  beforeCalculateLabelRotation() {
+    callback(this.options.beforeCalculateLabelRotation, [
+      this
+    ]);
+  }
+  calculateLabelRotation() {
+    const options = this.options;
+    const tickOpts = options.ticks;
+    const numTicks = getTicksLimit(this.ticks.length, options.ticks.maxTicksLimit);
+    const minRotation = tickOpts.minRotation || 0;
+    const maxRotation = tickOpts.maxRotation;
+    let labelRotation = minRotation;
+    let tickWidth, maxHeight, maxLabelDiagonal;
+    if (!this._isVisible() || !tickOpts.display || minRotation >= maxRotation || numTicks <= 1 || !this.isHorizontal()) {
+      this.labelRotation = minRotation;
+      return;
+    }
+    const labelSizes = this._getLabelSizes();
+    const maxLabelWidth = labelSizes.widest.width;
+    const maxLabelHeight = labelSizes.highest.height;
+    const maxWidth = _limitValue(this.chart.width - maxLabelWidth, 0, this.maxWidth);
+    tickWidth = options.offset ? this.maxWidth / numTicks : maxWidth / (numTicks - 1);
+    if (maxLabelWidth + 6 > tickWidth) {
+      tickWidth = maxWidth / (numTicks - (options.offset ? 0.5 : 1));
+      maxHeight = this.maxHeight - getTickMarkLength(options.grid) - tickOpts.padding - getTitleHeight(options.title, this.chart.options.font);
+      maxLabelDiagonal = Math.sqrt(maxLabelWidth * maxLabelWidth + maxLabelHeight * maxLabelHeight);
+      labelRotation = toDegrees(Math.min(Math.asin(_limitValue((labelSizes.highest.height + 6) / tickWidth, -1, 1)), Math.asin(_limitValue(maxHeight / maxLabelDiagonal, -1, 1)) - Math.asin(_limitValue(maxLabelHeight / maxLabelDiagonal, -1, 1))));
+      labelRotation = Math.max(minRotation, Math.min(maxRotation, labelRotation));
+    }
+    this.labelRotation = labelRotation;
+  }
+  afterCalculateLabelRotation() {
+    callback(this.options.afterCalculateLabelRotation, [
+      this
+    ]);
+  }
+  afterAutoSkip() {
+  }
+  beforeFit() {
+    callback(this.options.beforeFit, [
+      this
+    ]);
+  }
+  fit() {
+    const minSize = {
+      width: 0,
+      height: 0
+    };
+    const { chart, options: { ticks: tickOpts, title: titleOpts, grid: gridOpts } } = this;
+    const display = this._isVisible();
+    const isHorizontal = this.isHorizontal();
+    if (display) {
+      const titleHeight = getTitleHeight(titleOpts, chart.options.font);
+      if (isHorizontal) {
+        minSize.width = this.maxWidth;
+        minSize.height = getTickMarkLength(gridOpts) + titleHeight;
+      } else {
+        minSize.height = this.maxHeight;
+        minSize.width = getTickMarkLength(gridOpts) + titleHeight;
+      }
+      if (tickOpts.display && this.ticks.length) {
+        const { first, last, widest, highest } = this._getLabelSizes();
+        const tickPadding = tickOpts.padding * 2;
+        const angleRadians = toRadians(this.labelRotation);
+        const cos = Math.cos(angleRadians);
+        const sin = Math.sin(angleRadians);
+        if (isHorizontal) {
+          const labelHeight = tickOpts.mirror ? 0 : sin * widest.width + cos * highest.height;
+          minSize.height = Math.min(this.maxHeight, minSize.height + labelHeight + tickPadding);
+        } else {
+          const labelWidth = tickOpts.mirror ? 0 : cos * widest.width + sin * highest.height;
+          minSize.width = Math.min(this.maxWidth, minSize.width + labelWidth + tickPadding);
+        }
+        this._calculatePadding(first, last, sin, cos);
+      }
+    }
+    this._handleMargins();
+    if (isHorizontal) {
+      this.width = this._length = chart.width - this._margins.left - this._margins.right;
+      this.height = minSize.height;
+    } else {
+      this.width = minSize.width;
+      this.height = this._length = chart.height - this._margins.top - this._margins.bottom;
+    }
+  }
+  _calculatePadding(first, last, sin, cos) {
+    const { ticks: { align, padding }, position } = this.options;
+    const isRotated = this.labelRotation !== 0;
+    const labelsBelowTicks = position !== "top" && this.axis === "x";
+    if (this.isHorizontal()) {
+      const offsetLeft = this.getPixelForTick(0) - this.left;
+      const offsetRight = this.right - this.getPixelForTick(this.ticks.length - 1);
+      let paddingLeft = 0;
+      let paddingRight = 0;
+      if (isRotated) {
+        if (labelsBelowTicks) {
+          paddingLeft = cos * first.width;
+          paddingRight = sin * last.height;
+        } else {
+          paddingLeft = sin * first.height;
+          paddingRight = cos * last.width;
+        }
+      } else if (align === "start") {
+        paddingRight = last.width;
+      } else if (align === "end") {
+        paddingLeft = first.width;
+      } else if (align !== "inner") {
+        paddingLeft = first.width / 2;
+        paddingRight = last.width / 2;
+      }
+      this.paddingLeft = Math.max((paddingLeft - offsetLeft + padding) * this.width / (this.width - offsetLeft), 0);
+      this.paddingRight = Math.max((paddingRight - offsetRight + padding) * this.width / (this.width - offsetRight), 0);
+    } else {
+      let paddingTop = last.height / 2;
+      let paddingBottom = first.height / 2;
+      if (align === "start") {
+        paddingTop = 0;
+        paddingBottom = first.height;
+      } else if (align === "end") {
+        paddingTop = last.height;
+        paddingBottom = 0;
+      }
+      this.paddingTop = paddingTop + padding;
+      this.paddingBottom = paddingBottom + padding;
+    }
+  }
+  _handleMargins() {
+    if (this._margins) {
+      this._margins.left = Math.max(this.paddingLeft, this._margins.left);
+      this._margins.top = Math.max(this.paddingTop, this._margins.top);
+      this._margins.right = Math.max(this.paddingRight, this._margins.right);
+      this._margins.bottom = Math.max(this.paddingBottom, this._margins.bottom);
+    }
+  }
+  afterFit() {
+    callback(this.options.afterFit, [
+      this
+    ]);
+  }
+  isHorizontal() {
+    const { axis, position } = this.options;
+    return position === "top" || position === "bottom" || axis === "x";
+  }
+  isFullSize() {
+    return this.options.fullSize;
+  }
+  _convertTicksToLabels(ticks) {
+    this.beforeTickToLabelConversion();
+    this.generateTickLabels(ticks);
+    let i, ilen;
+    for (i = 0, ilen = ticks.length; i < ilen; i++) {
+      if (isNullOrUndef(ticks[i].label)) {
+        ticks.splice(i, 1);
+        ilen--;
+        i--;
+      }
+    }
+    this.afterTickToLabelConversion();
+  }
+  _getLabelSizes() {
+    let labelSizes = this._labelSizes;
+    if (!labelSizes) {
+      const sampleSize = this.options.ticks.sampleSize;
+      let ticks = this.ticks;
+      if (sampleSize < ticks.length) {
+        ticks = sample(ticks, sampleSize);
+      }
+      this._labelSizes = labelSizes = this._computeLabelSizes(ticks, ticks.length, this.options.ticks.maxTicksLimit);
+    }
+    return labelSizes;
+  }
+  _computeLabelSizes(ticks, length, maxTicksLimit) {
+    const { ctx, _longestTextCache: caches } = this;
+    const widths = [];
+    const heights = [];
+    const increment = Math.floor(length / getTicksLimit(length, maxTicksLimit));
+    let widestLabelSize = 0;
+    let highestLabelSize = 0;
+    let i, j, jlen, label, tickFont, fontString, cache, lineHeight, width, height, nestedLabel;
+    for (i = 0; i < length; i += increment) {
+      label = ticks[i].label;
+      tickFont = this._resolveTickFontOptions(i);
+      ctx.font = fontString = tickFont.string;
+      cache = caches[fontString] = caches[fontString] || {
+        data: {},
+        gc: []
+      };
+      lineHeight = tickFont.lineHeight;
+      width = height = 0;
+      if (!isNullOrUndef(label) && !isArray(label)) {
+        width = _measureText(ctx, cache.data, cache.gc, width, label);
+        height = lineHeight;
+      } else if (isArray(label)) {
+        for (j = 0, jlen = label.length; j < jlen; ++j) {
+          nestedLabel = label[j];
+          if (!isNullOrUndef(nestedLabel) && !isArray(nestedLabel)) {
+            width = _measureText(ctx, cache.data, cache.gc, width, nestedLabel);
+            height += lineHeight;
+          }
+        }
+      }
+      widths.push(width);
+      heights.push(height);
+      widestLabelSize = Math.max(width, widestLabelSize);
+      highestLabelSize = Math.max(height, highestLabelSize);
+    }
+    garbageCollect(caches, length);
+    const widest = widths.indexOf(widestLabelSize);
+    const highest = heights.indexOf(highestLabelSize);
+    const valueAt = (idx) => ({
+      width: widths[idx] || 0,
+      height: heights[idx] || 0
+    });
+    return {
+      first: valueAt(0),
+      last: valueAt(length - 1),
+      widest: valueAt(widest),
+      highest: valueAt(highest),
+      widths,
+      heights
+    };
+  }
+  getLabelForValue(value) {
+    return value;
+  }
+  getPixelForValue(value, index2) {
+    return NaN;
+  }
+  getValueForPixel(pixel) {
+  }
+  getPixelForTick(index2) {
+    const ticks = this.ticks;
+    if (index2 < 0 || index2 > ticks.length - 1) {
+      return null;
+    }
+    return this.getPixelForValue(ticks[index2].value);
+  }
+  getPixelForDecimal(decimal) {
+    if (this._reversePixels) {
+      decimal = 1 - decimal;
+    }
+    const pixel = this._startPixel + decimal * this._length;
+    return _int16Range(this._alignToPixels ? _alignPixel(this.chart, pixel, 0) : pixel);
+  }
+  getDecimalForPixel(pixel) {
+    const decimal = (pixel - this._startPixel) / this._length;
+    return this._reversePixels ? 1 - decimal : decimal;
+  }
+  getBasePixel() {
+    return this.getPixelForValue(this.getBaseValue());
+  }
+  getBaseValue() {
+    const { min, max } = this;
+    return min < 0 && max < 0 ? max : min > 0 && max > 0 ? min : 0;
+  }
+  getContext(index2) {
+    const ticks = this.ticks || [];
+    if (index2 >= 0 && index2 < ticks.length) {
+      const tick = ticks[index2];
+      return tick.$context || (tick.$context = createTickContext(this.getContext(), index2, tick));
+    }
+    return this.$context || (this.$context = createScaleContext(this.chart.getContext(), this));
+  }
+  _tickSize() {
+    const optionTicks = this.options.ticks;
+    const rot = toRadians(this.labelRotation);
+    const cos = Math.abs(Math.cos(rot));
+    const sin = Math.abs(Math.sin(rot));
+    const labelSizes = this._getLabelSizes();
+    const padding = optionTicks.autoSkipPadding || 0;
+    const w = labelSizes ? labelSizes.widest.width + padding : 0;
+    const h = labelSizes ? labelSizes.highest.height + padding : 0;
+    return this.isHorizontal() ? h * cos > w * sin ? w / cos : h / sin : h * sin < w * cos ? h / cos : w / sin;
+  }
+  _isVisible() {
+    const display = this.options.display;
+    if (display !== "auto") {
+      return !!display;
+    }
+    return this.getMatchingVisibleMetas().length > 0;
+  }
+  _computeGridLineItems(chartArea) {
+    const axis = this.axis;
+    const chart = this.chart;
+    const options = this.options;
+    const { grid, position, border } = options;
+    const offset = grid.offset;
+    const isHorizontal = this.isHorizontal();
+    const ticks = this.ticks;
+    const ticksLength = ticks.length + (offset ? 1 : 0);
+    const tl = getTickMarkLength(grid);
+    const items = [];
+    const borderOpts = border.setContext(this.getContext());
+    const axisWidth = borderOpts.display ? borderOpts.width : 0;
+    const axisHalfWidth = axisWidth / 2;
+    const alignBorderValue = function(pixel) {
+      return _alignPixel(chart, pixel, axisWidth);
+    };
+    let borderValue, i, lineValue, alignedLineValue;
+    let tx1, ty1, tx2, ty2, x1, y1, x2, y2;
+    if (position === "top") {
+      borderValue = alignBorderValue(this.bottom);
+      ty1 = this.bottom - tl;
+      ty2 = borderValue - axisHalfWidth;
+      y1 = alignBorderValue(chartArea.top) + axisHalfWidth;
+      y2 = chartArea.bottom;
+    } else if (position === "bottom") {
+      borderValue = alignBorderValue(this.top);
+      y1 = chartArea.top;
+      y2 = alignBorderValue(chartArea.bottom) - axisHalfWidth;
+      ty1 = borderValue + axisHalfWidth;
+      ty2 = this.top + tl;
+    } else if (position === "left") {
+      borderValue = alignBorderValue(this.right);
+      tx1 = this.right - tl;
+      tx2 = borderValue - axisHalfWidth;
+      x1 = alignBorderValue(chartArea.left) + axisHalfWidth;
+      x2 = chartArea.right;
+    } else if (position === "right") {
+      borderValue = alignBorderValue(this.left);
+      x1 = chartArea.left;
+      x2 = alignBorderValue(chartArea.right) - axisHalfWidth;
+      tx1 = borderValue + axisHalfWidth;
+      tx2 = this.left + tl;
+    } else if (axis === "x") {
+      if (position === "center") {
+        borderValue = alignBorderValue((chartArea.top + chartArea.bottom) / 2 + 0.5);
+      } else if (isObject(position)) {
+        const positionAxisID = Object.keys(position)[0];
+        const value = position[positionAxisID];
+        borderValue = alignBorderValue(this.chart.scales[positionAxisID].getPixelForValue(value));
+      }
+      y1 = chartArea.top;
+      y2 = chartArea.bottom;
+      ty1 = borderValue + axisHalfWidth;
+      ty2 = ty1 + tl;
+    } else if (axis === "y") {
+      if (position === "center") {
+        borderValue = alignBorderValue((chartArea.left + chartArea.right) / 2);
+      } else if (isObject(position)) {
+        const positionAxisID = Object.keys(position)[0];
+        const value = position[positionAxisID];
+        borderValue = alignBorderValue(this.chart.scales[positionAxisID].getPixelForValue(value));
+      }
+      tx1 = borderValue - axisHalfWidth;
+      tx2 = tx1 - tl;
+      x1 = chartArea.left;
+      x2 = chartArea.right;
+    }
+    const limit = valueOrDefault(options.ticks.maxTicksLimit, ticksLength);
+    const step = Math.max(1, Math.ceil(ticksLength / limit));
+    for (i = 0; i < ticksLength; i += step) {
+      const context = this.getContext(i);
+      const optsAtIndex = grid.setContext(context);
+      const optsAtIndexBorder = border.setContext(context);
+      const lineWidth = optsAtIndex.lineWidth;
+      const lineColor = optsAtIndex.color;
+      const borderDash = optsAtIndexBorder.dash || [];
+      const borderDashOffset = optsAtIndexBorder.dashOffset;
+      const tickWidth = optsAtIndex.tickWidth;
+      const tickColor = optsAtIndex.tickColor;
+      const tickBorderDash = optsAtIndex.tickBorderDash || [];
+      const tickBorderDashOffset = optsAtIndex.tickBorderDashOffset;
+      lineValue = getPixelForGridLine(this, i, offset);
+      if (lineValue === void 0) {
+        continue;
+      }
+      alignedLineValue = _alignPixel(chart, lineValue, lineWidth);
+      if (isHorizontal) {
+        tx1 = tx2 = x1 = x2 = alignedLineValue;
+      } else {
+        ty1 = ty2 = y1 = y2 = alignedLineValue;
+      }
+      items.push({
+        tx1,
+        ty1,
+        tx2,
+        ty2,
+        x1,
+        y1,
+        x2,
+        y2,
+        width: lineWidth,
+        color: lineColor,
+        borderDash,
+        borderDashOffset,
+        tickWidth,
+        tickColor,
+        tickBorderDash,
+        tickBorderDashOffset
+      });
+    }
+    this._ticksLength = ticksLength;
+    this._borderValue = borderValue;
+    return items;
+  }
+  _computeLabelItems(chartArea) {
+    const axis = this.axis;
+    const options = this.options;
+    const { position, ticks: optionTicks } = options;
+    const isHorizontal = this.isHorizontal();
+    const ticks = this.ticks;
+    const { align, crossAlign, padding, mirror } = optionTicks;
+    const tl = getTickMarkLength(options.grid);
+    const tickAndPadding = tl + padding;
+    const hTickAndPadding = mirror ? -padding : tickAndPadding;
+    const rotation = -toRadians(this.labelRotation);
+    const items = [];
+    let i, ilen, tick, label, x, y, textAlign, pixel, font, lineHeight, lineCount, textOffset;
+    let textBaseline = "middle";
+    if (position === "top") {
+      y = this.bottom - hTickAndPadding;
+      textAlign = this._getXAxisLabelAlignment();
+    } else if (position === "bottom") {
+      y = this.top + hTickAndPadding;
+      textAlign = this._getXAxisLabelAlignment();
+    } else if (position === "left") {
+      const ret = this._getYAxisLabelAlignment(tl);
+      textAlign = ret.textAlign;
+      x = ret.x;
+    } else if (position === "right") {
+      const ret = this._getYAxisLabelAlignment(tl);
+      textAlign = ret.textAlign;
+      x = ret.x;
+    } else if (axis === "x") {
+      if (position === "center") {
+        y = (chartArea.top + chartArea.bottom) / 2 + tickAndPadding;
+      } else if (isObject(position)) {
+        const positionAxisID = Object.keys(position)[0];
+        const value = position[positionAxisID];
+        y = this.chart.scales[positionAxisID].getPixelForValue(value) + tickAndPadding;
+      }
+      textAlign = this._getXAxisLabelAlignment();
+    } else if (axis === "y") {
+      if (position === "center") {
+        x = (chartArea.left + chartArea.right) / 2 - tickAndPadding;
+      } else if (isObject(position)) {
+        const positionAxisID = Object.keys(position)[0];
+        const value = position[positionAxisID];
+        x = this.chart.scales[positionAxisID].getPixelForValue(value);
+      }
+      textAlign = this._getYAxisLabelAlignment(tl).textAlign;
+    }
+    if (axis === "y") {
+      if (align === "start") {
+        textBaseline = "top";
+      } else if (align === "end") {
+        textBaseline = "bottom";
+      }
+    }
+    const labelSizes = this._getLabelSizes();
+    for (i = 0, ilen = ticks.length; i < ilen; ++i) {
+      tick = ticks[i];
+      label = tick.label;
+      const optsAtIndex = optionTicks.setContext(this.getContext(i));
+      pixel = this.getPixelForTick(i) + optionTicks.labelOffset;
+      font = this._resolveTickFontOptions(i);
+      lineHeight = font.lineHeight;
+      lineCount = isArray(label) ? label.length : 1;
+      const halfCount = lineCount / 2;
+      const color2 = optsAtIndex.color;
+      const strokeColor = optsAtIndex.textStrokeColor;
+      const strokeWidth = optsAtIndex.textStrokeWidth;
+      let tickTextAlign = textAlign;
+      if (isHorizontal) {
+        x = pixel;
+        if (textAlign === "inner") {
+          if (i === ilen - 1) {
+            tickTextAlign = !this.options.reverse ? "right" : "left";
+          } else if (i === 0) {
+            tickTextAlign = !this.options.reverse ? "left" : "right";
+          } else {
+            tickTextAlign = "center";
+          }
+        }
+        if (position === "top") {
+          if (crossAlign === "near" || rotation !== 0) {
+            textOffset = -lineCount * lineHeight + lineHeight / 2;
+          } else if (crossAlign === "center") {
+            textOffset = -labelSizes.highest.height / 2 - halfCount * lineHeight + lineHeight;
+          } else {
+            textOffset = -labelSizes.highest.height + lineHeight / 2;
+          }
+        } else {
+          if (crossAlign === "near" || rotation !== 0) {
+            textOffset = lineHeight / 2;
+          } else if (crossAlign === "center") {
+            textOffset = labelSizes.highest.height / 2 - halfCount * lineHeight;
+          } else {
+            textOffset = labelSizes.highest.height - lineCount * lineHeight;
+          }
+        }
+        if (mirror) {
+          textOffset *= -1;
+        }
+        if (rotation !== 0 && !optsAtIndex.showLabelBackdrop) {
+          x += lineHeight / 2 * Math.sin(rotation);
+        }
+      } else {
+        y = pixel;
+        textOffset = (1 - lineCount) * lineHeight / 2;
+      }
+      let backdrop;
+      if (optsAtIndex.showLabelBackdrop) {
+        const labelPadding = toPadding(optsAtIndex.backdropPadding);
+        const height = labelSizes.heights[i];
+        const width = labelSizes.widths[i];
+        let top = textOffset - labelPadding.top;
+        let left = 0 - labelPadding.left;
+        switch (textBaseline) {
+          case "middle":
+            top -= height / 2;
+            break;
+          case "bottom":
+            top -= height;
+            break;
+        }
+        switch (textAlign) {
+          case "center":
+            left -= width / 2;
+            break;
+          case "right":
+            left -= width;
+            break;
+          case "inner":
+            if (i === ilen - 1) {
+              left -= width;
+            } else if (i > 0) {
+              left -= width / 2;
+            }
+            break;
+        }
+        backdrop = {
+          left,
+          top,
+          width: width + labelPadding.width,
+          height: height + labelPadding.height,
+          color: optsAtIndex.backdropColor
+        };
+      }
+      items.push({
+        label,
+        font,
+        textOffset,
+        options: {
+          rotation,
+          color: color2,
+          strokeColor,
+          strokeWidth,
+          textAlign: tickTextAlign,
+          textBaseline,
+          translation: [
+            x,
+            y
+          ],
+          backdrop
+        }
+      });
+    }
+    return items;
+  }
+  _getXAxisLabelAlignment() {
+    const { position, ticks } = this.options;
+    const rotation = -toRadians(this.labelRotation);
+    if (rotation) {
+      return position === "top" ? "left" : "right";
+    }
+    let align = "center";
+    if (ticks.align === "start") {
+      align = "left";
+    } else if (ticks.align === "end") {
+      align = "right";
+    } else if (ticks.align === "inner") {
+      align = "inner";
+    }
+    return align;
+  }
+  _getYAxisLabelAlignment(tl) {
+    const { position, ticks: { crossAlign, mirror, padding } } = this.options;
+    const labelSizes = this._getLabelSizes();
+    const tickAndPadding = tl + padding;
+    const widest = labelSizes.widest.width;
+    let textAlign;
+    let x;
+    if (position === "left") {
+      if (mirror) {
+        x = this.right + padding;
+        if (crossAlign === "near") {
+          textAlign = "left";
+        } else if (crossAlign === "center") {
+          textAlign = "center";
+          x += widest / 2;
+        } else {
+          textAlign = "right";
+          x += widest;
+        }
+      } else {
+        x = this.right - tickAndPadding;
+        if (crossAlign === "near") {
+          textAlign = "right";
+        } else if (crossAlign === "center") {
+          textAlign = "center";
+          x -= widest / 2;
+        } else {
+          textAlign = "left";
+          x = this.left;
+        }
+      }
+    } else if (position === "right") {
+      if (mirror) {
+        x = this.left + padding;
+        if (crossAlign === "near") {
+          textAlign = "right";
+        } else if (crossAlign === "center") {
+          textAlign = "center";
+          x -= widest / 2;
+        } else {
+          textAlign = "left";
+          x -= widest;
+        }
+      } else {
+        x = this.left + tickAndPadding;
+        if (crossAlign === "near") {
+          textAlign = "left";
+        } else if (crossAlign === "center") {
+          textAlign = "center";
+          x += widest / 2;
+        } else {
+          textAlign = "right";
+          x = this.right;
+        }
+      }
+    } else {
+      textAlign = "right";
+    }
+    return {
+      textAlign,
+      x
+    };
+  }
+  _computeLabelArea() {
+    if (this.options.ticks.mirror) {
+      return;
+    }
+    const chart = this.chart;
+    const position = this.options.position;
+    if (position === "left" || position === "right") {
+      return {
+        top: 0,
+        left: this.left,
+        bottom: chart.height,
+        right: this.right
+      };
+    }
+    if (position === "top" || position === "bottom") {
+      return {
+        top: this.top,
+        left: 0,
+        bottom: this.bottom,
+        right: chart.width
+      };
+    }
+  }
+  drawBackground() {
+    const { ctx, options: { backgroundColor }, left, top, width, height } = this;
+    if (backgroundColor) {
+      ctx.save();
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(left, top, width, height);
+      ctx.restore();
+    }
+  }
+  getLineWidthForValue(value) {
+    const grid = this.options.grid;
+    if (!this._isVisible() || !grid.display) {
+      return 0;
+    }
+    const ticks = this.ticks;
+    const index2 = ticks.findIndex((t) => t.value === value);
+    if (index2 >= 0) {
+      const opts = grid.setContext(this.getContext(index2));
+      return opts.lineWidth;
+    }
+    return 0;
+  }
+  drawGrid(chartArea) {
+    const grid = this.options.grid;
+    const ctx = this.ctx;
+    const items = this._gridLineItems || (this._gridLineItems = this._computeGridLineItems(chartArea));
+    let i, ilen;
+    const drawLine = (p1, p2, style) => {
+      if (!style.width || !style.color) {
+        return;
+      }
+      ctx.save();
+      ctx.lineWidth = style.width;
+      ctx.strokeStyle = style.color;
+      ctx.setLineDash(style.borderDash || []);
+      ctx.lineDashOffset = style.borderDashOffset;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+      ctx.restore();
+    };
+    if (grid.display) {
+      for (i = 0, ilen = items.length; i < ilen; ++i) {
+        const item = items[i];
+        if (grid.drawOnChartArea) {
+          drawLine({
+            x: item.x1,
+            y: item.y1
+          }, {
+            x: item.x2,
+            y: item.y2
+          }, item);
+        }
+        if (grid.drawTicks) {
+          drawLine({
+            x: item.tx1,
+            y: item.ty1
+          }, {
+            x: item.tx2,
+            y: item.ty2
+          }, {
+            color: item.tickColor,
+            width: item.tickWidth,
+            borderDash: item.tickBorderDash,
+            borderDashOffset: item.tickBorderDashOffset
+          });
+        }
+      }
+    }
+  }
+  drawBorder() {
+    const { chart, ctx, options: { border, grid } } = this;
+    const borderOpts = border.setContext(this.getContext());
+    const axisWidth = border.display ? borderOpts.width : 0;
+    if (!axisWidth) {
+      return;
+    }
+    const lastLineWidth = grid.setContext(this.getContext(0)).lineWidth;
+    const borderValue = this._borderValue;
+    let x1, x2, y1, y2;
+    if (this.isHorizontal()) {
+      x1 = _alignPixel(chart, this.left, axisWidth) - axisWidth / 2;
+      x2 = _alignPixel(chart, this.right, lastLineWidth) + lastLineWidth / 2;
+      y1 = y2 = borderValue;
+    } else {
+      y1 = _alignPixel(chart, this.top, axisWidth) - axisWidth / 2;
+      y2 = _alignPixel(chart, this.bottom, lastLineWidth) + lastLineWidth / 2;
+      x1 = x2 = borderValue;
+    }
+    ctx.save();
+    ctx.lineWidth = borderOpts.width;
+    ctx.strokeStyle = borderOpts.color;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  drawLabels(chartArea) {
+    const optionTicks = this.options.ticks;
+    if (!optionTicks.display) {
+      return;
+    }
+    const ctx = this.ctx;
+    const area = this._computeLabelArea();
+    if (area) {
+      clipArea(ctx, area);
+    }
+    const items = this.getLabelItems(chartArea);
+    for (const item of items) {
+      const renderTextOptions = item.options;
+      const tickFont = item.font;
+      const label = item.label;
+      const y = item.textOffset;
+      renderText(ctx, label, 0, y, tickFont, renderTextOptions);
+    }
+    if (area) {
+      unclipArea(ctx);
+    }
+  }
+  drawTitle() {
+    const { ctx, options: { position, title, reverse } } = this;
+    if (!title.display) {
+      return;
+    }
+    const font = toFont(title.font);
+    const padding = toPadding(title.padding);
+    const align = title.align;
+    let offset = font.lineHeight / 2;
+    if (position === "bottom" || position === "center" || isObject(position)) {
+      offset += padding.bottom;
+      if (isArray(title.text)) {
+        offset += font.lineHeight * (title.text.length - 1);
+      }
+    } else {
+      offset += padding.top;
+    }
+    const { titleX, titleY, maxWidth, rotation } = titleArgs(this, offset, position, align);
+    renderText(ctx, title.text, 0, 0, font, {
+      color: title.color,
+      maxWidth,
+      rotation,
+      textAlign: titleAlign(align, position, reverse),
+      textBaseline: "middle",
+      translation: [
+        titleX,
+        titleY
+      ]
+    });
+  }
+  draw(chartArea) {
+    if (!this._isVisible()) {
+      return;
+    }
+    this.drawBackground();
+    this.drawGrid(chartArea);
+    this.drawBorder();
+    this.drawTitle();
+    this.drawLabels(chartArea);
+  }
+  _layers() {
+    const opts = this.options;
+    const tz = opts.ticks && opts.ticks.z || 0;
+    const gz = valueOrDefault(opts.grid && opts.grid.z, -1);
+    const bz = valueOrDefault(opts.border && opts.border.z, 0);
+    if (!this._isVisible() || this.draw !== _Scale.prototype.draw) {
+      return [
+        {
+          z: tz,
+          draw: (chartArea) => {
+            this.draw(chartArea);
+          }
+        }
+      ];
+    }
+    return [
+      {
+        z: gz,
+        draw: (chartArea) => {
+          this.drawBackground();
+          this.drawGrid(chartArea);
+          this.drawTitle();
+        }
+      },
+      {
+        z: bz,
+        draw: () => {
+          this.drawBorder();
+        }
+      },
+      {
+        z: tz,
+        draw: (chartArea) => {
+          this.drawLabels(chartArea);
+        }
+      }
+    ];
+  }
+  getMatchingVisibleMetas(type) {
+    const metas = this.chart.getSortedVisibleDatasetMetas();
+    const axisID = this.axis + "AxisID";
+    const result = [];
+    let i, ilen;
+    for (i = 0, ilen = metas.length; i < ilen; ++i) {
+      const meta = metas[i];
+      if (meta[axisID] === this.id && (!type || meta.type === type)) {
+        result.push(meta);
+      }
+    }
+    return result;
+  }
+  _resolveTickFontOptions(index2) {
+    const opts = this.options.ticks.setContext(this.getContext(index2));
+    return toFont(opts.font);
+  }
+  _maxDigits() {
+    const fontSize = this._resolveTickFontOptions(0).lineHeight;
+    return (this.isHorizontal() ? this.width : this.height) / fontSize;
+  }
+};
+var TypedRegistry = class {
+  constructor(type, scope, override) {
+    this.type = type;
+    this.scope = scope;
+    this.override = override;
+    this.items = /* @__PURE__ */ Object.create(null);
+  }
+  isForType(type) {
+    return Object.prototype.isPrototypeOf.call(this.type.prototype, type.prototype);
+  }
+  register(item) {
+    const proto = Object.getPrototypeOf(item);
+    let parentScope;
+    if (isIChartComponent(proto)) {
+      parentScope = this.register(proto);
+    }
+    const items = this.items;
+    const id = item.id;
+    const scope = this.scope + "." + id;
+    if (!id) {
+      throw new Error("class does not have id: " + item);
+    }
+    if (id in items) {
+      return scope;
+    }
+    items[id] = item;
+    registerDefaults(item, scope, parentScope);
+    if (this.override) {
+      defaults.override(item.id, item.overrides);
+    }
+    return scope;
+  }
+  get(id) {
+    return this.items[id];
+  }
+  unregister(item) {
+    const items = this.items;
+    const id = item.id;
+    const scope = this.scope;
+    if (id in items) {
+      delete items[id];
+    }
+    if (scope && id in defaults[scope]) {
+      delete defaults[scope][id];
+      if (this.override) {
+        delete overrides[id];
+      }
+    }
+  }
+};
 function registerDefaults(item, scope, parentScope) {
   const itemDefaults = merge(/* @__PURE__ */ Object.create(null), [
     parentScope ? defaults.get(parentScope) : {},
@@ -6478,6 +8355,164 @@ function routeDefaults(scope, routes) {
 function isIChartComponent(proto) {
   return "id" in proto && "defaults" in proto;
 }
+var Registry = class {
+  constructor() {
+    this.controllers = new TypedRegistry(DatasetController, "datasets", true);
+    this.elements = new TypedRegistry(Element, "elements");
+    this.plugins = new TypedRegistry(Object, "plugins");
+    this.scales = new TypedRegistry(Scale, "scales");
+    this._typedRegistries = [
+      this.controllers,
+      this.scales,
+      this.elements
+    ];
+  }
+  add(...args) {
+    this._each("register", args);
+  }
+  remove(...args) {
+    this._each("unregister", args);
+  }
+  addControllers(...args) {
+    this._each("register", args, this.controllers);
+  }
+  addElements(...args) {
+    this._each("register", args, this.elements);
+  }
+  addPlugins(...args) {
+    this._each("register", args, this.plugins);
+  }
+  addScales(...args) {
+    this._each("register", args, this.scales);
+  }
+  getController(id) {
+    return this._get(id, this.controllers, "controller");
+  }
+  getElement(id) {
+    return this._get(id, this.elements, "element");
+  }
+  getPlugin(id) {
+    return this._get(id, this.plugins, "plugin");
+  }
+  getScale(id) {
+    return this._get(id, this.scales, "scale");
+  }
+  removeControllers(...args) {
+    this._each("unregister", args, this.controllers);
+  }
+  removeElements(...args) {
+    this._each("unregister", args, this.elements);
+  }
+  removePlugins(...args) {
+    this._each("unregister", args, this.plugins);
+  }
+  removeScales(...args) {
+    this._each("unregister", args, this.scales);
+  }
+  _each(method, args, typedRegistry) {
+    [
+      ...args
+    ].forEach((arg) => {
+      const reg = typedRegistry || this._getRegistryForType(arg);
+      if (typedRegistry || reg.isForType(arg) || reg === this.plugins && arg.id) {
+        this._exec(method, reg, arg);
+      } else {
+        each(arg, (item) => {
+          const itemReg = typedRegistry || this._getRegistryForType(item);
+          this._exec(method, itemReg, item);
+        });
+      }
+    });
+  }
+  _exec(method, registry2, component) {
+    const camelMethod = _capitalize(method);
+    callback(component["before" + camelMethod], [], component);
+    registry2[method](component);
+    callback(component["after" + camelMethod], [], component);
+  }
+  _getRegistryForType(type) {
+    for (let i = 0; i < this._typedRegistries.length; i++) {
+      const reg = this._typedRegistries[i];
+      if (reg.isForType(type)) {
+        return reg;
+      }
+    }
+    return this.plugins;
+  }
+  _get(id, typedRegistry, type) {
+    const item = typedRegistry.get(id);
+    if (item === void 0) {
+      throw new Error('"' + id + '" is not a registered ' + type + ".");
+    }
+    return item;
+  }
+};
+var registry = /* @__PURE__ */ new Registry();
+var PluginService = class {
+  constructor() {
+    this._init = void 0;
+  }
+  notify(chart, hook, args, filter) {
+    if (hook === "beforeInit") {
+      this._init = this._createDescriptors(chart, true);
+      this._notify(this._init, chart, "install");
+    }
+    if (this._init === void 0) {
+      return;
+    }
+    const descriptors2 = filter ? this._descriptors(chart).filter(filter) : this._descriptors(chart);
+    const result = this._notify(descriptors2, chart, hook, args);
+    if (hook === "afterDestroy") {
+      this._notify(descriptors2, chart, "stop");
+      this._notify(this._init, chart, "uninstall");
+      this._init = void 0;
+    }
+    return result;
+  }
+  _notify(descriptors2, chart, hook, args) {
+    args = args || {};
+    for (const descriptor of descriptors2) {
+      const plugin = descriptor.plugin;
+      const method = plugin[hook];
+      const params = [
+        chart,
+        args,
+        descriptor.options
+      ];
+      if (callback(method, params, plugin) === false && args.cancelable) {
+        return false;
+      }
+    }
+    return true;
+  }
+  invalidate() {
+    if (!isNullOrUndef(this._cache)) {
+      this._oldCache = this._cache;
+      this._cache = void 0;
+    }
+  }
+  _descriptors(chart) {
+    if (this._cache) {
+      return this._cache;
+    }
+    const descriptors2 = this._cache = this._createDescriptors(chart);
+    this._notifyStateChanges(chart);
+    return descriptors2;
+  }
+  _createDescriptors(chart, all) {
+    const config = chart && chart.config;
+    const options = valueOrDefault(config.options && config.options.plugins, {});
+    const plugins2 = allPlugins(config);
+    return options === false && !all ? [] : createDescriptors(chart, plugins2, options, all);
+  }
+  _notifyStateChanges(chart) {
+    const previousDescriptors = this._oldCache || [];
+    const descriptors2 = this._cache;
+    const diff = (a, b) => a.filter((x) => !b.some((y) => x.plugin.id === y.plugin.id));
+    this._notify(diff(previousDescriptors, descriptors2), chart, "stop");
+    this._notify(diff(descriptors2, previousDescriptors), chart, "start");
+  }
+};
 function allPlugins(config) {
   const localIds = {};
   const plugins2 = [];
@@ -6669,6 +8704,8 @@ function initConfig(config) {
   initOptions(config);
   return config;
 }
+var keyCache = /* @__PURE__ */ new Map();
+var keysCached = /* @__PURE__ */ new Set();
 function cachedKeys(cacheKey, generate) {
   let keys = keyCache.get(cacheKey);
   if (!keys) {
@@ -6678,6 +8715,166 @@ function cachedKeys(cacheKey, generate) {
   }
   return keys;
 }
+var addIfFound = (set2, obj, key) => {
+  const opts = resolveObjectKey(obj, key);
+  if (opts !== void 0) {
+    set2.add(opts);
+  }
+};
+var Config = class {
+  constructor(config) {
+    this._config = initConfig(config);
+    this._scopeCache = /* @__PURE__ */ new Map();
+    this._resolverCache = /* @__PURE__ */ new Map();
+  }
+  get platform() {
+    return this._config.platform;
+  }
+  get type() {
+    return this._config.type;
+  }
+  set type(type) {
+    this._config.type = type;
+  }
+  get data() {
+    return this._config.data;
+  }
+  set data(data) {
+    this._config.data = initData(data);
+  }
+  get options() {
+    return this._config.options;
+  }
+  set options(options) {
+    this._config.options = options;
+  }
+  get plugins() {
+    return this._config.plugins;
+  }
+  update() {
+    const config = this._config;
+    this.clearCache();
+    initOptions(config);
+  }
+  clearCache() {
+    this._scopeCache.clear();
+    this._resolverCache.clear();
+  }
+  datasetScopeKeys(datasetType) {
+    return cachedKeys(datasetType, () => [
+      [
+        `datasets.${datasetType}`,
+        ""
+      ]
+    ]);
+  }
+  datasetAnimationScopeKeys(datasetType, transition) {
+    return cachedKeys(`${datasetType}.transition.${transition}`, () => [
+      [
+        `datasets.${datasetType}.transitions.${transition}`,
+        `transitions.${transition}`
+      ],
+      [
+        `datasets.${datasetType}`,
+        ""
+      ]
+    ]);
+  }
+  datasetElementScopeKeys(datasetType, elementType) {
+    return cachedKeys(`${datasetType}-${elementType}`, () => [
+      [
+        `datasets.${datasetType}.elements.${elementType}`,
+        `datasets.${datasetType}`,
+        `elements.${elementType}`,
+        ""
+      ]
+    ]);
+  }
+  pluginScopeKeys(plugin) {
+    const id = plugin.id;
+    const type = this.type;
+    return cachedKeys(`${type}-plugin-${id}`, () => [
+      [
+        `plugins.${id}`,
+        ...plugin.additionalOptionScopes || []
+      ]
+    ]);
+  }
+  _cachedScopes(mainScope, resetCache) {
+    const _scopeCache = this._scopeCache;
+    let cache = _scopeCache.get(mainScope);
+    if (!cache || resetCache) {
+      cache = /* @__PURE__ */ new Map();
+      _scopeCache.set(mainScope, cache);
+    }
+    return cache;
+  }
+  getOptionScopes(mainScope, keyLists, resetCache) {
+    const { options, type } = this;
+    const cache = this._cachedScopes(mainScope, resetCache);
+    const cached = cache.get(keyLists);
+    if (cached) {
+      return cached;
+    }
+    const scopes = /* @__PURE__ */ new Set();
+    keyLists.forEach((keys) => {
+      if (mainScope) {
+        scopes.add(mainScope);
+        keys.forEach((key) => addIfFound(scopes, mainScope, key));
+      }
+      keys.forEach((key) => addIfFound(scopes, options, key));
+      keys.forEach((key) => addIfFound(scopes, overrides[type] || {}, key));
+      keys.forEach((key) => addIfFound(scopes, defaults, key));
+      keys.forEach((key) => addIfFound(scopes, descriptors, key));
+    });
+    const array = Array.from(scopes);
+    if (array.length === 0) {
+      array.push(/* @__PURE__ */ Object.create(null));
+    }
+    if (keysCached.has(keyLists)) {
+      cache.set(keyLists, array);
+    }
+    return array;
+  }
+  chartOptionScopes() {
+    const { options, type } = this;
+    return [
+      options,
+      overrides[type] || {},
+      defaults.datasets[type] || {},
+      {
+        type
+      },
+      defaults,
+      descriptors
+    ];
+  }
+  resolveNamedOptions(scopes, names2, context, prefixes = [
+    ""
+  ]) {
+    const result = {
+      $shared: true
+    };
+    const { resolver, subPrefixes } = getResolver(this._resolverCache, scopes, prefixes);
+    let options = resolver;
+    if (needContext(resolver, names2)) {
+      result.$shared = false;
+      context = isFunction(context) ? context() : context;
+      const subResolver = this.createResolver(scopes, context, subPrefixes);
+      options = _attachContext(resolver, context, subResolver);
+    }
+    for (const prop of names2) {
+      result[prop] = options[prop];
+    }
+    return result;
+  }
+  createResolver(scopes, context, prefixes = [
+    ""
+  ], descriptorDefaults) {
+    const { resolver } = getResolver(this._resolverCache, scopes, prefixes);
+    return isObject(context) ? _attachContext(resolver, context, void 0, descriptorDefaults) : resolver;
+  }
+};
 function getResolver(resolverCache, scopes, prefixes) {
   let cache = resolverCache.get(scopes);
   if (!cache) {
@@ -6696,6 +8893,7 @@ function getResolver(resolverCache, scopes, prefixes) {
   }
   return cached;
 }
+var hasFunction = (value) => isObject(value) && Object.getOwnPropertyNames(value).some((key) => isFunction(value[key]));
 function needContext(proxy, names2) {
   const { isScriptable, isIndexable } = _descriptors(proxy);
   for (const prop of names2) {
@@ -6708,6 +8906,14 @@ function needContext(proxy, names2) {
   }
   return false;
 }
+var version = "4.5.1";
+var KNOWN_POSITIONS = [
+  "top",
+  "bottom",
+  "left",
+  "right",
+  "chartArea"
+];
 function positionIsHorizontal(position, axis) {
   return position === "top" || position === "bottom" || KNOWN_POSITIONS.indexOf(position) === -1 && axis === "x";
 }
@@ -6742,6 +8948,11 @@ function getCanvas(item) {
   }
   return item;
 }
+var instances = {};
+var getChart = (key) => {
+  const canvas = getCanvas(key);
+  return Object.values(instances).filter((c) => c.canvas === canvas).pop();
+};
 function moveNumericKeys(obj, start, move) {
   const keys = Object.keys(obj);
   for (const key of keys) {
@@ -6764,6 +8975,826 @@ function determineLastEvent(e, lastEvent, inChartArea, isClick) {
   }
   return e;
 }
+var Chart = class {
+  static defaults = defaults;
+  static instances = instances;
+  static overrides = overrides;
+  static registry = registry;
+  static version = version;
+  static getChart = getChart;
+  static register(...items) {
+    registry.add(...items);
+    invalidatePlugins();
+  }
+  static unregister(...items) {
+    registry.remove(...items);
+    invalidatePlugins();
+  }
+  constructor(item, userConfig) {
+    const config = this.config = new Config(userConfig);
+    const initialCanvas = getCanvas(item);
+    const existingChart = getChart(initialCanvas);
+    if (existingChart) {
+      throw new Error("Canvas is already in use. Chart with ID '" + existingChart.id + "' must be destroyed before the canvas with ID '" + existingChart.canvas.id + "' can be reused.");
+    }
+    const options = config.createResolver(config.chartOptionScopes(), this.getContext());
+    this.platform = new (config.platform || _detectPlatform(initialCanvas))();
+    this.platform.updateConfig(config);
+    const context = this.platform.acquireContext(initialCanvas, options.aspectRatio);
+    const canvas = context && context.canvas;
+    const height = canvas && canvas.height;
+    const width = canvas && canvas.width;
+    this.id = uid();
+    this.ctx = context;
+    this.canvas = canvas;
+    this.width = width;
+    this.height = height;
+    this._options = options;
+    this._aspectRatio = this.aspectRatio;
+    this._layers = [];
+    this._metasets = [];
+    this._stacks = void 0;
+    this.boxes = [];
+    this.currentDevicePixelRatio = void 0;
+    this.chartArea = void 0;
+    this._active = [];
+    this._lastEvent = void 0;
+    this._listeners = {};
+    this._responsiveListeners = void 0;
+    this._sortedMetasets = [];
+    this.scales = {};
+    this._plugins = new PluginService();
+    this.$proxies = {};
+    this._hiddenIndices = {};
+    this.attached = false;
+    this._animationsDisabled = void 0;
+    this.$context = void 0;
+    this._doResize = debounce((mode) => this.update(mode), options.resizeDelay || 0);
+    this._dataChanges = [];
+    instances[this.id] = this;
+    if (!context || !canvas) {
+      console.error("Failed to create chart: can't acquire context from the given item");
+      return;
+    }
+    animator.listen(this, "complete", onAnimationsComplete);
+    animator.listen(this, "progress", onAnimationProgress);
+    this._initialize();
+    if (this.attached) {
+      this.update();
+    }
+  }
+  get aspectRatio() {
+    const { options: { aspectRatio, maintainAspectRatio }, width, height, _aspectRatio } = this;
+    if (!isNullOrUndef(aspectRatio)) {
+      return aspectRatio;
+    }
+    if (maintainAspectRatio && _aspectRatio) {
+      return _aspectRatio;
+    }
+    return height ? width / height : null;
+  }
+  get data() {
+    return this.config.data;
+  }
+  set data(data) {
+    this.config.data = data;
+  }
+  get options() {
+    return this._options;
+  }
+  set options(options) {
+    this.config.options = options;
+  }
+  get registry() {
+    return registry;
+  }
+  _initialize() {
+    this.notifyPlugins("beforeInit");
+    if (this.options.responsive) {
+      this.resize();
+    } else {
+      retinaScale(this, this.options.devicePixelRatio);
+    }
+    this.bindEvents();
+    this.notifyPlugins("afterInit");
+    return this;
+  }
+  clear() {
+    clearCanvas(this.canvas, this.ctx);
+    return this;
+  }
+  stop() {
+    animator.stop(this);
+    return this;
+  }
+  resize(width, height) {
+    if (!animator.running(this)) {
+      this._resize(width, height);
+    } else {
+      this._resizeBeforeDraw = {
+        width,
+        height
+      };
+    }
+  }
+  _resize(width, height) {
+    const options = this.options;
+    const canvas = this.canvas;
+    const aspectRatio = options.maintainAspectRatio && this.aspectRatio;
+    const newSize = this.platform.getMaximumSize(canvas, width, height, aspectRatio);
+    const newRatio = options.devicePixelRatio || this.platform.getDevicePixelRatio();
+    const mode = this.width ? "resize" : "attach";
+    this.width = newSize.width;
+    this.height = newSize.height;
+    this._aspectRatio = this.aspectRatio;
+    if (!retinaScale(this, newRatio, true)) {
+      return;
+    }
+    this.notifyPlugins("resize", {
+      size: newSize
+    });
+    callback(options.onResize, [
+      this,
+      newSize
+    ], this);
+    if (this.attached) {
+      if (this._doResize(mode)) {
+        this.render();
+      }
+    }
+  }
+  ensureScalesHaveIDs() {
+    const options = this.options;
+    const scalesOptions = options.scales || {};
+    each(scalesOptions, (axisOptions, axisID) => {
+      axisOptions.id = axisID;
+    });
+  }
+  buildOrUpdateScales() {
+    const options = this.options;
+    const scaleOpts = options.scales;
+    const scales2 = this.scales;
+    const updated = Object.keys(scales2).reduce((obj, id) => {
+      obj[id] = false;
+      return obj;
+    }, {});
+    let items = [];
+    if (scaleOpts) {
+      items = items.concat(Object.keys(scaleOpts).map((id) => {
+        const scaleOptions = scaleOpts[id];
+        const axis = determineAxis(id, scaleOptions);
+        const isRadial = axis === "r";
+        const isHorizontal = axis === "x";
+        return {
+          options: scaleOptions,
+          dposition: isRadial ? "chartArea" : isHorizontal ? "bottom" : "left",
+          dtype: isRadial ? "radialLinear" : isHorizontal ? "category" : "linear"
+        };
+      }));
+    }
+    each(items, (item) => {
+      const scaleOptions = item.options;
+      const id = scaleOptions.id;
+      const axis = determineAxis(id, scaleOptions);
+      const scaleType = valueOrDefault(scaleOptions.type, item.dtype);
+      if (scaleOptions.position === void 0 || positionIsHorizontal(scaleOptions.position, axis) !== positionIsHorizontal(item.dposition)) {
+        scaleOptions.position = item.dposition;
+      }
+      updated[id] = true;
+      let scale = null;
+      if (id in scales2 && scales2[id].type === scaleType) {
+        scale = scales2[id];
+      } else {
+        const scaleClass = registry.getScale(scaleType);
+        scale = new scaleClass({
+          id,
+          type: scaleType,
+          ctx: this.ctx,
+          chart: this
+        });
+        scales2[scale.id] = scale;
+      }
+      scale.init(scaleOptions, options);
+    });
+    each(updated, (hasUpdated, id) => {
+      if (!hasUpdated) {
+        delete scales2[id];
+      }
+    });
+    each(scales2, (scale) => {
+      layouts.configure(this, scale, scale.options);
+      layouts.addBox(this, scale);
+    });
+  }
+  _updateMetasets() {
+    const metasets = this._metasets;
+    const numData = this.data.datasets.length;
+    const numMeta = metasets.length;
+    metasets.sort((a, b) => a.index - b.index);
+    if (numMeta > numData) {
+      for (let i = numData; i < numMeta; ++i) {
+        this._destroyDatasetMeta(i);
+      }
+      metasets.splice(numData, numMeta - numData);
+    }
+    this._sortedMetasets = metasets.slice(0).sort(compare2Level("order", "index"));
+  }
+  _removeUnreferencedMetasets() {
+    const { _metasets: metasets, data: { datasets } } = this;
+    if (metasets.length > datasets.length) {
+      delete this._stacks;
+    }
+    metasets.forEach((meta, index2) => {
+      if (datasets.filter((x) => x === meta._dataset).length === 0) {
+        this._destroyDatasetMeta(index2);
+      }
+    });
+  }
+  buildOrUpdateControllers() {
+    const newControllers = [];
+    const datasets = this.data.datasets;
+    let i, ilen;
+    this._removeUnreferencedMetasets();
+    for (i = 0, ilen = datasets.length; i < ilen; i++) {
+      const dataset = datasets[i];
+      let meta = this.getDatasetMeta(i);
+      const type = dataset.type || this.config.type;
+      if (meta.type && meta.type !== type) {
+        this._destroyDatasetMeta(i);
+        meta = this.getDatasetMeta(i);
+      }
+      meta.type = type;
+      meta.indexAxis = dataset.indexAxis || getIndexAxis(type, this.options);
+      meta.order = dataset.order || 0;
+      meta.index = i;
+      meta.label = "" + dataset.label;
+      meta.visible = this.isDatasetVisible(i);
+      if (meta.controller) {
+        meta.controller.updateIndex(i);
+        meta.controller.linkScales();
+      } else {
+        const ControllerClass = registry.getController(type);
+        const { datasetElementType, dataElementType } = defaults.datasets[type];
+        Object.assign(ControllerClass, {
+          dataElementType: registry.getElement(dataElementType),
+          datasetElementType: datasetElementType && registry.getElement(datasetElementType)
+        });
+        meta.controller = new ControllerClass(this, i);
+        newControllers.push(meta.controller);
+      }
+    }
+    this._updateMetasets();
+    return newControllers;
+  }
+  _resetElements() {
+    each(this.data.datasets, (dataset, datasetIndex) => {
+      this.getDatasetMeta(datasetIndex).controller.reset();
+    }, this);
+  }
+  reset() {
+    this._resetElements();
+    this.notifyPlugins("reset");
+  }
+  update(mode) {
+    const config = this.config;
+    config.update();
+    const options = this._options = config.createResolver(config.chartOptionScopes(), this.getContext());
+    const animsDisabled = this._animationsDisabled = !options.animation;
+    this._updateScales();
+    this._checkEventBindings();
+    this._updateHiddenIndices();
+    this._plugins.invalidate();
+    if (this.notifyPlugins("beforeUpdate", {
+      mode,
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    const newControllers = this.buildOrUpdateControllers();
+    this.notifyPlugins("beforeElementsUpdate");
+    let minPadding = 0;
+    for (let i = 0, ilen = this.data.datasets.length; i < ilen; i++) {
+      const { controller } = this.getDatasetMeta(i);
+      const reset = !animsDisabled && newControllers.indexOf(controller) === -1;
+      controller.buildOrUpdateElements(reset);
+      minPadding = Math.max(+controller.getMaxOverflow(), minPadding);
+    }
+    minPadding = this._minPadding = options.layout.autoPadding ? minPadding : 0;
+    this._updateLayout(minPadding);
+    if (!animsDisabled) {
+      each(newControllers, (controller) => {
+        controller.reset();
+      });
+    }
+    this._updateDatasets(mode);
+    this.notifyPlugins("afterUpdate", {
+      mode
+    });
+    this._layers.sort(compare2Level("z", "_idx"));
+    const { _active, _lastEvent } = this;
+    if (_lastEvent) {
+      this._eventHandler(_lastEvent, true);
+    } else if (_active.length) {
+      this._updateHoverStyles(_active, _active, true);
+    }
+    this.render();
+  }
+  _updateScales() {
+    each(this.scales, (scale) => {
+      layouts.removeBox(this, scale);
+    });
+    this.ensureScalesHaveIDs();
+    this.buildOrUpdateScales();
+  }
+  _checkEventBindings() {
+    const options = this.options;
+    const existingEvents = new Set(Object.keys(this._listeners));
+    const newEvents = new Set(options.events);
+    if (!setsEqual(existingEvents, newEvents) || !!this._responsiveListeners !== options.responsive) {
+      this.unbindEvents();
+      this.bindEvents();
+    }
+  }
+  _updateHiddenIndices() {
+    const { _hiddenIndices } = this;
+    const changes = this._getUniformDataChanges() || [];
+    for (const { method, start, count } of changes) {
+      const move = method === "_removeElements" ? -count : count;
+      moveNumericKeys(_hiddenIndices, start, move);
+    }
+  }
+  _getUniformDataChanges() {
+    const _dataChanges = this._dataChanges;
+    if (!_dataChanges || !_dataChanges.length) {
+      return;
+    }
+    this._dataChanges = [];
+    const datasetCount = this.data.datasets.length;
+    const makeSet = (idx) => new Set(_dataChanges.filter((c) => c[0] === idx).map((c, i) => i + "," + c.splice(1).join(",")));
+    const changeSet = makeSet(0);
+    for (let i = 1; i < datasetCount; i++) {
+      if (!setsEqual(changeSet, makeSet(i))) {
+        return;
+      }
+    }
+    return Array.from(changeSet).map((c) => c.split(",")).map((a) => ({
+      method: a[1],
+      start: +a[2],
+      count: +a[3]
+    }));
+  }
+  _updateLayout(minPadding) {
+    if (this.notifyPlugins("beforeLayout", {
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    layouts.update(this, this.width, this.height, minPadding);
+    const area = this.chartArea;
+    const noArea = area.width <= 0 || area.height <= 0;
+    this._layers = [];
+    each(this.boxes, (box) => {
+      if (noArea && box.position === "chartArea") {
+        return;
+      }
+      if (box.configure) {
+        box.configure();
+      }
+      this._layers.push(...box._layers());
+    }, this);
+    this._layers.forEach((item, index2) => {
+      item._idx = index2;
+    });
+    this.notifyPlugins("afterLayout");
+  }
+  _updateDatasets(mode) {
+    if (this.notifyPlugins("beforeDatasetsUpdate", {
+      mode,
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    for (let i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
+      this.getDatasetMeta(i).controller.configure();
+    }
+    for (let i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
+      this._updateDataset(i, isFunction(mode) ? mode({
+        datasetIndex: i
+      }) : mode);
+    }
+    this.notifyPlugins("afterDatasetsUpdate", {
+      mode
+    });
+  }
+  _updateDataset(index2, mode) {
+    const meta = this.getDatasetMeta(index2);
+    const args = {
+      meta,
+      index: index2,
+      mode,
+      cancelable: true
+    };
+    if (this.notifyPlugins("beforeDatasetUpdate", args) === false) {
+      return;
+    }
+    meta.controller._update(mode);
+    args.cancelable = false;
+    this.notifyPlugins("afterDatasetUpdate", args);
+  }
+  render() {
+    if (this.notifyPlugins("beforeRender", {
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    if (animator.has(this)) {
+      if (this.attached && !animator.running(this)) {
+        animator.start(this);
+      }
+    } else {
+      this.draw();
+      onAnimationsComplete({
+        chart: this
+      });
+    }
+  }
+  draw() {
+    let i;
+    if (this._resizeBeforeDraw) {
+      const { width, height } = this._resizeBeforeDraw;
+      this._resizeBeforeDraw = null;
+      this._resize(width, height);
+    }
+    this.clear();
+    if (this.width <= 0 || this.height <= 0) {
+      return;
+    }
+    if (this.notifyPlugins("beforeDraw", {
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    const layers = this._layers;
+    for (i = 0; i < layers.length && layers[i].z <= 0; ++i) {
+      layers[i].draw(this.chartArea);
+    }
+    this._drawDatasets();
+    for (; i < layers.length; ++i) {
+      layers[i].draw(this.chartArea);
+    }
+    this.notifyPlugins("afterDraw");
+  }
+  _getSortedDatasetMetas(filterVisible) {
+    const metasets = this._sortedMetasets;
+    const result = [];
+    let i, ilen;
+    for (i = 0, ilen = metasets.length; i < ilen; ++i) {
+      const meta = metasets[i];
+      if (!filterVisible || meta.visible) {
+        result.push(meta);
+      }
+    }
+    return result;
+  }
+  getSortedVisibleDatasetMetas() {
+    return this._getSortedDatasetMetas(true);
+  }
+  _drawDatasets() {
+    if (this.notifyPlugins("beforeDatasetsDraw", {
+      cancelable: true
+    }) === false) {
+      return;
+    }
+    const metasets = this.getSortedVisibleDatasetMetas();
+    for (let i = metasets.length - 1; i >= 0; --i) {
+      this._drawDataset(metasets[i]);
+    }
+    this.notifyPlugins("afterDatasetsDraw");
+  }
+  _drawDataset(meta) {
+    const ctx = this.ctx;
+    const args = {
+      meta,
+      index: meta.index,
+      cancelable: true
+    };
+    const clip = getDatasetClipArea(this, meta);
+    if (this.notifyPlugins("beforeDatasetDraw", args) === false) {
+      return;
+    }
+    if (clip) {
+      clipArea(ctx, clip);
+    }
+    meta.controller.draw();
+    if (clip) {
+      unclipArea(ctx);
+    }
+    args.cancelable = false;
+    this.notifyPlugins("afterDatasetDraw", args);
+  }
+  isPointInArea(point) {
+    return _isPointInArea(point, this.chartArea, this._minPadding);
+  }
+  getElementsAtEventForMode(e, mode, options, useFinalPosition) {
+    const method = Interaction.modes[mode];
+    if (typeof method === "function") {
+      return method(this, e, options, useFinalPosition);
+    }
+    return [];
+  }
+  getDatasetMeta(datasetIndex) {
+    const dataset = this.data.datasets[datasetIndex];
+    const metasets = this._metasets;
+    let meta = metasets.filter((x) => x && x._dataset === dataset).pop();
+    if (!meta) {
+      meta = {
+        type: null,
+        data: [],
+        dataset: null,
+        controller: null,
+        hidden: null,
+        xAxisID: null,
+        yAxisID: null,
+        order: dataset && dataset.order || 0,
+        index: datasetIndex,
+        _dataset: dataset,
+        _parsed: [],
+        _sorted: false
+      };
+      metasets.push(meta);
+    }
+    return meta;
+  }
+  getContext() {
+    return this.$context || (this.$context = createContext(null, {
+      chart: this,
+      type: "chart"
+    }));
+  }
+  getVisibleDatasetCount() {
+    return this.getSortedVisibleDatasetMetas().length;
+  }
+  isDatasetVisible(datasetIndex) {
+    const dataset = this.data.datasets[datasetIndex];
+    if (!dataset) {
+      return false;
+    }
+    const meta = this.getDatasetMeta(datasetIndex);
+    return typeof meta.hidden === "boolean" ? !meta.hidden : !dataset.hidden;
+  }
+  setDatasetVisibility(datasetIndex, visible) {
+    const meta = this.getDatasetMeta(datasetIndex);
+    meta.hidden = !visible;
+  }
+  toggleDataVisibility(index2) {
+    this._hiddenIndices[index2] = !this._hiddenIndices[index2];
+  }
+  getDataVisibility(index2) {
+    return !this._hiddenIndices[index2];
+  }
+  _updateVisibility(datasetIndex, dataIndex, visible) {
+    const mode = visible ? "show" : "hide";
+    const meta = this.getDatasetMeta(datasetIndex);
+    const anims = meta.controller._resolveAnimations(void 0, mode);
+    if (defined(dataIndex)) {
+      meta.data[dataIndex].hidden = !visible;
+      this.update();
+    } else {
+      this.setDatasetVisibility(datasetIndex, visible);
+      anims.update(meta, {
+        visible
+      });
+      this.update((ctx) => ctx.datasetIndex === datasetIndex ? mode : void 0);
+    }
+  }
+  hide(datasetIndex, dataIndex) {
+    this._updateVisibility(datasetIndex, dataIndex, false);
+  }
+  show(datasetIndex, dataIndex) {
+    this._updateVisibility(datasetIndex, dataIndex, true);
+  }
+  _destroyDatasetMeta(datasetIndex) {
+    const meta = this._metasets[datasetIndex];
+    if (meta && meta.controller) {
+      meta.controller._destroy();
+    }
+    delete this._metasets[datasetIndex];
+  }
+  _stop() {
+    let i, ilen;
+    this.stop();
+    animator.remove(this);
+    for (i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
+      this._destroyDatasetMeta(i);
+    }
+  }
+  destroy() {
+    this.notifyPlugins("beforeDestroy");
+    const { canvas, ctx } = this;
+    this._stop();
+    this.config.clearCache();
+    if (canvas) {
+      this.unbindEvents();
+      clearCanvas(canvas, ctx);
+      this.platform.releaseContext(ctx);
+      this.canvas = null;
+      this.ctx = null;
+    }
+    delete instances[this.id];
+    this.notifyPlugins("afterDestroy");
+  }
+  toBase64Image(...args) {
+    return this.canvas.toDataURL(...args);
+  }
+  bindEvents() {
+    this.bindUserEvents();
+    if (this.options.responsive) {
+      this.bindResponsiveEvents();
+    } else {
+      this.attached = true;
+    }
+  }
+  bindUserEvents() {
+    const listeners = this._listeners;
+    const platform = this.platform;
+    const _add = (type, listener2) => {
+      platform.addEventListener(this, type, listener2);
+      listeners[type] = listener2;
+    };
+    const listener = (e, x, y) => {
+      e.offsetX = x;
+      e.offsetY = y;
+      this._eventHandler(e);
+    };
+    each(this.options.events, (type) => _add(type, listener));
+  }
+  bindResponsiveEvents() {
+    if (!this._responsiveListeners) {
+      this._responsiveListeners = {};
+    }
+    const listeners = this._responsiveListeners;
+    const platform = this.platform;
+    const _add = (type, listener2) => {
+      platform.addEventListener(this, type, listener2);
+      listeners[type] = listener2;
+    };
+    const _remove = (type, listener2) => {
+      if (listeners[type]) {
+        platform.removeEventListener(this, type, listener2);
+        delete listeners[type];
+      }
+    };
+    const listener = (width, height) => {
+      if (this.canvas) {
+        this.resize(width, height);
+      }
+    };
+    let detached;
+    const attached = () => {
+      _remove("attach", attached);
+      this.attached = true;
+      this.resize();
+      _add("resize", listener);
+      _add("detach", detached);
+    };
+    detached = () => {
+      this.attached = false;
+      _remove("resize", listener);
+      this._stop();
+      this._resize(0, 0);
+      _add("attach", attached);
+    };
+    if (platform.isAttached(this.canvas)) {
+      attached();
+    } else {
+      detached();
+    }
+  }
+  unbindEvents() {
+    each(this._listeners, (listener, type) => {
+      this.platform.removeEventListener(this, type, listener);
+    });
+    this._listeners = {};
+    each(this._responsiveListeners, (listener, type) => {
+      this.platform.removeEventListener(this, type, listener);
+    });
+    this._responsiveListeners = void 0;
+  }
+  updateHoverStyle(items, mode, enabled) {
+    const prefix = enabled ? "set" : "remove";
+    let meta, item, i, ilen;
+    if (mode === "dataset") {
+      meta = this.getDatasetMeta(items[0].datasetIndex);
+      meta.controller["_" + prefix + "DatasetHoverStyle"]();
+    }
+    for (i = 0, ilen = items.length; i < ilen; ++i) {
+      item = items[i];
+      const controller = item && this.getDatasetMeta(item.datasetIndex).controller;
+      if (controller) {
+        controller[prefix + "HoverStyle"](item.element, item.datasetIndex, item.index);
+      }
+    }
+  }
+  getActiveElements() {
+    return this._active || [];
+  }
+  setActiveElements(activeElements) {
+    const lastActive = this._active || [];
+    const active = activeElements.map(({ datasetIndex, index: index2 }) => {
+      const meta = this.getDatasetMeta(datasetIndex);
+      if (!meta) {
+        throw new Error("No dataset found at index " + datasetIndex);
+      }
+      return {
+        datasetIndex,
+        element: meta.data[index2],
+        index: index2
+      };
+    });
+    const changed = !_elementsEqual(active, lastActive);
+    if (changed) {
+      this._active = active;
+      this._lastEvent = null;
+      this._updateHoverStyles(active, lastActive);
+    }
+  }
+  notifyPlugins(hook, args, filter) {
+    return this._plugins.notify(this, hook, args, filter);
+  }
+  isPluginEnabled(pluginId) {
+    return this._plugins._cache.filter((p) => p.plugin.id === pluginId).length === 1;
+  }
+  _updateHoverStyles(active, lastActive, replay) {
+    const hoverOptions = this.options.hover;
+    const diff = (a, b) => a.filter((x) => !b.some((y) => x.datasetIndex === y.datasetIndex && x.index === y.index));
+    const deactivated = diff(lastActive, active);
+    const activated = replay ? active : diff(active, lastActive);
+    if (deactivated.length) {
+      this.updateHoverStyle(deactivated, hoverOptions.mode, false);
+    }
+    if (activated.length && hoverOptions.mode) {
+      this.updateHoverStyle(activated, hoverOptions.mode, true);
+    }
+  }
+  _eventHandler(e, replay) {
+    const args = {
+      event: e,
+      replay,
+      cancelable: true,
+      inChartArea: this.isPointInArea(e)
+    };
+    const eventFilter = (plugin) => (plugin.options.events || this.options.events).includes(e.native.type);
+    if (this.notifyPlugins("beforeEvent", args, eventFilter) === false) {
+      return;
+    }
+    const changed = this._handleEvent(e, replay, args.inChartArea);
+    args.cancelable = false;
+    this.notifyPlugins("afterEvent", args, eventFilter);
+    if (changed || args.changed) {
+      this.render();
+    }
+    return this;
+  }
+  _handleEvent(e, replay, inChartArea) {
+    const { _active: lastActive = [], options } = this;
+    const useFinalPosition = replay;
+    const active = this._getActiveElements(e, lastActive, inChartArea, useFinalPosition);
+    const isClick = _isClickEvent(e);
+    const lastEvent = determineLastEvent(e, this._lastEvent, inChartArea, isClick);
+    if (inChartArea) {
+      this._lastEvent = null;
+      callback(options.onHover, [
+        e,
+        active,
+        this
+      ], this);
+      if (isClick) {
+        callback(options.onClick, [
+          e,
+          active,
+          this
+        ], this);
+      }
+    }
+    const changed = !_elementsEqual(active, lastActive);
+    if (changed || replay) {
+      this._active = active;
+      this._updateHoverStyles(active, lastActive, replay);
+    }
+    this._lastEvent = lastEvent;
+    return changed;
+  }
+  _getActiveElements(e, lastActive, inChartArea, useFinalPosition) {
+    if (e.type === "mouseout") {
+      return [];
+    }
+    if (!inChartArea) {
+      return lastActive;
+    }
+    const hoverOptions = this.options.hover;
+    return this.getElementsAtEventForMode(e, hoverOptions.mode, hoverOptions, useFinalPosition);
+  }
+};
 function invalidatePlugins() {
   return each(Chart.instances, (chart) => chart._plugins.invalidate());
 }
@@ -6956,13 +9987,122 @@ function drawBorder(ctx, element, offset, spacing, circular) {
     ctx.stroke();
   }
 }
-function setStyle(ctx, options, style2 = options) {
-  ctx.lineCap = valueOrDefault(style2.borderCapStyle, options.borderCapStyle);
-  ctx.setLineDash(valueOrDefault(style2.borderDash, options.borderDash));
-  ctx.lineDashOffset = valueOrDefault(style2.borderDashOffset, options.borderDashOffset);
-  ctx.lineJoin = valueOrDefault(style2.borderJoinStyle, options.borderJoinStyle);
-  ctx.lineWidth = valueOrDefault(style2.borderWidth, options.borderWidth);
-  ctx.strokeStyle = valueOrDefault(style2.borderColor, options.borderColor);
+var ArcElement = class extends Element {
+  static id = "arc";
+  static defaults = {
+    borderAlign: "center",
+    borderColor: "#fff",
+    borderDash: [],
+    borderDashOffset: 0,
+    borderJoinStyle: void 0,
+    borderRadius: 0,
+    borderWidth: 2,
+    offset: 0,
+    spacing: 0,
+    angle: void 0,
+    circular: true,
+    selfJoin: false
+  };
+  static defaultRoutes = {
+    backgroundColor: "backgroundColor"
+  };
+  static descriptors = {
+    _scriptable: true,
+    _indexable: (name) => name !== "borderDash"
+  };
+  circumference;
+  endAngle;
+  fullCircles;
+  innerRadius;
+  outerRadius;
+  pixelMargin;
+  startAngle;
+  constructor(cfg) {
+    super();
+    this.options = void 0;
+    this.circumference = void 0;
+    this.startAngle = void 0;
+    this.endAngle = void 0;
+    this.innerRadius = void 0;
+    this.outerRadius = void 0;
+    this.pixelMargin = 0;
+    this.fullCircles = 0;
+    if (cfg) {
+      Object.assign(this, cfg);
+    }
+  }
+  inRange(chartX, chartY, useFinalPosition) {
+    const point = this.getProps([
+      "x",
+      "y"
+    ], useFinalPosition);
+    const { angle, distance } = getAngleFromPoint(point, {
+      x: chartX,
+      y: chartY
+    });
+    const { startAngle, endAngle, innerRadius, outerRadius, circumference } = this.getProps([
+      "startAngle",
+      "endAngle",
+      "innerRadius",
+      "outerRadius",
+      "circumference"
+    ], useFinalPosition);
+    const rAdjust = (this.options.spacing + this.options.borderWidth) / 2;
+    const _circumference = valueOrDefault(circumference, endAngle - startAngle);
+    const nonZeroBetween = _angleBetween(angle, startAngle, endAngle) && startAngle !== endAngle;
+    const betweenAngles = _circumference >= TAU || nonZeroBetween;
+    const withinRadius = _isBetween(distance, innerRadius + rAdjust, outerRadius + rAdjust);
+    return betweenAngles && withinRadius;
+  }
+  getCenterPoint(useFinalPosition) {
+    const { x, y, startAngle, endAngle, innerRadius, outerRadius } = this.getProps([
+      "x",
+      "y",
+      "startAngle",
+      "endAngle",
+      "innerRadius",
+      "outerRadius"
+    ], useFinalPosition);
+    const { offset, spacing } = this.options;
+    const halfAngle = (startAngle + endAngle) / 2;
+    const halfRadius = (innerRadius + outerRadius + spacing + offset) / 2;
+    return {
+      x: x + Math.cos(halfAngle) * halfRadius,
+      y: y + Math.sin(halfAngle) * halfRadius
+    };
+  }
+  tooltipPosition(useFinalPosition) {
+    return this.getCenterPoint(useFinalPosition);
+  }
+  draw(ctx) {
+    const { options, circumference } = this;
+    const offset = (options.offset || 0) / 4;
+    const spacing = (options.spacing || 0) / 2;
+    const circular = options.circular;
+    this.pixelMargin = options.borderAlign === "inner" ? 0.33 : 0;
+    this.fullCircles = circumference > TAU ? Math.floor(circumference / TAU) : 0;
+    if (circumference === 0 || this.innerRadius < 0 || this.outerRadius < 0) {
+      return;
+    }
+    ctx.save();
+    const halfAngle = (this.startAngle + this.endAngle) / 2;
+    ctx.translate(Math.cos(halfAngle) * offset, Math.sin(halfAngle) * offset);
+    const fix = 1 - Math.sin(Math.min(PI, circumference || 0));
+    const radiusOffset = offset * fix;
+    ctx.fillStyle = options.backgroundColor;
+    ctx.strokeStyle = options.borderColor;
+    drawArc(ctx, this, radiusOffset, spacing, circular);
+    drawBorder(ctx, this, radiusOffset, spacing, circular);
+    ctx.restore();
+  }
+};
+function setStyle(ctx, options, style = options) {
+  ctx.lineCap = valueOrDefault(style.borderCapStyle, options.borderCapStyle);
+  ctx.setLineDash(valueOrDefault(style.borderDash, options.borderDash));
+  ctx.lineDashOffset = valueOrDefault(style.borderDashOffset, options.borderDashOffset);
+  ctx.lineJoin = valueOrDefault(style.borderJoinStyle, options.borderJoinStyle);
+  ctx.lineWidth = valueOrDefault(style.borderWidth, options.borderWidth);
+  ctx.strokeStyle = valueOrDefault(style.borderColor, options.borderColor);
 }
 function lineTo(ctx, previous, target) {
   ctx.lineTo(target.x, target.y);
@@ -7100,6 +10240,7 @@ function strokePathDirect(ctx, line, start, count) {
     ctx.stroke();
   }
 }
+var usePath2D = typeof Path2D === "function";
 function draw(ctx, line, start, count) {
   if (usePath2D && !line.options.segment) {
     strokePathWithCache(ctx, line, start, count);
@@ -7107,6 +10248,139 @@ function draw(ctx, line, start, count) {
     strokePathDirect(ctx, line, start, count);
   }
 }
+var LineElement = class extends Element {
+  static id = "line";
+  static defaults = {
+    borderCapStyle: "butt",
+    borderDash: [],
+    borderDashOffset: 0,
+    borderJoinStyle: "miter",
+    borderWidth: 3,
+    capBezierPoints: true,
+    cubicInterpolationMode: "default",
+    fill: false,
+    spanGaps: false,
+    stepped: false,
+    tension: 0
+  };
+  static defaultRoutes = {
+    backgroundColor: "backgroundColor",
+    borderColor: "borderColor"
+  };
+  static descriptors = {
+    _scriptable: true,
+    _indexable: (name) => name !== "borderDash" && name !== "fill"
+  };
+  constructor(cfg) {
+    super();
+    this.animated = true;
+    this.options = void 0;
+    this._chart = void 0;
+    this._loop = void 0;
+    this._fullLoop = void 0;
+    this._path = void 0;
+    this._points = void 0;
+    this._segments = void 0;
+    this._decimated = false;
+    this._pointsUpdated = false;
+    this._datasetIndex = void 0;
+    if (cfg) {
+      Object.assign(this, cfg);
+    }
+  }
+  updateControlPoints(chartArea, indexAxis) {
+    const options = this.options;
+    if ((options.tension || options.cubicInterpolationMode === "monotone") && !options.stepped && !this._pointsUpdated) {
+      const loop = options.spanGaps ? this._loop : this._fullLoop;
+      _updateBezierControlPoints(this._points, options, chartArea, loop, indexAxis);
+      this._pointsUpdated = true;
+    }
+  }
+  set points(points) {
+    this._points = points;
+    delete this._segments;
+    delete this._path;
+    this._pointsUpdated = false;
+  }
+  get points() {
+    return this._points;
+  }
+  get segments() {
+    return this._segments || (this._segments = _computeSegments(this, this.options.segment));
+  }
+  first() {
+    const segments = this.segments;
+    const points = this.points;
+    return segments.length && points[segments[0].start];
+  }
+  last() {
+    const segments = this.segments;
+    const points = this.points;
+    const count = segments.length;
+    return count && points[segments[count - 1].end];
+  }
+  interpolate(point, property) {
+    const options = this.options;
+    const value = point[property];
+    const points = this.points;
+    const segments = _boundSegments(this, {
+      property,
+      start: value,
+      end: value
+    });
+    if (!segments.length) {
+      return;
+    }
+    const result = [];
+    const _interpolate = _getInterpolationMethod(options);
+    let i, ilen;
+    for (i = 0, ilen = segments.length; i < ilen; ++i) {
+      const { start, end } = segments[i];
+      const p1 = points[start];
+      const p2 = points[end];
+      if (p1 === p2) {
+        result.push(p1);
+        continue;
+      }
+      const t = Math.abs((value - p1[property]) / (p2[property] - p1[property]));
+      const interpolated = _interpolate(p1, p2, t, options.stepped);
+      interpolated[property] = point[property];
+      result.push(interpolated);
+    }
+    return result.length === 1 ? result[0] : result;
+  }
+  pathSegment(ctx, segment, params) {
+    const segmentMethod = _getSegmentMethod(this);
+    return segmentMethod(ctx, this, segment, params);
+  }
+  path(ctx, start, count) {
+    const segments = this.segments;
+    const segmentMethod = _getSegmentMethod(this);
+    let loop = this._loop;
+    start = start || 0;
+    count = count || this.points.length - start;
+    for (const segment of segments) {
+      loop &= segmentMethod(ctx, this, segment, {
+        start,
+        end: start + count - 1
+      });
+    }
+    return !!loop;
+  }
+  draw(ctx, chartArea, start, count) {
+    const options = this.options || {};
+    const points = this.points || [];
+    if (points.length && options.borderWidth) {
+      ctx.save();
+      draw(ctx, this, start, count);
+      ctx.restore();
+    }
+    if (this.animated) {
+      this._pointsUpdated = false;
+      this._path = void 0;
+    }
+  }
+};
 function inRange$1(el, pos, axis, useFinalPosition) {
   const options = el.options;
   const { [axis]: value } = el.getProps([
@@ -7114,6 +10388,86 @@ function inRange$1(el, pos, axis, useFinalPosition) {
   ], useFinalPosition);
   return Math.abs(pos - value) < options.radius + options.hitRadius;
 }
+var PointElement = class extends Element {
+  static id = "point";
+  parsed;
+  skip;
+  stop;
+  /**
+  * @type {any}
+  */
+  static defaults = {
+    borderWidth: 1,
+    hitRadius: 1,
+    hoverBorderWidth: 1,
+    hoverRadius: 4,
+    pointStyle: "circle",
+    radius: 3,
+    rotation: 0
+  };
+  /**
+  * @type {any}
+  */
+  static defaultRoutes = {
+    backgroundColor: "backgroundColor",
+    borderColor: "borderColor"
+  };
+  constructor(cfg) {
+    super();
+    this.options = void 0;
+    this.parsed = void 0;
+    this.skip = void 0;
+    this.stop = void 0;
+    if (cfg) {
+      Object.assign(this, cfg);
+    }
+  }
+  inRange(mouseX, mouseY, useFinalPosition) {
+    const options = this.options;
+    const { x, y } = this.getProps([
+      "x",
+      "y"
+    ], useFinalPosition);
+    return Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2) < Math.pow(options.hitRadius + options.radius, 2);
+  }
+  inXRange(mouseX, useFinalPosition) {
+    return inRange$1(this, mouseX, "x", useFinalPosition);
+  }
+  inYRange(mouseY, useFinalPosition) {
+    return inRange$1(this, mouseY, "y", useFinalPosition);
+  }
+  getCenterPoint(useFinalPosition) {
+    const { x, y } = this.getProps([
+      "x",
+      "y"
+    ], useFinalPosition);
+    return {
+      x,
+      y
+    };
+  }
+  size(options) {
+    options = options || this.options || {};
+    let radius = options.radius || 0;
+    radius = Math.max(radius, radius && options.hoverRadius || 0);
+    const borderWidth = radius && options.borderWidth || 0;
+    return (radius + borderWidth) * 2;
+  }
+  draw(ctx, area) {
+    const options = this.options;
+    if (this.skip || options.radius < 0.1 || !_isPointInArea(this, area, this.size(options) / 2)) {
+      return;
+    }
+    ctx.strokeStyle = options.borderColor;
+    ctx.lineWidth = options.borderWidth;
+    ctx.fillStyle = options.backgroundColor;
+    drawPoint(ctx, options, this.x, this.y);
+  }
+  getRange() {
+    const options = this.options || {};
+    return options.radius + options.hitRadius;
+  }
+};
 function getBarBounds(bar, useFinalPosition) {
   const { x, y, base, width, height } = bar.getProps([
     "x",
@@ -7227,6 +10581,93 @@ function inflateRect(rect, amount, refRect = {}) {
     radius: rect.radius
   };
 }
+var BarElement = class extends Element {
+  static id = "bar";
+  static defaults = {
+    borderSkipped: "start",
+    borderWidth: 0,
+    borderRadius: 0,
+    inflateAmount: "auto",
+    pointStyle: void 0
+  };
+  static defaultRoutes = {
+    backgroundColor: "backgroundColor",
+    borderColor: "borderColor"
+  };
+  constructor(cfg) {
+    super();
+    this.options = void 0;
+    this.horizontal = void 0;
+    this.base = void 0;
+    this.width = void 0;
+    this.height = void 0;
+    this.inflateAmount = void 0;
+    if (cfg) {
+      Object.assign(this, cfg);
+    }
+  }
+  draw(ctx) {
+    const { inflateAmount, options: { borderColor, backgroundColor } } = this;
+    const { inner, outer } = boundingRects(this);
+    const addRectPath = hasRadius(outer.radius) ? addRoundedRectPath : addNormalRectPath;
+    ctx.save();
+    if (outer.w !== inner.w || outer.h !== inner.h) {
+      ctx.beginPath();
+      addRectPath(ctx, inflateRect(outer, inflateAmount, inner));
+      ctx.clip();
+      addRectPath(ctx, inflateRect(inner, -inflateAmount, outer));
+      ctx.fillStyle = borderColor;
+      ctx.fill("evenodd");
+    }
+    ctx.beginPath();
+    addRectPath(ctx, inflateRect(inner, inflateAmount));
+    ctx.fillStyle = backgroundColor;
+    ctx.fill();
+    ctx.restore();
+  }
+  inRange(mouseX, mouseY, useFinalPosition) {
+    return inRange(this, mouseX, mouseY, useFinalPosition);
+  }
+  inXRange(mouseX, useFinalPosition) {
+    return inRange(this, mouseX, null, useFinalPosition);
+  }
+  inYRange(mouseY, useFinalPosition) {
+    return inRange(this, null, mouseY, useFinalPosition);
+  }
+  getCenterPoint(useFinalPosition) {
+    const { x, y, base, horizontal } = this.getProps([
+      "x",
+      "y",
+      "base",
+      "horizontal"
+    ], useFinalPosition);
+    return {
+      x: horizontal ? (x + base) / 2 : x,
+      y: horizontal ? y : (y + base) / 2
+    };
+  }
+  getRange(axis) {
+    return axis === "x" ? this.width / 2 : this.height / 2;
+  }
+};
+var elements = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement
+});
+var BORDER_COLORS = [
+  "rgb(54, 162, 235)",
+  "rgb(255, 99, 132)",
+  "rgb(255, 159, 64)",
+  "rgb(255, 205, 86)",
+  "rgb(75, 192, 192)",
+  "rgb(153, 102, 255)",
+  "rgb(201, 203, 207)"
+  // grey
+];
+var BACKGROUND_COLORS = /* @__PURE__ */ BORDER_COLORS.map((color2) => color2.replace("rgb(", "rgba(").replace(")", ", 0.5)"));
 function getBorderColor(i) {
   return BORDER_COLORS[i % BORDER_COLORS.length];
 }
@@ -7274,6 +10715,26 @@ function containsColorsDefinition(descriptor) {
 function containsDefaultColorsDefenitions() {
   return defaults.borderColor !== "rgba(0,0,0,0.1)" || defaults.backgroundColor !== "rgba(0,0,0,0.1)";
 }
+var plugin_colors = {
+  id: "colors",
+  defaults: {
+    enabled: true,
+    forceOverride: false
+  },
+  beforeLayout(chart, _args, options) {
+    if (!options.enabled) {
+      return;
+    }
+    const { data: { datasets }, options: chartOptions } = chart.config;
+    const { elements: elements2 } = chartOptions;
+    const containsColorDefenition = containsColorsDefinitions(datasets) || containsColorsDefinition(chartOptions) || elements2 && containsColorsDefinitions(elements2) || containsDefaultColorsDefenitions();
+    if (!options.forceOverride && containsColorDefenition) {
+      return;
+    }
+    const colorizer = getColorizer(chart);
+    datasets.forEach(colorizer);
+  }
+};
 function lttbDecimation(data, start, count, availableWidth, options) {
   const samples = options.samples || availableWidth;
   if (samples >= count) {
@@ -7407,6 +10868,76 @@ function getStartAndCountOfVisiblePointsSimplified(meta, points) {
     count
   };
 }
+var plugin_decimation = {
+  id: "decimation",
+  defaults: {
+    algorithm: "min-max",
+    enabled: false
+  },
+  beforeElementsUpdate: (chart, args, options) => {
+    if (!options.enabled) {
+      cleanDecimatedData(chart);
+      return;
+    }
+    const availableWidth = chart.width;
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const { _data, indexAxis } = dataset;
+      const meta = chart.getDatasetMeta(datasetIndex);
+      const data = _data || dataset.data;
+      if (resolve([
+        indexAxis,
+        chart.options.indexAxis
+      ]) === "y") {
+        return;
+      }
+      if (!meta.controller.supportsDecimation) {
+        return;
+      }
+      const xAxis = chart.scales[meta.xAxisID];
+      if (xAxis.type !== "linear" && xAxis.type !== "time") {
+        return;
+      }
+      if (chart.options.parsing) {
+        return;
+      }
+      let { start, count } = getStartAndCountOfVisiblePointsSimplified(meta, data);
+      const threshold = options.threshold || 4 * availableWidth;
+      if (count <= threshold) {
+        cleanDecimatedDataset(dataset);
+        return;
+      }
+      if (isNullOrUndef(_data)) {
+        dataset._data = data;
+        delete dataset.data;
+        Object.defineProperty(dataset, "data", {
+          configurable: true,
+          enumerable: true,
+          get: function() {
+            return this._decimated;
+          },
+          set: function(d) {
+            this._data = d;
+          }
+        });
+      }
+      let decimated;
+      switch (options.algorithm) {
+        case "lttb":
+          decimated = lttbDecimation(data, start, count, availableWidth, options);
+          break;
+        case "min-max":
+          decimated = minMaxDecimation(data, start, count, availableWidth);
+          break;
+        default:
+          throw new Error(`Unsupported decimation algorithm '${options.algorithm}'`);
+      }
+      dataset._decimated = decimated;
+    });
+  },
+  destroy(chart) {
+    cleanDecimatedData(chart);
+  }
+};
 function _segments(line, target, property) {
   const segments = line.segments;
   const points = line.points;
@@ -7700,6 +11231,31 @@ function findPoint(line, sourcePoint, property) {
     point
   };
 }
+var simpleArc = class {
+  constructor(opts) {
+    this.x = opts.x;
+    this.y = opts.y;
+    this.radius = opts.radius;
+  }
+  pathSegment(ctx, bounds, opts) {
+    const { x, y, radius } = this;
+    bounds = bounds || {
+      start: 0,
+      end: TAU
+    };
+    ctx.arc(x, y, radius, bounds.end, bounds.start, true);
+    return !opts.bounds;
+  }
+  interpolate(point) {
+    const { x, y, radius } = this;
+    const angle = point.angle;
+    return {
+      x: x + Math.cos(angle) * radius,
+      y: y + Math.sin(angle) * radius,
+      angle
+    };
+  }
+};
 function _getTarget(source) {
   const { chart, fill: fill2, line } = source;
   if (isNumberFinite(fill2)) {
@@ -7953,6 +11509,493 @@ function interpolatedLineTo(ctx, target, point, property) {
     ctx.lineTo(interpolatedPoint.x, interpolatedPoint.y);
   }
 }
+var index = {
+  id: "filler",
+  afterDatasetsUpdate(chart, _args, options) {
+    const count = (chart.data.datasets || []).length;
+    const sources = [];
+    let meta, i, line, source;
+    for (i = 0; i < count; ++i) {
+      meta = chart.getDatasetMeta(i);
+      line = meta.dataset;
+      source = null;
+      if (line && line.options && line instanceof LineElement) {
+        source = {
+          visible: chart.isDatasetVisible(i),
+          index: i,
+          fill: _decodeFill(line, i, count),
+          chart,
+          axis: meta.controller.options.indexAxis,
+          scale: meta.vScale,
+          line
+        };
+      }
+      meta.$filler = source;
+      sources.push(source);
+    }
+    for (i = 0; i < count; ++i) {
+      source = sources[i];
+      if (!source || source.fill === false) {
+        continue;
+      }
+      source.fill = _resolveTarget(sources, i, options.propagate);
+    }
+  },
+  beforeDraw(chart, _args, options) {
+    const draw2 = options.drawTime === "beforeDraw";
+    const metasets = chart.getSortedVisibleDatasetMetas();
+    const area = chart.chartArea;
+    for (let i = metasets.length - 1; i >= 0; --i) {
+      const source = metasets[i].$filler;
+      if (!source) {
+        continue;
+      }
+      source.line.updateControlPoints(area, source.axis);
+      if (draw2 && source.fill) {
+        _drawfill(chart.ctx, source, area);
+      }
+    }
+  },
+  beforeDatasetsDraw(chart, _args, options) {
+    if (options.drawTime !== "beforeDatasetsDraw") {
+      return;
+    }
+    const metasets = chart.getSortedVisibleDatasetMetas();
+    for (let i = metasets.length - 1; i >= 0; --i) {
+      const source = metasets[i].$filler;
+      if (_shouldApplyFill(source)) {
+        _drawfill(chart.ctx, source, chart.chartArea);
+      }
+    }
+  },
+  beforeDatasetDraw(chart, args, options) {
+    const source = args.meta.$filler;
+    if (!_shouldApplyFill(source) || options.drawTime !== "beforeDatasetDraw") {
+      return;
+    }
+    _drawfill(chart.ctx, source, chart.chartArea);
+  },
+  defaults: {
+    propagate: true,
+    drawTime: "beforeDatasetDraw"
+  }
+};
+var getBoxSize = (labelOpts, fontSize) => {
+  let { boxHeight = fontSize, boxWidth = fontSize } = labelOpts;
+  if (labelOpts.usePointStyle) {
+    boxHeight = Math.min(boxHeight, fontSize);
+    boxWidth = labelOpts.pointStyleWidth || Math.min(boxWidth, fontSize);
+  }
+  return {
+    boxWidth,
+    boxHeight,
+    itemHeight: Math.max(fontSize, boxHeight)
+  };
+};
+var itemsEqual = (a, b) => a !== null && b !== null && a.datasetIndex === b.datasetIndex && a.index === b.index;
+var Legend = class extends Element {
+  constructor(config) {
+    super();
+    this._added = false;
+    this.legendHitBoxes = [];
+    this._hoveredItem = null;
+    this.doughnutMode = false;
+    this.chart = config.chart;
+    this.options = config.options;
+    this.ctx = config.ctx;
+    this.legendItems = void 0;
+    this.columnSizes = void 0;
+    this.lineWidths = void 0;
+    this.maxHeight = void 0;
+    this.maxWidth = void 0;
+    this.top = void 0;
+    this.bottom = void 0;
+    this.left = void 0;
+    this.right = void 0;
+    this.height = void 0;
+    this.width = void 0;
+    this._margins = void 0;
+    this.position = void 0;
+    this.weight = void 0;
+    this.fullSize = void 0;
+  }
+  update(maxWidth, maxHeight, margins) {
+    this.maxWidth = maxWidth;
+    this.maxHeight = maxHeight;
+    this._margins = margins;
+    this.setDimensions();
+    this.buildLabels();
+    this.fit();
+  }
+  setDimensions() {
+    if (this.isHorizontal()) {
+      this.width = this.maxWidth;
+      this.left = this._margins.left;
+      this.right = this.width;
+    } else {
+      this.height = this.maxHeight;
+      this.top = this._margins.top;
+      this.bottom = this.height;
+    }
+  }
+  buildLabels() {
+    const labelOpts = this.options.labels || {};
+    let legendItems = callback(labelOpts.generateLabels, [
+      this.chart
+    ], this) || [];
+    if (labelOpts.filter) {
+      legendItems = legendItems.filter((item) => labelOpts.filter(item, this.chart.data));
+    }
+    if (labelOpts.sort) {
+      legendItems = legendItems.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
+    }
+    if (this.options.reverse) {
+      legendItems.reverse();
+    }
+    this.legendItems = legendItems;
+  }
+  fit() {
+    const { options, ctx } = this;
+    if (!options.display) {
+      this.width = this.height = 0;
+      return;
+    }
+    const labelOpts = options.labels;
+    const labelFont = toFont(labelOpts.font);
+    const fontSize = labelFont.size;
+    const titleHeight = this._computeTitleHeight();
+    const { boxWidth, itemHeight } = getBoxSize(labelOpts, fontSize);
+    let width, height;
+    ctx.font = labelFont.string;
+    if (this.isHorizontal()) {
+      width = this.maxWidth;
+      height = this._fitRows(titleHeight, fontSize, boxWidth, itemHeight) + 10;
+    } else {
+      height = this.maxHeight;
+      width = this._fitCols(titleHeight, labelFont, boxWidth, itemHeight) + 10;
+    }
+    this.width = Math.min(width, options.maxWidth || this.maxWidth);
+    this.height = Math.min(height, options.maxHeight || this.maxHeight);
+  }
+  _fitRows(titleHeight, fontSize, boxWidth, itemHeight) {
+    const { ctx, maxWidth, options: { labels: { padding } } } = this;
+    const hitboxes = this.legendHitBoxes = [];
+    const lineWidths = this.lineWidths = [
+      0
+    ];
+    const lineHeight = itemHeight + padding;
+    let totalHeight = titleHeight;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    let row = -1;
+    let top = -lineHeight;
+    this.legendItems.forEach((legendItem, i) => {
+      const itemWidth = boxWidth + fontSize / 2 + ctx.measureText(legendItem.text).width;
+      if (i === 0 || lineWidths[lineWidths.length - 1] + itemWidth + 2 * padding > maxWidth) {
+        totalHeight += lineHeight;
+        lineWidths[lineWidths.length - (i > 0 ? 0 : 1)] = 0;
+        top += lineHeight;
+        row++;
+      }
+      hitboxes[i] = {
+        left: 0,
+        top,
+        row,
+        width: itemWidth,
+        height: itemHeight
+      };
+      lineWidths[lineWidths.length - 1] += itemWidth + padding;
+    });
+    return totalHeight;
+  }
+  _fitCols(titleHeight, labelFont, boxWidth, _itemHeight) {
+    const { ctx, maxHeight, options: { labels: { padding } } } = this;
+    const hitboxes = this.legendHitBoxes = [];
+    const columnSizes = this.columnSizes = [];
+    const heightLimit = maxHeight - titleHeight;
+    let totalWidth = padding;
+    let currentColWidth = 0;
+    let currentColHeight = 0;
+    let left = 0;
+    let col = 0;
+    this.legendItems.forEach((legendItem, i) => {
+      const { itemWidth, itemHeight } = calculateItemSize(boxWidth, labelFont, ctx, legendItem, _itemHeight);
+      if (i > 0 && currentColHeight + itemHeight + 2 * padding > heightLimit) {
+        totalWidth += currentColWidth + padding;
+        columnSizes.push({
+          width: currentColWidth,
+          height: currentColHeight
+        });
+        left += currentColWidth + padding;
+        col++;
+        currentColWidth = currentColHeight = 0;
+      }
+      hitboxes[i] = {
+        left,
+        top: currentColHeight,
+        col,
+        width: itemWidth,
+        height: itemHeight
+      };
+      currentColWidth = Math.max(currentColWidth, itemWidth);
+      currentColHeight += itemHeight + padding;
+    });
+    totalWidth += currentColWidth;
+    columnSizes.push({
+      width: currentColWidth,
+      height: currentColHeight
+    });
+    return totalWidth;
+  }
+  adjustHitBoxes() {
+    if (!this.options.display) {
+      return;
+    }
+    const titleHeight = this._computeTitleHeight();
+    const { legendHitBoxes: hitboxes, options: { align, labels: { padding }, rtl } } = this;
+    const rtlHelper = getRtlAdapter(rtl, this.left, this.width);
+    if (this.isHorizontal()) {
+      let row = 0;
+      let left = _alignStartEnd(align, this.left + padding, this.right - this.lineWidths[row]);
+      for (const hitbox of hitboxes) {
+        if (row !== hitbox.row) {
+          row = hitbox.row;
+          left = _alignStartEnd(align, this.left + padding, this.right - this.lineWidths[row]);
+        }
+        hitbox.top += this.top + titleHeight + padding;
+        hitbox.left = rtlHelper.leftForLtr(rtlHelper.x(left), hitbox.width);
+        left += hitbox.width + padding;
+      }
+    } else {
+      let col = 0;
+      let top = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - this.columnSizes[col].height);
+      for (const hitbox of hitboxes) {
+        if (hitbox.col !== col) {
+          col = hitbox.col;
+          top = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - this.columnSizes[col].height);
+        }
+        hitbox.top = top;
+        hitbox.left += this.left + padding;
+        hitbox.left = rtlHelper.leftForLtr(rtlHelper.x(hitbox.left), hitbox.width);
+        top += hitbox.height + padding;
+      }
+    }
+  }
+  isHorizontal() {
+    return this.options.position === "top" || this.options.position === "bottom";
+  }
+  draw() {
+    if (this.options.display) {
+      const ctx = this.ctx;
+      clipArea(ctx, this);
+      this._draw();
+      unclipArea(ctx);
+    }
+  }
+  _draw() {
+    const { options: opts, columnSizes, lineWidths, ctx } = this;
+    const { align, labels: labelOpts } = opts;
+    const defaultColor = defaults.color;
+    const rtlHelper = getRtlAdapter(opts.rtl, this.left, this.width);
+    const labelFont = toFont(labelOpts.font);
+    const { padding } = labelOpts;
+    const fontSize = labelFont.size;
+    const halfFontSize = fontSize / 2;
+    let cursor;
+    this.drawTitle();
+    ctx.textAlign = rtlHelper.textAlign("left");
+    ctx.textBaseline = "middle";
+    ctx.lineWidth = 0.5;
+    ctx.font = labelFont.string;
+    const { boxWidth, boxHeight, itemHeight } = getBoxSize(labelOpts, fontSize);
+    const drawLegendBox = function(x, y, legendItem) {
+      if (isNaN(boxWidth) || boxWidth <= 0 || isNaN(boxHeight) || boxHeight < 0) {
+        return;
+      }
+      ctx.save();
+      const lineWidth = valueOrDefault(legendItem.lineWidth, 1);
+      ctx.fillStyle = valueOrDefault(legendItem.fillStyle, defaultColor);
+      ctx.lineCap = valueOrDefault(legendItem.lineCap, "butt");
+      ctx.lineDashOffset = valueOrDefault(legendItem.lineDashOffset, 0);
+      ctx.lineJoin = valueOrDefault(legendItem.lineJoin, "miter");
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = valueOrDefault(legendItem.strokeStyle, defaultColor);
+      ctx.setLineDash(valueOrDefault(legendItem.lineDash, []));
+      if (labelOpts.usePointStyle) {
+        const drawOptions = {
+          radius: boxHeight * Math.SQRT2 / 2,
+          pointStyle: legendItem.pointStyle,
+          rotation: legendItem.rotation,
+          borderWidth: lineWidth
+        };
+        const centerX = rtlHelper.xPlus(x, boxWidth / 2);
+        const centerY = y + halfFontSize;
+        drawPointLegend(ctx, drawOptions, centerX, centerY, labelOpts.pointStyleWidth && boxWidth);
+      } else {
+        const yBoxTop = y + Math.max((fontSize - boxHeight) / 2, 0);
+        const xBoxLeft = rtlHelper.leftForLtr(x, boxWidth);
+        const borderRadius = toTRBLCorners(legendItem.borderRadius);
+        ctx.beginPath();
+        if (Object.values(borderRadius).some((v) => v !== 0)) {
+          addRoundedRectPath(ctx, {
+            x: xBoxLeft,
+            y: yBoxTop,
+            w: boxWidth,
+            h: boxHeight,
+            radius: borderRadius
+          });
+        } else {
+          ctx.rect(xBoxLeft, yBoxTop, boxWidth, boxHeight);
+        }
+        ctx.fill();
+        if (lineWidth !== 0) {
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    };
+    const fillText = function(x, y, legendItem) {
+      renderText(ctx, legendItem.text, x, y + itemHeight / 2, labelFont, {
+        strikethrough: legendItem.hidden,
+        textAlign: rtlHelper.textAlign(legendItem.textAlign)
+      });
+    };
+    const isHorizontal = this.isHorizontal();
+    const titleHeight = this._computeTitleHeight();
+    if (isHorizontal) {
+      cursor = {
+        x: _alignStartEnd(align, this.left + padding, this.right - lineWidths[0]),
+        y: this.top + padding + titleHeight,
+        line: 0
+      };
+    } else {
+      cursor = {
+        x: this.left + padding,
+        y: _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - columnSizes[0].height),
+        line: 0
+      };
+    }
+    overrideTextDirection(this.ctx, opts.textDirection);
+    const lineHeight = itemHeight + padding;
+    this.legendItems.forEach((legendItem, i) => {
+      ctx.strokeStyle = legendItem.fontColor;
+      ctx.fillStyle = legendItem.fontColor;
+      const textWidth = ctx.measureText(legendItem.text).width;
+      const textAlign = rtlHelper.textAlign(legendItem.textAlign || (legendItem.textAlign = labelOpts.textAlign));
+      const width = boxWidth + halfFontSize + textWidth;
+      let x = cursor.x;
+      let y = cursor.y;
+      rtlHelper.setWidth(this.width);
+      if (isHorizontal) {
+        if (i > 0 && x + width + padding > this.right) {
+          y = cursor.y += lineHeight;
+          cursor.line++;
+          x = cursor.x = _alignStartEnd(align, this.left + padding, this.right - lineWidths[cursor.line]);
+        }
+      } else if (i > 0 && y + lineHeight > this.bottom) {
+        x = cursor.x = x + columnSizes[cursor.line].width + padding;
+        cursor.line++;
+        y = cursor.y = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - columnSizes[cursor.line].height);
+      }
+      const realX = rtlHelper.x(x);
+      drawLegendBox(realX, y, legendItem);
+      x = _textX(textAlign, x + boxWidth + halfFontSize, isHorizontal ? x + width : this.right, opts.rtl);
+      fillText(rtlHelper.x(x), y, legendItem);
+      if (isHorizontal) {
+        cursor.x += width + padding;
+      } else if (typeof legendItem.text !== "string") {
+        const fontLineHeight = labelFont.lineHeight;
+        cursor.y += calculateLegendItemHeight(legendItem, fontLineHeight) + padding;
+      } else {
+        cursor.y += lineHeight;
+      }
+    });
+    restoreTextDirection(this.ctx, opts.textDirection);
+  }
+  drawTitle() {
+    const opts = this.options;
+    const titleOpts = opts.title;
+    const titleFont = toFont(titleOpts.font);
+    const titlePadding = toPadding(titleOpts.padding);
+    if (!titleOpts.display) {
+      return;
+    }
+    const rtlHelper = getRtlAdapter(opts.rtl, this.left, this.width);
+    const ctx = this.ctx;
+    const position = titleOpts.position;
+    const halfFontSize = titleFont.size / 2;
+    const topPaddingPlusHalfFontSize = titlePadding.top + halfFontSize;
+    let y;
+    let left = this.left;
+    let maxWidth = this.width;
+    if (this.isHorizontal()) {
+      maxWidth = Math.max(...this.lineWidths);
+      y = this.top + topPaddingPlusHalfFontSize;
+      left = _alignStartEnd(opts.align, left, this.right - maxWidth);
+    } else {
+      const maxHeight = this.columnSizes.reduce((acc, size) => Math.max(acc, size.height), 0);
+      y = topPaddingPlusHalfFontSize + _alignStartEnd(opts.align, this.top, this.bottom - maxHeight - opts.labels.padding - this._computeTitleHeight());
+    }
+    const x = _alignStartEnd(position, left, left + maxWidth);
+    ctx.textAlign = rtlHelper.textAlign(_toLeftRightCenter(position));
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = titleOpts.color;
+    ctx.fillStyle = titleOpts.color;
+    ctx.font = titleFont.string;
+    renderText(ctx, titleOpts.text, x, y, titleFont);
+  }
+  _computeTitleHeight() {
+    const titleOpts = this.options.title;
+    const titleFont = toFont(titleOpts.font);
+    const titlePadding = toPadding(titleOpts.padding);
+    return titleOpts.display ? titleFont.lineHeight + titlePadding.height : 0;
+  }
+  _getLegendItemAt(x, y) {
+    let i, hitBox, lh;
+    if (_isBetween(x, this.left, this.right) && _isBetween(y, this.top, this.bottom)) {
+      lh = this.legendHitBoxes;
+      for (i = 0; i < lh.length; ++i) {
+        hitBox = lh[i];
+        if (_isBetween(x, hitBox.left, hitBox.left + hitBox.width) && _isBetween(y, hitBox.top, hitBox.top + hitBox.height)) {
+          return this.legendItems[i];
+        }
+      }
+    }
+    return null;
+  }
+  handleEvent(e) {
+    const opts = this.options;
+    if (!isListened(e.type, opts)) {
+      return;
+    }
+    const hoveredItem = this._getLegendItemAt(e.x, e.y);
+    if (e.type === "mousemove" || e.type === "mouseout") {
+      const previous = this._hoveredItem;
+      const sameItem = itemsEqual(previous, hoveredItem);
+      if (previous && !sameItem) {
+        callback(opts.onLeave, [
+          e,
+          previous,
+          this
+        ], this);
+      }
+      this._hoveredItem = hoveredItem;
+      if (hoveredItem && !sameItem) {
+        callback(opts.onHover, [
+          e,
+          hoveredItem,
+          this
+        ], this);
+      }
+    } else if (hoveredItem) {
+      callback(opts.onClick, [
+        e,
+        hoveredItem,
+        this
+      ], this);
+    }
+  }
+};
 function calculateItemSize(boxWidth, labelFont, ctx, legendItem, _itemHeight) {
   const itemWidth = calculateItemWidth(legendItem, boxWidth, labelFont, ctx);
   const itemHeight = calculateItemHeight(_itemHeight, legendItem, labelFont.lineHeight);
@@ -7988,6 +12031,196 @@ function isListened(type, opts) {
   }
   return false;
 }
+var plugin_legend = {
+  id: "legend",
+  _element: Legend,
+  start(chart, _args, options) {
+    const legend = chart.legend = new Legend({
+      ctx: chart.ctx,
+      options,
+      chart
+    });
+    layouts.configure(chart, legend, options);
+    layouts.addBox(chart, legend);
+  },
+  stop(chart) {
+    layouts.removeBox(chart, chart.legend);
+    delete chart.legend;
+  },
+  beforeUpdate(chart, _args, options) {
+    const legend = chart.legend;
+    layouts.configure(chart, legend, options);
+    legend.options = options;
+  },
+  afterUpdate(chart) {
+    const legend = chart.legend;
+    legend.buildLabels();
+    legend.adjustHitBoxes();
+  },
+  afterEvent(chart, args) {
+    if (!args.replay) {
+      chart.legend.handleEvent(args.event);
+    }
+  },
+  defaults: {
+    display: true,
+    position: "top",
+    align: "center",
+    fullSize: true,
+    reverse: false,
+    weight: 1e3,
+    onClick(e, legendItem, legend) {
+      const index2 = legendItem.datasetIndex;
+      const ci = legend.chart;
+      if (ci.isDatasetVisible(index2)) {
+        ci.hide(index2);
+        legendItem.hidden = true;
+      } else {
+        ci.show(index2);
+        legendItem.hidden = false;
+      }
+    },
+    onHover: null,
+    onLeave: null,
+    labels: {
+      color: (ctx) => ctx.chart.options.color,
+      boxWidth: 40,
+      padding: 10,
+      generateLabels(chart) {
+        const datasets = chart.data.datasets;
+        const { labels: { usePointStyle, pointStyle, textAlign, color: color2, useBorderRadius, borderRadius } } = chart.legend.options;
+        return chart._getSortedDatasetMetas().map((meta) => {
+          const style = meta.controller.getStyle(usePointStyle ? 0 : void 0);
+          const borderWidth = toPadding(style.borderWidth);
+          return {
+            text: datasets[meta.index].label,
+            fillStyle: style.backgroundColor,
+            fontColor: color2,
+            hidden: !meta.visible,
+            lineCap: style.borderCapStyle,
+            lineDash: style.borderDash,
+            lineDashOffset: style.borderDashOffset,
+            lineJoin: style.borderJoinStyle,
+            lineWidth: (borderWidth.width + borderWidth.height) / 4,
+            strokeStyle: style.borderColor,
+            pointStyle: pointStyle || style.pointStyle,
+            rotation: style.rotation,
+            textAlign: textAlign || style.textAlign,
+            borderRadius: useBorderRadius && (borderRadius || style.borderRadius),
+            datasetIndex: meta.index
+          };
+        }, this);
+      }
+    },
+    title: {
+      color: (ctx) => ctx.chart.options.color,
+      display: false,
+      position: "center",
+      text: ""
+    }
+  },
+  descriptors: {
+    _scriptable: (name) => !name.startsWith("on"),
+    labels: {
+      _scriptable: (name) => ![
+        "generateLabels",
+        "filter",
+        "sort"
+      ].includes(name)
+    }
+  }
+};
+var Title = class extends Element {
+  constructor(config) {
+    super();
+    this.chart = config.chart;
+    this.options = config.options;
+    this.ctx = config.ctx;
+    this._padding = void 0;
+    this.top = void 0;
+    this.bottom = void 0;
+    this.left = void 0;
+    this.right = void 0;
+    this.width = void 0;
+    this.height = void 0;
+    this.position = void 0;
+    this.weight = void 0;
+    this.fullSize = void 0;
+  }
+  update(maxWidth, maxHeight) {
+    const opts = this.options;
+    this.left = 0;
+    this.top = 0;
+    if (!opts.display) {
+      this.width = this.height = this.right = this.bottom = 0;
+      return;
+    }
+    this.width = this.right = maxWidth;
+    this.height = this.bottom = maxHeight;
+    const lineCount = isArray(opts.text) ? opts.text.length : 1;
+    this._padding = toPadding(opts.padding);
+    const textSize = lineCount * toFont(opts.font).lineHeight + this._padding.height;
+    if (this.isHorizontal()) {
+      this.height = textSize;
+    } else {
+      this.width = textSize;
+    }
+  }
+  isHorizontal() {
+    const pos = this.options.position;
+    return pos === "top" || pos === "bottom";
+  }
+  _drawArgs(offset) {
+    const { top, left, bottom, right, options } = this;
+    const align = options.align;
+    let rotation = 0;
+    let maxWidth, titleX, titleY;
+    if (this.isHorizontal()) {
+      titleX = _alignStartEnd(align, left, right);
+      titleY = top + offset;
+      maxWidth = right - left;
+    } else {
+      if (options.position === "left") {
+        titleX = left + offset;
+        titleY = _alignStartEnd(align, bottom, top);
+        rotation = PI * -0.5;
+      } else {
+        titleX = right - offset;
+        titleY = _alignStartEnd(align, top, bottom);
+        rotation = PI * 0.5;
+      }
+      maxWidth = bottom - top;
+    }
+    return {
+      titleX,
+      titleY,
+      maxWidth,
+      rotation
+    };
+  }
+  draw() {
+    const ctx = this.ctx;
+    const opts = this.options;
+    if (!opts.display) {
+      return;
+    }
+    const fontOpts = toFont(opts.font);
+    const lineHeight = fontOpts.lineHeight;
+    const offset = lineHeight / 2 + this._padding.top;
+    const { titleX, titleY, maxWidth, rotation } = this._drawArgs(offset);
+    renderText(ctx, opts.text, 0, 0, fontOpts, {
+      color: opts.color,
+      maxWidth,
+      rotation,
+      textAlign: _toLeftRightCenter(opts.align),
+      textBaseline: "middle",
+      translation: [
+        titleX,
+        titleY
+      ]
+    });
+  }
+};
 function createTitle(chart, titleOpts) {
   const title = new Title({
     ctx: chart.ctx,
@@ -7998,6 +12231,143 @@ function createTitle(chart, titleOpts) {
   layouts.addBox(chart, title);
   chart.titleBlock = title;
 }
+var plugin_title = {
+  id: "title",
+  _element: Title,
+  start(chart, _args, options) {
+    createTitle(chart, options);
+  },
+  stop(chart) {
+    const titleBlock = chart.titleBlock;
+    layouts.removeBox(chart, titleBlock);
+    delete chart.titleBlock;
+  },
+  beforeUpdate(chart, _args, options) {
+    const title = chart.titleBlock;
+    layouts.configure(chart, title, options);
+    title.options = options;
+  },
+  defaults: {
+    align: "center",
+    display: false,
+    font: {
+      weight: "bold"
+    },
+    fullSize: true,
+    padding: 10,
+    position: "top",
+    text: "",
+    weight: 2e3
+  },
+  defaultRoutes: {
+    color: "color"
+  },
+  descriptors: {
+    _scriptable: true,
+    _indexable: false
+  }
+};
+var map2 = /* @__PURE__ */ new WeakMap();
+var plugin_subtitle = {
+  id: "subtitle",
+  start(chart, _args, options) {
+    const title = new Title({
+      ctx: chart.ctx,
+      options,
+      chart
+    });
+    layouts.configure(chart, title, options);
+    layouts.addBox(chart, title);
+    map2.set(chart, title);
+  },
+  stop(chart) {
+    layouts.removeBox(chart, map2.get(chart));
+    map2.delete(chart);
+  },
+  beforeUpdate(chart, _args, options) {
+    const title = map2.get(chart);
+    layouts.configure(chart, title, options);
+    title.options = options;
+  },
+  defaults: {
+    align: "center",
+    display: false,
+    font: {
+      weight: "normal"
+    },
+    fullSize: true,
+    padding: 0,
+    position: "top",
+    text: "",
+    weight: 1500
+  },
+  defaultRoutes: {
+    color: "color"
+  },
+  descriptors: {
+    _scriptable: true,
+    _indexable: false
+  }
+};
+var positioners = {
+  average(items) {
+    if (!items.length) {
+      return false;
+    }
+    let i, len;
+    let xSet = /* @__PURE__ */ new Set();
+    let y = 0;
+    let count = 0;
+    for (i = 0, len = items.length; i < len; ++i) {
+      const el = items[i].element;
+      if (el && el.hasValue()) {
+        const pos = el.tooltipPosition();
+        xSet.add(pos.x);
+        y += pos.y;
+        ++count;
+      }
+    }
+    if (count === 0 || xSet.size === 0) {
+      return false;
+    }
+    const xAverage = [
+      ...xSet
+    ].reduce((a, b) => a + b) / xSet.size;
+    return {
+      x: xAverage,
+      y: y / count
+    };
+  },
+  nearest(items, eventPosition) {
+    if (!items.length) {
+      return false;
+    }
+    let x = eventPosition.x;
+    let y = eventPosition.y;
+    let minDistance = Number.POSITIVE_INFINITY;
+    let i, len, nearestElement;
+    for (i = 0, len = items.length; i < len; ++i) {
+      const el = items[i].element;
+      if (el && el.hasValue()) {
+        const center = el.getCenterPoint();
+        const d = distanceBetweenPoints(eventPosition, center);
+        if (d < minDistance) {
+          minDistance = d;
+          nearestElement = el;
+        }
+      }
+    }
+    if (nearestElement) {
+      const tp = nearestElement.tooltipPosition();
+      x = tp.x;
+      y = tp.y;
+    }
+    return {
+      x,
+      y
+    };
+  }
+};
 function pushOrConcat(base, toPush) {
   if (toPush) {
     if (isArray(toPush)) {
@@ -8183,6 +12553,69 @@ function overrideCallbacks(callbacks, context) {
   const override = context && context.dataset && context.dataset.tooltip && context.dataset.tooltip.callbacks;
   return override ? callbacks.override(override) : callbacks;
 }
+var defaultCallbacks = {
+  beforeTitle: noop,
+  title(tooltipItems) {
+    if (tooltipItems.length > 0) {
+      const item = tooltipItems[0];
+      const labels = item.chart.data.labels;
+      const labelCount = labels ? labels.length : 0;
+      if (this && this.options && this.options.mode === "dataset") {
+        return item.dataset.label || "";
+      } else if (item.label) {
+        return item.label;
+      } else if (labelCount > 0 && item.dataIndex < labelCount) {
+        return labels[item.dataIndex];
+      }
+    }
+    return "";
+  },
+  afterTitle: noop,
+  beforeBody: noop,
+  beforeLabel: noop,
+  label(tooltipItem) {
+    if (this && this.options && this.options.mode === "dataset") {
+      return tooltipItem.label + ": " + tooltipItem.formattedValue || tooltipItem.formattedValue;
+    }
+    let label = tooltipItem.dataset.label || "";
+    if (label) {
+      label += ": ";
+    }
+    const value = tooltipItem.formattedValue;
+    if (!isNullOrUndef(value)) {
+      label += value;
+    }
+    return label;
+  },
+  labelColor(tooltipItem) {
+    const meta = tooltipItem.chart.getDatasetMeta(tooltipItem.datasetIndex);
+    const options = meta.controller.getStyle(tooltipItem.dataIndex);
+    return {
+      borderColor: options.borderColor,
+      backgroundColor: options.backgroundColor,
+      borderWidth: options.borderWidth,
+      borderDash: options.borderDash,
+      borderDashOffset: options.borderDashOffset,
+      borderRadius: 0
+    };
+  },
+  labelTextColor() {
+    return this.options.bodyColor;
+  },
+  labelPointStyle(tooltipItem) {
+    const meta = tooltipItem.chart.getDatasetMeta(tooltipItem.datasetIndex);
+    const options = meta.controller.getStyle(tooltipItem.dataIndex);
+    return {
+      pointStyle: options.pointStyle,
+      rotation: options.rotation
+    };
+  },
+  afterLabel: noop,
+  afterBody: noop,
+  beforeFooter: noop,
+  footer: noop,
+  afterFooter: noop
+};
 function invokeCallbackWithFallback(callbacks, name, ctx, arg) {
   const result = callbacks[name].call(ctx, arg);
   if (typeof result === "undefined") {
@@ -8190,6 +12623,695 @@ function invokeCallbackWithFallback(callbacks, name, ctx, arg) {
   }
   return result;
 }
+var Tooltip = class extends Element {
+  static positioners = positioners;
+  constructor(config) {
+    super();
+    this.opacity = 0;
+    this._active = [];
+    this._eventPosition = void 0;
+    this._size = void 0;
+    this._cachedAnimations = void 0;
+    this._tooltipItems = [];
+    this.$animations = void 0;
+    this.$context = void 0;
+    this.chart = config.chart;
+    this.options = config.options;
+    this.dataPoints = void 0;
+    this.title = void 0;
+    this.beforeBody = void 0;
+    this.body = void 0;
+    this.afterBody = void 0;
+    this.footer = void 0;
+    this.xAlign = void 0;
+    this.yAlign = void 0;
+    this.x = void 0;
+    this.y = void 0;
+    this.height = void 0;
+    this.width = void 0;
+    this.caretX = void 0;
+    this.caretY = void 0;
+    this.labelColors = void 0;
+    this.labelPointStyles = void 0;
+    this.labelTextColors = void 0;
+  }
+  initialize(options) {
+    this.options = options;
+    this._cachedAnimations = void 0;
+    this.$context = void 0;
+  }
+  _resolveAnimations() {
+    const cached = this._cachedAnimations;
+    if (cached) {
+      return cached;
+    }
+    const chart = this.chart;
+    const options = this.options.setContext(this.getContext());
+    const opts = options.enabled && chart.options.animation && options.animations;
+    const animations = new Animations(this.chart, opts);
+    if (opts._cacheable) {
+      this._cachedAnimations = Object.freeze(animations);
+    }
+    return animations;
+  }
+  getContext() {
+    return this.$context || (this.$context = createTooltipContext(this.chart.getContext(), this, this._tooltipItems));
+  }
+  getTitle(context, options) {
+    const { callbacks } = options;
+    const beforeTitle = invokeCallbackWithFallback(callbacks, "beforeTitle", this, context);
+    const title = invokeCallbackWithFallback(callbacks, "title", this, context);
+    const afterTitle = invokeCallbackWithFallback(callbacks, "afterTitle", this, context);
+    let lines = [];
+    lines = pushOrConcat(lines, splitNewlines(beforeTitle));
+    lines = pushOrConcat(lines, splitNewlines(title));
+    lines = pushOrConcat(lines, splitNewlines(afterTitle));
+    return lines;
+  }
+  getBeforeBody(tooltipItems, options) {
+    return getBeforeAfterBodyLines(invokeCallbackWithFallback(options.callbacks, "beforeBody", this, tooltipItems));
+  }
+  getBody(tooltipItems, options) {
+    const { callbacks } = options;
+    const bodyItems = [];
+    each(tooltipItems, (context) => {
+      const bodyItem = {
+        before: [],
+        lines: [],
+        after: []
+      };
+      const scoped = overrideCallbacks(callbacks, context);
+      pushOrConcat(bodyItem.before, splitNewlines(invokeCallbackWithFallback(scoped, "beforeLabel", this, context)));
+      pushOrConcat(bodyItem.lines, invokeCallbackWithFallback(scoped, "label", this, context));
+      pushOrConcat(bodyItem.after, splitNewlines(invokeCallbackWithFallback(scoped, "afterLabel", this, context)));
+      bodyItems.push(bodyItem);
+    });
+    return bodyItems;
+  }
+  getAfterBody(tooltipItems, options) {
+    return getBeforeAfterBodyLines(invokeCallbackWithFallback(options.callbacks, "afterBody", this, tooltipItems));
+  }
+  getFooter(tooltipItems, options) {
+    const { callbacks } = options;
+    const beforeFooter = invokeCallbackWithFallback(callbacks, "beforeFooter", this, tooltipItems);
+    const footer = invokeCallbackWithFallback(callbacks, "footer", this, tooltipItems);
+    const afterFooter = invokeCallbackWithFallback(callbacks, "afterFooter", this, tooltipItems);
+    let lines = [];
+    lines = pushOrConcat(lines, splitNewlines(beforeFooter));
+    lines = pushOrConcat(lines, splitNewlines(footer));
+    lines = pushOrConcat(lines, splitNewlines(afterFooter));
+    return lines;
+  }
+  _createItems(options) {
+    const active = this._active;
+    const data = this.chart.data;
+    const labelColors = [];
+    const labelPointStyles = [];
+    const labelTextColors = [];
+    let tooltipItems = [];
+    let i, len;
+    for (i = 0, len = active.length; i < len; ++i) {
+      tooltipItems.push(createTooltipItem(this.chart, active[i]));
+    }
+    if (options.filter) {
+      tooltipItems = tooltipItems.filter((element, index2, array) => options.filter(element, index2, array, data));
+    }
+    if (options.itemSort) {
+      tooltipItems = tooltipItems.sort((a, b) => options.itemSort(a, b, data));
+    }
+    each(tooltipItems, (context) => {
+      const scoped = overrideCallbacks(options.callbacks, context);
+      labelColors.push(invokeCallbackWithFallback(scoped, "labelColor", this, context));
+      labelPointStyles.push(invokeCallbackWithFallback(scoped, "labelPointStyle", this, context));
+      labelTextColors.push(invokeCallbackWithFallback(scoped, "labelTextColor", this, context));
+    });
+    this.labelColors = labelColors;
+    this.labelPointStyles = labelPointStyles;
+    this.labelTextColors = labelTextColors;
+    this.dataPoints = tooltipItems;
+    return tooltipItems;
+  }
+  update(changed, replay) {
+    const options = this.options.setContext(this.getContext());
+    const active = this._active;
+    let properties;
+    let tooltipItems = [];
+    if (!active.length) {
+      if (this.opacity !== 0) {
+        properties = {
+          opacity: 0
+        };
+      }
+    } else {
+      const position = positioners[options.position].call(this, active, this._eventPosition);
+      tooltipItems = this._createItems(options);
+      this.title = this.getTitle(tooltipItems, options);
+      this.beforeBody = this.getBeforeBody(tooltipItems, options);
+      this.body = this.getBody(tooltipItems, options);
+      this.afterBody = this.getAfterBody(tooltipItems, options);
+      this.footer = this.getFooter(tooltipItems, options);
+      const size = this._size = getTooltipSize(this, options);
+      const positionAndSize = Object.assign({}, position, size);
+      const alignment = determineAlignment(this.chart, options, positionAndSize);
+      const backgroundPoint = getBackgroundPoint(options, positionAndSize, alignment, this.chart);
+      this.xAlign = alignment.xAlign;
+      this.yAlign = alignment.yAlign;
+      properties = {
+        opacity: 1,
+        x: backgroundPoint.x,
+        y: backgroundPoint.y,
+        width: size.width,
+        height: size.height,
+        caretX: position.x,
+        caretY: position.y
+      };
+    }
+    this._tooltipItems = tooltipItems;
+    this.$context = void 0;
+    if (properties) {
+      this._resolveAnimations().update(this, properties);
+    }
+    if (changed && options.external) {
+      options.external.call(this, {
+        chart: this.chart,
+        tooltip: this,
+        replay
+      });
+    }
+  }
+  drawCaret(tooltipPoint, ctx, size, options) {
+    const caretPosition = this.getCaretPosition(tooltipPoint, size, options);
+    ctx.lineTo(caretPosition.x1, caretPosition.y1);
+    ctx.lineTo(caretPosition.x2, caretPosition.y2);
+    ctx.lineTo(caretPosition.x3, caretPosition.y3);
+  }
+  getCaretPosition(tooltipPoint, size, options) {
+    const { xAlign, yAlign } = this;
+    const { caretSize, cornerRadius } = options;
+    const { topLeft, topRight, bottomLeft, bottomRight } = toTRBLCorners(cornerRadius);
+    const { x: ptX, y: ptY } = tooltipPoint;
+    const { width, height } = size;
+    let x1, x2, x3, y1, y2, y3;
+    if (yAlign === "center") {
+      y2 = ptY + height / 2;
+      if (xAlign === "left") {
+        x1 = ptX;
+        x2 = x1 - caretSize;
+        y1 = y2 + caretSize;
+        y3 = y2 - caretSize;
+      } else {
+        x1 = ptX + width;
+        x2 = x1 + caretSize;
+        y1 = y2 - caretSize;
+        y3 = y2 + caretSize;
+      }
+      x3 = x1;
+    } else {
+      if (xAlign === "left") {
+        x2 = ptX + Math.max(topLeft, bottomLeft) + caretSize;
+      } else if (xAlign === "right") {
+        x2 = ptX + width - Math.max(topRight, bottomRight) - caretSize;
+      } else {
+        x2 = this.caretX;
+      }
+      if (yAlign === "top") {
+        y1 = ptY;
+        y2 = y1 - caretSize;
+        x1 = x2 - caretSize;
+        x3 = x2 + caretSize;
+      } else {
+        y1 = ptY + height;
+        y2 = y1 + caretSize;
+        x1 = x2 + caretSize;
+        x3 = x2 - caretSize;
+      }
+      y3 = y1;
+    }
+    return {
+      x1,
+      x2,
+      x3,
+      y1,
+      y2,
+      y3
+    };
+  }
+  drawTitle(pt, ctx, options) {
+    const title = this.title;
+    const length = title.length;
+    let titleFont, titleSpacing, i;
+    if (length) {
+      const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
+      pt.x = getAlignedX(this, options.titleAlign, options);
+      ctx.textAlign = rtlHelper.textAlign(options.titleAlign);
+      ctx.textBaseline = "middle";
+      titleFont = toFont(options.titleFont);
+      titleSpacing = options.titleSpacing;
+      ctx.fillStyle = options.titleColor;
+      ctx.font = titleFont.string;
+      for (i = 0; i < length; ++i) {
+        ctx.fillText(title[i], rtlHelper.x(pt.x), pt.y + titleFont.lineHeight / 2);
+        pt.y += titleFont.lineHeight + titleSpacing;
+        if (i + 1 === length) {
+          pt.y += options.titleMarginBottom - titleSpacing;
+        }
+      }
+    }
+  }
+  _drawColorBox(ctx, pt, i, rtlHelper, options) {
+    const labelColor = this.labelColors[i];
+    const labelPointStyle = this.labelPointStyles[i];
+    const { boxHeight, boxWidth } = options;
+    const bodyFont = toFont(options.bodyFont);
+    const colorX = getAlignedX(this, "left", options);
+    const rtlColorX = rtlHelper.x(colorX);
+    const yOffSet = boxHeight < bodyFont.lineHeight ? (bodyFont.lineHeight - boxHeight) / 2 : 0;
+    const colorY = pt.y + yOffSet;
+    if (options.usePointStyle) {
+      const drawOptions = {
+        radius: Math.min(boxWidth, boxHeight) / 2,
+        pointStyle: labelPointStyle.pointStyle,
+        rotation: labelPointStyle.rotation,
+        borderWidth: 1
+      };
+      const centerX = rtlHelper.leftForLtr(rtlColorX, boxWidth) + boxWidth / 2;
+      const centerY = colorY + boxHeight / 2;
+      ctx.strokeStyle = options.multiKeyBackground;
+      ctx.fillStyle = options.multiKeyBackground;
+      drawPoint(ctx, drawOptions, centerX, centerY);
+      ctx.strokeStyle = labelColor.borderColor;
+      ctx.fillStyle = labelColor.backgroundColor;
+      drawPoint(ctx, drawOptions, centerX, centerY);
+    } else {
+      ctx.lineWidth = isObject(labelColor.borderWidth) ? Math.max(...Object.values(labelColor.borderWidth)) : labelColor.borderWidth || 1;
+      ctx.strokeStyle = labelColor.borderColor;
+      ctx.setLineDash(labelColor.borderDash || []);
+      ctx.lineDashOffset = labelColor.borderDashOffset || 0;
+      const outerX = rtlHelper.leftForLtr(rtlColorX, boxWidth);
+      const innerX = rtlHelper.leftForLtr(rtlHelper.xPlus(rtlColorX, 1), boxWidth - 2);
+      const borderRadius = toTRBLCorners(labelColor.borderRadius);
+      if (Object.values(borderRadius).some((v) => v !== 0)) {
+        ctx.beginPath();
+        ctx.fillStyle = options.multiKeyBackground;
+        addRoundedRectPath(ctx, {
+          x: outerX,
+          y: colorY,
+          w: boxWidth,
+          h: boxHeight,
+          radius: borderRadius
+        });
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = labelColor.backgroundColor;
+        ctx.beginPath();
+        addRoundedRectPath(ctx, {
+          x: innerX,
+          y: colorY + 1,
+          w: boxWidth - 2,
+          h: boxHeight - 2,
+          radius: borderRadius
+        });
+        ctx.fill();
+      } else {
+        ctx.fillStyle = options.multiKeyBackground;
+        ctx.fillRect(outerX, colorY, boxWidth, boxHeight);
+        ctx.strokeRect(outerX, colorY, boxWidth, boxHeight);
+        ctx.fillStyle = labelColor.backgroundColor;
+        ctx.fillRect(innerX, colorY + 1, boxWidth - 2, boxHeight - 2);
+      }
+    }
+    ctx.fillStyle = this.labelTextColors[i];
+  }
+  drawBody(pt, ctx, options) {
+    const { body } = this;
+    const { bodySpacing, bodyAlign, displayColors, boxHeight, boxWidth, boxPadding } = options;
+    const bodyFont = toFont(options.bodyFont);
+    let bodyLineHeight = bodyFont.lineHeight;
+    let xLinePadding = 0;
+    const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
+    const fillLineOfText = function(line) {
+      ctx.fillText(line, rtlHelper.x(pt.x + xLinePadding), pt.y + bodyLineHeight / 2);
+      pt.y += bodyLineHeight + bodySpacing;
+    };
+    const bodyAlignForCalculation = rtlHelper.textAlign(bodyAlign);
+    let bodyItem, textColor, lines, i, j, ilen, jlen;
+    ctx.textAlign = bodyAlign;
+    ctx.textBaseline = "middle";
+    ctx.font = bodyFont.string;
+    pt.x = getAlignedX(this, bodyAlignForCalculation, options);
+    ctx.fillStyle = options.bodyColor;
+    each(this.beforeBody, fillLineOfText);
+    xLinePadding = displayColors && bodyAlignForCalculation !== "right" ? bodyAlign === "center" ? boxWidth / 2 + boxPadding : boxWidth + 2 + boxPadding : 0;
+    for (i = 0, ilen = body.length; i < ilen; ++i) {
+      bodyItem = body[i];
+      textColor = this.labelTextColors[i];
+      ctx.fillStyle = textColor;
+      each(bodyItem.before, fillLineOfText);
+      lines = bodyItem.lines;
+      if (displayColors && lines.length) {
+        this._drawColorBox(ctx, pt, i, rtlHelper, options);
+        bodyLineHeight = Math.max(bodyFont.lineHeight, boxHeight);
+      }
+      for (j = 0, jlen = lines.length; j < jlen; ++j) {
+        fillLineOfText(lines[j]);
+        bodyLineHeight = bodyFont.lineHeight;
+      }
+      each(bodyItem.after, fillLineOfText);
+    }
+    xLinePadding = 0;
+    bodyLineHeight = bodyFont.lineHeight;
+    each(this.afterBody, fillLineOfText);
+    pt.y -= bodySpacing;
+  }
+  drawFooter(pt, ctx, options) {
+    const footer = this.footer;
+    const length = footer.length;
+    let footerFont, i;
+    if (length) {
+      const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
+      pt.x = getAlignedX(this, options.footerAlign, options);
+      pt.y += options.footerMarginTop;
+      ctx.textAlign = rtlHelper.textAlign(options.footerAlign);
+      ctx.textBaseline = "middle";
+      footerFont = toFont(options.footerFont);
+      ctx.fillStyle = options.footerColor;
+      ctx.font = footerFont.string;
+      for (i = 0; i < length; ++i) {
+        ctx.fillText(footer[i], rtlHelper.x(pt.x), pt.y + footerFont.lineHeight / 2);
+        pt.y += footerFont.lineHeight + options.footerSpacing;
+      }
+    }
+  }
+  drawBackground(pt, ctx, tooltipSize, options) {
+    const { xAlign, yAlign } = this;
+    const { x, y } = pt;
+    const { width, height } = tooltipSize;
+    const { topLeft, topRight, bottomLeft, bottomRight } = toTRBLCorners(options.cornerRadius);
+    ctx.fillStyle = options.backgroundColor;
+    ctx.strokeStyle = options.borderColor;
+    ctx.lineWidth = options.borderWidth;
+    ctx.beginPath();
+    ctx.moveTo(x + topLeft, y);
+    if (yAlign === "top") {
+      this.drawCaret(pt, ctx, tooltipSize, options);
+    }
+    ctx.lineTo(x + width - topRight, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + topRight);
+    if (yAlign === "center" && xAlign === "right") {
+      this.drawCaret(pt, ctx, tooltipSize, options);
+    }
+    ctx.lineTo(x + width, y + height - bottomRight);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - bottomRight, y + height);
+    if (yAlign === "bottom") {
+      this.drawCaret(pt, ctx, tooltipSize, options);
+    }
+    ctx.lineTo(x + bottomLeft, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - bottomLeft);
+    if (yAlign === "center" && xAlign === "left") {
+      this.drawCaret(pt, ctx, tooltipSize, options);
+    }
+    ctx.lineTo(x, y + topLeft);
+    ctx.quadraticCurveTo(x, y, x + topLeft, y);
+    ctx.closePath();
+    ctx.fill();
+    if (options.borderWidth > 0) {
+      ctx.stroke();
+    }
+  }
+  _updateAnimationTarget(options) {
+    const chart = this.chart;
+    const anims = this.$animations;
+    const animX = anims && anims.x;
+    const animY = anims && anims.y;
+    if (animX || animY) {
+      const position = positioners[options.position].call(this, this._active, this._eventPosition);
+      if (!position) {
+        return;
+      }
+      const size = this._size = getTooltipSize(this, options);
+      const positionAndSize = Object.assign({}, position, this._size);
+      const alignment = determineAlignment(chart, options, positionAndSize);
+      const point = getBackgroundPoint(options, positionAndSize, alignment, chart);
+      if (animX._to !== point.x || animY._to !== point.y) {
+        this.xAlign = alignment.xAlign;
+        this.yAlign = alignment.yAlign;
+        this.width = size.width;
+        this.height = size.height;
+        this.caretX = position.x;
+        this.caretY = position.y;
+        this._resolveAnimations().update(this, point);
+      }
+    }
+  }
+  _willRender() {
+    return !!this.opacity;
+  }
+  draw(ctx) {
+    const options = this.options.setContext(this.getContext());
+    let opacity = this.opacity;
+    if (!opacity) {
+      return;
+    }
+    this._updateAnimationTarget(options);
+    const tooltipSize = {
+      width: this.width,
+      height: this.height
+    };
+    const pt = {
+      x: this.x,
+      y: this.y
+    };
+    opacity = Math.abs(opacity) < 1e-3 ? 0 : opacity;
+    const padding = toPadding(options.padding);
+    const hasTooltipContent = this.title.length || this.beforeBody.length || this.body.length || this.afterBody.length || this.footer.length;
+    if (options.enabled && hasTooltipContent) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      this.drawBackground(pt, ctx, tooltipSize, options);
+      overrideTextDirection(ctx, options.textDirection);
+      pt.y += padding.top;
+      this.drawTitle(pt, ctx, options);
+      this.drawBody(pt, ctx, options);
+      this.drawFooter(pt, ctx, options);
+      restoreTextDirection(ctx, options.textDirection);
+      ctx.restore();
+    }
+  }
+  getActiveElements() {
+    return this._active || [];
+  }
+  setActiveElements(activeElements, eventPosition) {
+    const lastActive = this._active;
+    const active = activeElements.map(({ datasetIndex, index: index2 }) => {
+      const meta = this.chart.getDatasetMeta(datasetIndex);
+      if (!meta) {
+        throw new Error("Cannot find a dataset at index " + datasetIndex);
+      }
+      return {
+        datasetIndex,
+        element: meta.data[index2],
+        index: index2
+      };
+    });
+    const changed = !_elementsEqual(lastActive, active);
+    const positionChanged = this._positionChanged(active, eventPosition);
+    if (changed || positionChanged) {
+      this._active = active;
+      this._eventPosition = eventPosition;
+      this._ignoreReplayEvents = true;
+      this.update(true);
+    }
+  }
+  handleEvent(e, replay, inChartArea = true) {
+    if (replay && this._ignoreReplayEvents) {
+      return false;
+    }
+    this._ignoreReplayEvents = false;
+    const options = this.options;
+    const lastActive = this._active || [];
+    const active = this._getActiveElements(e, lastActive, replay, inChartArea);
+    const positionChanged = this._positionChanged(active, e);
+    const changed = replay || !_elementsEqual(active, lastActive) || positionChanged;
+    if (changed) {
+      this._active = active;
+      if (options.enabled || options.external) {
+        this._eventPosition = {
+          x: e.x,
+          y: e.y
+        };
+        this.update(true, replay);
+      }
+    }
+    return changed;
+  }
+  _getActiveElements(e, lastActive, replay, inChartArea) {
+    const options = this.options;
+    if (e.type === "mouseout") {
+      return [];
+    }
+    if (!inChartArea) {
+      return lastActive.filter((i) => this.chart.data.datasets[i.datasetIndex] && this.chart.getDatasetMeta(i.datasetIndex).controller.getParsed(i.index) !== void 0);
+    }
+    const active = this.chart.getElementsAtEventForMode(e, options.mode, options, replay);
+    if (options.reverse) {
+      active.reverse();
+    }
+    return active;
+  }
+  _positionChanged(active, e) {
+    const { caretX, caretY, options } = this;
+    const position = positioners[options.position].call(this, active, e);
+    return position !== false && (caretX !== position.x || caretY !== position.y);
+  }
+};
+var plugin_tooltip = {
+  id: "tooltip",
+  _element: Tooltip,
+  positioners,
+  afterInit(chart, _args, options) {
+    if (options) {
+      chart.tooltip = new Tooltip({
+        chart,
+        options
+      });
+    }
+  },
+  beforeUpdate(chart, _args, options) {
+    if (chart.tooltip) {
+      chart.tooltip.initialize(options);
+    }
+  },
+  reset(chart, _args, options) {
+    if (chart.tooltip) {
+      chart.tooltip.initialize(options);
+    }
+  },
+  afterDraw(chart) {
+    const tooltip = chart.tooltip;
+    if (tooltip && tooltip._willRender()) {
+      const args = {
+        tooltip
+      };
+      if (chart.notifyPlugins("beforeTooltipDraw", {
+        ...args,
+        cancelable: true
+      }) === false) {
+        return;
+      }
+      tooltip.draw(chart.ctx);
+      chart.notifyPlugins("afterTooltipDraw", args);
+    }
+  },
+  afterEvent(chart, args) {
+    if (chart.tooltip) {
+      const useFinalPosition = args.replay;
+      if (chart.tooltip.handleEvent(args.event, useFinalPosition, args.inChartArea)) {
+        args.changed = true;
+      }
+    }
+  },
+  defaults: {
+    enabled: true,
+    external: null,
+    position: "average",
+    backgroundColor: "rgba(0,0,0,0.8)",
+    titleColor: "#fff",
+    titleFont: {
+      weight: "bold"
+    },
+    titleSpacing: 2,
+    titleMarginBottom: 6,
+    titleAlign: "left",
+    bodyColor: "#fff",
+    bodySpacing: 2,
+    bodyFont: {},
+    bodyAlign: "left",
+    footerColor: "#fff",
+    footerSpacing: 2,
+    footerMarginTop: 6,
+    footerFont: {
+      weight: "bold"
+    },
+    footerAlign: "left",
+    padding: 6,
+    caretPadding: 2,
+    caretSize: 5,
+    cornerRadius: 6,
+    boxHeight: (ctx, opts) => opts.bodyFont.size,
+    boxWidth: (ctx, opts) => opts.bodyFont.size,
+    multiKeyBackground: "#fff",
+    displayColors: true,
+    boxPadding: 0,
+    borderColor: "rgba(0,0,0,0)",
+    borderWidth: 0,
+    animation: {
+      duration: 400,
+      easing: "easeOutQuart"
+    },
+    animations: {
+      numbers: {
+        type: "number",
+        properties: [
+          "x",
+          "y",
+          "width",
+          "height",
+          "caretX",
+          "caretY"
+        ]
+      },
+      opacity: {
+        easing: "linear",
+        duration: 200
+      }
+    },
+    callbacks: defaultCallbacks
+  },
+  defaultRoutes: {
+    bodyFont: "font",
+    footerFont: "font",
+    titleFont: "font"
+  },
+  descriptors: {
+    _scriptable: (name) => name !== "filter" && name !== "itemSort" && name !== "external",
+    _indexable: false,
+    callbacks: {
+      _scriptable: false,
+      _indexable: false
+    },
+    animation: {
+      _fallback: false
+    },
+    animations: {
+      _fallback: "animation"
+    }
+  },
+  additionalOptionScopes: [
+    "interaction"
+  ]
+};
+var plugins = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  Colors: plugin_colors,
+  Decimation: plugin_decimation,
+  Filler: index,
+  Legend: plugin_legend,
+  SubTitle: plugin_subtitle,
+  Title: plugin_title,
+  Tooltip: plugin_tooltip
+});
+var addIfString = (labels, raw, index2, addedLabels) => {
+  if (typeof raw === "string") {
+    index2 = labels.push(raw) - 1;
+    addedLabels.unshift({
+      index: index2,
+      label: raw
+    });
+  } else if (isNaN(raw)) {
+    index2 = null;
+  }
+  return index2;
+};
 function findOrAddLabel(labels, raw, index2, addedLabels) {
   const first = labels.indexOf(raw);
   if (first === -1) {
@@ -8198,6 +13320,7 @@ function findOrAddLabel(labels, raw, index2, addedLabels) {
   const last = labels.lastIndexOf(raw);
   return first !== last ? index2 : first;
 }
+var validIndex = (index2, max) => index2 === null ? null : _limitValue(Math.round(index2), 0, max);
 function _getLabelForValue(value) {
   const labels = this.getLabels();
   if (value >= 0 && value < labels.length) {
@@ -8205,6 +13328,99 @@ function _getLabelForValue(value) {
   }
   return value;
 }
+var CategoryScale = class extends Scale {
+  static id = "category";
+  static defaults = {
+    ticks: {
+      callback: _getLabelForValue
+    }
+  };
+  constructor(cfg) {
+    super(cfg);
+    this._startValue = void 0;
+    this._valueRange = 0;
+    this._addedLabels = [];
+  }
+  init(scaleOptions) {
+    const added = this._addedLabels;
+    if (added.length) {
+      const labels = this.getLabels();
+      for (const { index: index2, label } of added) {
+        if (labels[index2] === label) {
+          labels.splice(index2, 1);
+        }
+      }
+      this._addedLabels = [];
+    }
+    super.init(scaleOptions);
+  }
+  parse(raw, index2) {
+    if (isNullOrUndef(raw)) {
+      return null;
+    }
+    const labels = this.getLabels();
+    index2 = isFinite(index2) && labels[index2] === raw ? index2 : findOrAddLabel(labels, raw, valueOrDefault(index2, raw), this._addedLabels);
+    return validIndex(index2, labels.length - 1);
+  }
+  determineDataLimits() {
+    const { minDefined, maxDefined } = this.getUserBounds();
+    let { min, max } = this.getMinMax(true);
+    if (this.options.bounds === "ticks") {
+      if (!minDefined) {
+        min = 0;
+      }
+      if (!maxDefined) {
+        max = this.getLabels().length - 1;
+      }
+    }
+    this.min = min;
+    this.max = max;
+  }
+  buildTicks() {
+    const min = this.min;
+    const max = this.max;
+    const offset = this.options.offset;
+    const ticks = [];
+    let labels = this.getLabels();
+    labels = min === 0 && max === labels.length - 1 ? labels : labels.slice(min, max + 1);
+    this._valueRange = Math.max(labels.length - (offset ? 0 : 1), 1);
+    this._startValue = this.min - (offset ? 0.5 : 0);
+    for (let value = min; value <= max; value++) {
+      ticks.push({
+        value
+      });
+    }
+    return ticks;
+  }
+  getLabelForValue(value) {
+    return _getLabelForValue.call(this, value);
+  }
+  configure() {
+    super.configure();
+    if (!this.isHorizontal()) {
+      this._reversePixels = !this._reversePixels;
+    }
+  }
+  getPixelForValue(value) {
+    if (typeof value !== "number") {
+      value = this.parse(value);
+    }
+    return value === null ? NaN : this.getPixelForDecimal((value - this._startValue) / this._valueRange);
+  }
+  getPixelForTick(index2) {
+    const ticks = this.ticks;
+    if (index2 < 0 || index2 > ticks.length - 1) {
+      return null;
+    }
+    return this.getPixelForValue(ticks[index2].value);
+  }
+  getValueForPixel(pixel) {
+    return Math.round(this._startValue + this.getDecimalForPixel(pixel) * this._valueRange);
+  }
+  getBasePixel() {
+    return this.bottom;
+  }
+};
 function generateTicks$1(generationOptions, dataRange) {
   const ticks = [];
   const MIN_SPACING = 1e-14;
@@ -8311,6 +13527,152 @@ function relativeLabelSize(value, minSpacing, { horizontal, minRotation }) {
   const length = 0.75 * minSpacing * ("" + value).length;
   return Math.min(minSpacing / ratio, length);
 }
+var LinearScaleBase = class extends Scale {
+  constructor(cfg) {
+    super(cfg);
+    this.start = void 0;
+    this.end = void 0;
+    this._startValue = void 0;
+    this._endValue = void 0;
+    this._valueRange = 0;
+  }
+  parse(raw, index2) {
+    if (isNullOrUndef(raw)) {
+      return null;
+    }
+    if ((typeof raw === "number" || raw instanceof Number) && !isFinite(+raw)) {
+      return null;
+    }
+    return +raw;
+  }
+  handleTickRangeOptions() {
+    const { beginAtZero } = this.options;
+    const { minDefined, maxDefined } = this.getUserBounds();
+    let { min, max } = this;
+    const setMin = (v) => min = minDefined ? min : v;
+    const setMax = (v) => max = maxDefined ? max : v;
+    if (beginAtZero) {
+      const minSign = sign(min);
+      const maxSign = sign(max);
+      if (minSign < 0 && maxSign < 0) {
+        setMax(0);
+      } else if (minSign > 0 && maxSign > 0) {
+        setMin(0);
+      }
+    }
+    if (min === max) {
+      let offset = max === 0 ? 1 : Math.abs(max * 0.05);
+      setMax(max + offset);
+      if (!beginAtZero) {
+        setMin(min - offset);
+      }
+    }
+    this.min = min;
+    this.max = max;
+  }
+  getTickLimit() {
+    const tickOpts = this.options.ticks;
+    let { maxTicksLimit, stepSize } = tickOpts;
+    let maxTicks;
+    if (stepSize) {
+      maxTicks = Math.ceil(this.max / stepSize) - Math.floor(this.min / stepSize) + 1;
+      if (maxTicks > 1e3) {
+        console.warn(`scales.${this.id}.ticks.stepSize: ${stepSize} would result generating up to ${maxTicks} ticks. Limiting to 1000.`);
+        maxTicks = 1e3;
+      }
+    } else {
+      maxTicks = this.computeTickLimit();
+      maxTicksLimit = maxTicksLimit || 11;
+    }
+    if (maxTicksLimit) {
+      maxTicks = Math.min(maxTicksLimit, maxTicks);
+    }
+    return maxTicks;
+  }
+  computeTickLimit() {
+    return Number.POSITIVE_INFINITY;
+  }
+  buildTicks() {
+    const opts = this.options;
+    const tickOpts = opts.ticks;
+    let maxTicks = this.getTickLimit();
+    maxTicks = Math.max(2, maxTicks);
+    const numericGeneratorOptions = {
+      maxTicks,
+      bounds: opts.bounds,
+      min: opts.min,
+      max: opts.max,
+      precision: tickOpts.precision,
+      step: tickOpts.stepSize,
+      count: tickOpts.count,
+      maxDigits: this._maxDigits(),
+      horizontal: this.isHorizontal(),
+      minRotation: tickOpts.minRotation || 0,
+      includeBounds: tickOpts.includeBounds !== false
+    };
+    const dataRange = this._range || this;
+    const ticks = generateTicks$1(numericGeneratorOptions, dataRange);
+    if (opts.bounds === "ticks") {
+      _setMinAndMaxByKey(ticks, this, "value");
+    }
+    if (opts.reverse) {
+      ticks.reverse();
+      this.start = this.max;
+      this.end = this.min;
+    } else {
+      this.start = this.min;
+      this.end = this.max;
+    }
+    return ticks;
+  }
+  configure() {
+    const ticks = this.ticks;
+    let start = this.min;
+    let end = this.max;
+    super.configure();
+    if (this.options.offset && ticks.length) {
+      const offset = (end - start) / Math.max(ticks.length - 1, 1) / 2;
+      start -= offset;
+      end += offset;
+    }
+    this._startValue = start;
+    this._endValue = end;
+    this._valueRange = end - start;
+  }
+  getLabelForValue(value) {
+    return formatNumber(value, this.chart.options.locale, this.options.ticks.format);
+  }
+};
+var LinearScale = class extends LinearScaleBase {
+  static id = "linear";
+  static defaults = {
+    ticks: {
+      callback: Ticks.formatters.numeric
+    }
+  };
+  determineDataLimits() {
+    const { min, max } = this.getMinMax(true);
+    this.min = isNumberFinite(min) ? min : 0;
+    this.max = isNumberFinite(max) ? max : 1;
+    this.handleTickRangeOptions();
+  }
+  computeTickLimit() {
+    const horizontal = this.isHorizontal();
+    const length = horizontal ? this.width : this.height;
+    const minRotation = toRadians(this.options.ticks.minRotation);
+    const ratio = (horizontal ? Math.sin(minRotation) : Math.cos(minRotation)) || 1e-3;
+    const tickFont = this._resolveTickFontOptions(0);
+    return Math.ceil(length / Math.min(40, tickFont.lineHeight / ratio));
+  }
+  getPixelForValue(value) {
+    return value === null ? NaN : this.getPixelForDecimal((value - this._startValue) / this._valueRange);
+  }
+  getValueForPixel(pixel) {
+    return this._startValue + this.getDecimalForPixel(pixel) * this._valueRange;
+  }
+};
+var log10Floor = (v) => Math.floor(log10(v));
+var changeExponent = (v, m) => Math.pow(10, log10Floor(v) + m);
 function isMajor(tickVal) {
   const remain = tickVal / Math.pow(10, log10Floor(tickVal));
   return remain === 1;
@@ -8370,6 +13732,113 @@ function generateTicks(generationOptions, { min, max }) {
   });
   return ticks;
 }
+var LogarithmicScale = class extends Scale {
+  static id = "logarithmic";
+  static defaults = {
+    ticks: {
+      callback: Ticks.formatters.logarithmic,
+      major: {
+        enabled: true
+      }
+    }
+  };
+  constructor(cfg) {
+    super(cfg);
+    this.start = void 0;
+    this.end = void 0;
+    this._startValue = void 0;
+    this._valueRange = 0;
+  }
+  parse(raw, index2) {
+    const value = LinearScaleBase.prototype.parse.apply(this, [
+      raw,
+      index2
+    ]);
+    if (value === 0) {
+      this._zero = true;
+      return void 0;
+    }
+    return isNumberFinite(value) && value > 0 ? value : null;
+  }
+  determineDataLimits() {
+    const { min, max } = this.getMinMax(true);
+    this.min = isNumberFinite(min) ? Math.max(0, min) : null;
+    this.max = isNumberFinite(max) ? Math.max(0, max) : null;
+    if (this.options.beginAtZero) {
+      this._zero = true;
+    }
+    if (this._zero && this.min !== this._suggestedMin && !isNumberFinite(this._userMin)) {
+      this.min = min === changeExponent(this.min, 0) ? changeExponent(this.min, -1) : changeExponent(this.min, 0);
+    }
+    this.handleTickRangeOptions();
+  }
+  handleTickRangeOptions() {
+    const { minDefined, maxDefined } = this.getUserBounds();
+    let min = this.min;
+    let max = this.max;
+    const setMin = (v) => min = minDefined ? min : v;
+    const setMax = (v) => max = maxDefined ? max : v;
+    if (min === max) {
+      if (min <= 0) {
+        setMin(1);
+        setMax(10);
+      } else {
+        setMin(changeExponent(min, -1));
+        setMax(changeExponent(max, 1));
+      }
+    }
+    if (min <= 0) {
+      setMin(changeExponent(max, -1));
+    }
+    if (max <= 0) {
+      setMax(changeExponent(min, 1));
+    }
+    this.min = min;
+    this.max = max;
+  }
+  buildTicks() {
+    const opts = this.options;
+    const generationOptions = {
+      min: this._userMin,
+      max: this._userMax
+    };
+    const ticks = generateTicks(generationOptions, this);
+    if (opts.bounds === "ticks") {
+      _setMinAndMaxByKey(ticks, this, "value");
+    }
+    if (opts.reverse) {
+      ticks.reverse();
+      this.start = this.max;
+      this.end = this.min;
+    } else {
+      this.start = this.min;
+      this.end = this.max;
+    }
+    return ticks;
+  }
+  getLabelForValue(value) {
+    return value === void 0 ? "0" : formatNumber(value, this.chart.options.locale, this.options.ticks.format);
+  }
+  configure() {
+    const start = this.min;
+    super.configure();
+    this._startValue = log10(start);
+    this._valueRange = log10(this.max) - log10(start);
+  }
+  getPixelForValue(value) {
+    if (value === void 0 || value === 0) {
+      value = this.min;
+    }
+    if (value === null || isNaN(value)) {
+      return NaN;
+    }
+    return this.getPixelForDecimal(value === this.min ? 0 : (log10(value) - this._startValue) / this._valueRange);
+  }
+  getValueForPixel(pixel) {
+    const decimal = this.getDecimalForPixel(pixel);
+    return Math.pow(10, this._startValue + decimal * this._valueRange);
+  }
+};
 function getTickBackdropHeight(opts) {
   const tickOpts = opts.ticks;
   if (tickOpts.display && opts.display) {
@@ -8622,6 +14091,293 @@ function createPointLabelContext(parent, index2, label) {
     type: "pointLabel"
   });
 }
+var RadialLinearScale = class extends LinearScaleBase {
+  static id = "radialLinear";
+  static defaults = {
+    display: true,
+    animate: true,
+    position: "chartArea",
+    angleLines: {
+      display: true,
+      lineWidth: 1,
+      borderDash: [],
+      borderDashOffset: 0
+    },
+    grid: {
+      circular: false
+    },
+    startAngle: 0,
+    ticks: {
+      showLabelBackdrop: true,
+      callback: Ticks.formatters.numeric
+    },
+    pointLabels: {
+      backdropColor: void 0,
+      backdropPadding: 2,
+      display: true,
+      font: {
+        size: 10
+      },
+      callback(label) {
+        return label;
+      },
+      padding: 5,
+      centerPointLabels: false
+    }
+  };
+  static defaultRoutes = {
+    "angleLines.color": "borderColor",
+    "pointLabels.color": "color",
+    "ticks.color": "color"
+  };
+  static descriptors = {
+    angleLines: {
+      _fallback: "grid"
+    }
+  };
+  constructor(cfg) {
+    super(cfg);
+    this.xCenter = void 0;
+    this.yCenter = void 0;
+    this.drawingArea = void 0;
+    this._pointLabels = [];
+    this._pointLabelItems = [];
+  }
+  setDimensions() {
+    const padding = this._padding = toPadding(getTickBackdropHeight(this.options) / 2);
+    const w = this.width = this.maxWidth - padding.width;
+    const h = this.height = this.maxHeight - padding.height;
+    this.xCenter = Math.floor(this.left + w / 2 + padding.left);
+    this.yCenter = Math.floor(this.top + h / 2 + padding.top);
+    this.drawingArea = Math.floor(Math.min(w, h) / 2);
+  }
+  determineDataLimits() {
+    const { min, max } = this.getMinMax(false);
+    this.min = isNumberFinite(min) && !isNaN(min) ? min : 0;
+    this.max = isNumberFinite(max) && !isNaN(max) ? max : 0;
+    this.handleTickRangeOptions();
+  }
+  computeTickLimit() {
+    return Math.ceil(this.drawingArea / getTickBackdropHeight(this.options));
+  }
+  generateTickLabels(ticks) {
+    LinearScaleBase.prototype.generateTickLabels.call(this, ticks);
+    this._pointLabels = this.getLabels().map((value, index2) => {
+      const label = callback(this.options.pointLabels.callback, [
+        value,
+        index2
+      ], this);
+      return label || label === 0 ? label : "";
+    }).filter((v, i) => this.chart.getDataVisibility(i));
+  }
+  fit() {
+    const opts = this.options;
+    if (opts.display && opts.pointLabels.display) {
+      fitWithPointLabels(this);
+    } else {
+      this.setCenterPoint(0, 0, 0, 0);
+    }
+  }
+  setCenterPoint(leftMovement, rightMovement, topMovement, bottomMovement) {
+    this.xCenter += Math.floor((leftMovement - rightMovement) / 2);
+    this.yCenter += Math.floor((topMovement - bottomMovement) / 2);
+    this.drawingArea -= Math.min(this.drawingArea / 2, Math.max(leftMovement, rightMovement, topMovement, bottomMovement));
+  }
+  getIndexAngle(index2) {
+    const angleMultiplier = TAU / (this._pointLabels.length || 1);
+    const startAngle = this.options.startAngle || 0;
+    return _normalizeAngle(index2 * angleMultiplier + toRadians(startAngle));
+  }
+  getDistanceFromCenterForValue(value) {
+    if (isNullOrUndef(value)) {
+      return NaN;
+    }
+    const scalingFactor = this.drawingArea / (this.max - this.min);
+    if (this.options.reverse) {
+      return (this.max - value) * scalingFactor;
+    }
+    return (value - this.min) * scalingFactor;
+  }
+  getValueForDistanceFromCenter(distance) {
+    if (isNullOrUndef(distance)) {
+      return NaN;
+    }
+    const scaledDistance = distance / (this.drawingArea / (this.max - this.min));
+    return this.options.reverse ? this.max - scaledDistance : this.min + scaledDistance;
+  }
+  getPointLabelContext(index2) {
+    const pointLabels = this._pointLabels || [];
+    if (index2 >= 0 && index2 < pointLabels.length) {
+      const pointLabel = pointLabels[index2];
+      return createPointLabelContext(this.getContext(), index2, pointLabel);
+    }
+  }
+  getPointPosition(index2, distanceFromCenter, additionalAngle = 0) {
+    const angle = this.getIndexAngle(index2) - HALF_PI + additionalAngle;
+    return {
+      x: Math.cos(angle) * distanceFromCenter + this.xCenter,
+      y: Math.sin(angle) * distanceFromCenter + this.yCenter,
+      angle
+    };
+  }
+  getPointPositionForValue(index2, value) {
+    return this.getPointPosition(index2, this.getDistanceFromCenterForValue(value));
+  }
+  getBasePosition(index2) {
+    return this.getPointPositionForValue(index2 || 0, this.getBaseValue());
+  }
+  getPointLabelPosition(index2) {
+    const { left, top, right, bottom } = this._pointLabelItems[index2];
+    return {
+      left,
+      top,
+      right,
+      bottom
+    };
+  }
+  drawBackground() {
+    const { backgroundColor, grid: { circular } } = this.options;
+    if (backgroundColor) {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.beginPath();
+      pathRadiusLine(this, this.getDistanceFromCenterForValue(this._endValue), circular, this._pointLabels.length);
+      ctx.closePath();
+      ctx.fillStyle = backgroundColor;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  drawGrid() {
+    const ctx = this.ctx;
+    const opts = this.options;
+    const { angleLines, grid, border } = opts;
+    const labelCount = this._pointLabels.length;
+    let i, offset, position;
+    if (opts.pointLabels.display) {
+      drawPointLabels(this, labelCount);
+    }
+    if (grid.display) {
+      this.ticks.forEach((tick, index2) => {
+        if (index2 !== 0 || index2 === 0 && this.min < 0) {
+          offset = this.getDistanceFromCenterForValue(tick.value);
+          const context = this.getContext(index2);
+          const optsAtIndex = grid.setContext(context);
+          const optsAtIndexBorder = border.setContext(context);
+          drawRadiusLine(this, optsAtIndex, offset, labelCount, optsAtIndexBorder);
+        }
+      });
+    }
+    if (angleLines.display) {
+      ctx.save();
+      for (i = labelCount - 1; i >= 0; i--) {
+        const optsAtIndex = angleLines.setContext(this.getPointLabelContext(i));
+        const { color: color2, lineWidth } = optsAtIndex;
+        if (!lineWidth || !color2) {
+          continue;
+        }
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color2;
+        ctx.setLineDash(optsAtIndex.borderDash);
+        ctx.lineDashOffset = optsAtIndex.borderDashOffset;
+        offset = this.getDistanceFromCenterForValue(opts.reverse ? this.min : this.max);
+        position = this.getPointPosition(i, offset);
+        ctx.beginPath();
+        ctx.moveTo(this.xCenter, this.yCenter);
+        ctx.lineTo(position.x, position.y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  drawBorder() {
+  }
+  drawLabels() {
+    const ctx = this.ctx;
+    const opts = this.options;
+    const tickOpts = opts.ticks;
+    if (!tickOpts.display) {
+      return;
+    }
+    const startAngle = this.getIndexAngle(0);
+    let offset, width;
+    ctx.save();
+    ctx.translate(this.xCenter, this.yCenter);
+    ctx.rotate(startAngle);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    this.ticks.forEach((tick, index2) => {
+      if (index2 === 0 && this.min >= 0 && !opts.reverse) {
+        return;
+      }
+      const optsAtIndex = tickOpts.setContext(this.getContext(index2));
+      const tickFont = toFont(optsAtIndex.font);
+      offset = this.getDistanceFromCenterForValue(this.ticks[index2].value);
+      if (optsAtIndex.showLabelBackdrop) {
+        ctx.font = tickFont.string;
+        width = ctx.measureText(tick.label).width;
+        ctx.fillStyle = optsAtIndex.backdropColor;
+        const padding = toPadding(optsAtIndex.backdropPadding);
+        ctx.fillRect(-width / 2 - padding.left, -offset - tickFont.size / 2 - padding.top, width + padding.width, tickFont.size + padding.height);
+      }
+      renderText(ctx, tick.label, 0, -offset, tickFont, {
+        color: optsAtIndex.color,
+        strokeColor: optsAtIndex.textStrokeColor,
+        strokeWidth: optsAtIndex.textStrokeWidth
+      });
+    });
+    ctx.restore();
+  }
+  drawTitle() {
+  }
+};
+var INTERVALS = {
+  millisecond: {
+    common: true,
+    size: 1,
+    steps: 1e3
+  },
+  second: {
+    common: true,
+    size: 1e3,
+    steps: 60
+  },
+  minute: {
+    common: true,
+    size: 6e4,
+    steps: 60
+  },
+  hour: {
+    common: true,
+    size: 36e5,
+    steps: 24
+  },
+  day: {
+    common: true,
+    size: 864e5,
+    steps: 30
+  },
+  week: {
+    common: false,
+    size: 6048e5,
+    steps: 4
+  },
+  month: {
+    common: true,
+    size: 2628e6,
+    steps: 12
+  },
+  quarter: {
+    common: false,
+    size: 7884e6,
+    steps: 4
+  },
+  year: {
+    common: true,
+    size: 3154e7
+  }
+};
+var UNITS = /* @__PURE__ */ Object.keys(INTERVALS);
 function sorter(a, b) {
   return a - b;
 }
@@ -8710,6 +14466,293 @@ function ticksFromTimestamps(scale, values, majorUnit) {
   }
   return ilen === 0 || !majorUnit ? ticks : setMajorTicks(scale, ticks, map3, majorUnit);
 }
+var TimeScale = class extends Scale {
+  static id = "time";
+  static defaults = {
+    bounds: "data",
+    adapters: {},
+    time: {
+      parser: false,
+      unit: false,
+      round: false,
+      isoWeekday: false,
+      minUnit: "millisecond",
+      displayFormats: {}
+    },
+    ticks: {
+      source: "auto",
+      callback: false,
+      major: {
+        enabled: false
+      }
+    }
+  };
+  constructor(props) {
+    super(props);
+    this._cache = {
+      data: [],
+      labels: [],
+      all: []
+    };
+    this._unit = "day";
+    this._majorUnit = void 0;
+    this._offsets = {};
+    this._normalized = false;
+    this._parseOpts = void 0;
+  }
+  init(scaleOpts, opts = {}) {
+    const time = scaleOpts.time || (scaleOpts.time = {});
+    const adapter = this._adapter = new adapters._date(scaleOpts.adapters.date);
+    adapter.init(opts);
+    mergeIf(time.displayFormats, adapter.formats());
+    this._parseOpts = {
+      parser: time.parser,
+      round: time.round,
+      isoWeekday: time.isoWeekday
+    };
+    super.init(scaleOpts);
+    this._normalized = opts.normalized;
+  }
+  parse(raw, index2) {
+    if (raw === void 0) {
+      return null;
+    }
+    return parse(this, raw);
+  }
+  beforeLayout() {
+    super.beforeLayout();
+    this._cache = {
+      data: [],
+      labels: [],
+      all: []
+    };
+  }
+  determineDataLimits() {
+    const options = this.options;
+    const adapter = this._adapter;
+    const unit = options.time.unit || "day";
+    let { min, max, minDefined, maxDefined } = this.getUserBounds();
+    function _applyBounds(bounds) {
+      if (!minDefined && !isNaN(bounds.min)) {
+        min = Math.min(min, bounds.min);
+      }
+      if (!maxDefined && !isNaN(bounds.max)) {
+        max = Math.max(max, bounds.max);
+      }
+    }
+    if (!minDefined || !maxDefined) {
+      _applyBounds(this._getLabelBounds());
+      if (options.bounds !== "ticks" || options.ticks.source !== "labels") {
+        _applyBounds(this.getMinMax(false));
+      }
+    }
+    min = isNumberFinite(min) && !isNaN(min) ? min : +adapter.startOf(Date.now(), unit);
+    max = isNumberFinite(max) && !isNaN(max) ? max : +adapter.endOf(Date.now(), unit) + 1;
+    this.min = Math.min(min, max - 1);
+    this.max = Math.max(min + 1, max);
+  }
+  _getLabelBounds() {
+    const arr = this.getLabelTimestamps();
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    if (arr.length) {
+      min = arr[0];
+      max = arr[arr.length - 1];
+    }
+    return {
+      min,
+      max
+    };
+  }
+  buildTicks() {
+    const options = this.options;
+    const timeOpts = options.time;
+    const tickOpts = options.ticks;
+    const timestamps = tickOpts.source === "labels" ? this.getLabelTimestamps() : this._generate();
+    if (options.bounds === "ticks" && timestamps.length) {
+      this.min = this._userMin || timestamps[0];
+      this.max = this._userMax || timestamps[timestamps.length - 1];
+    }
+    const min = this.min;
+    const max = this.max;
+    const ticks = _filterBetween(timestamps, min, max);
+    this._unit = timeOpts.unit || (tickOpts.autoSkip ? determineUnitForAutoTicks(timeOpts.minUnit, this.min, this.max, this._getLabelCapacity(min)) : determineUnitForFormatting(this, ticks.length, timeOpts.minUnit, this.min, this.max));
+    this._majorUnit = !tickOpts.major.enabled || this._unit === "year" ? void 0 : determineMajorUnit(this._unit);
+    this.initOffsets(timestamps);
+    if (options.reverse) {
+      ticks.reverse();
+    }
+    return ticksFromTimestamps(this, ticks, this._majorUnit);
+  }
+  afterAutoSkip() {
+    if (this.options.offsetAfterAutoskip) {
+      this.initOffsets(this.ticks.map((tick) => +tick.value));
+    }
+  }
+  initOffsets(timestamps = []) {
+    let start = 0;
+    let end = 0;
+    let first, last;
+    if (this.options.offset && timestamps.length) {
+      first = this.getDecimalForValue(timestamps[0]);
+      if (timestamps.length === 1) {
+        start = 1 - first;
+      } else {
+        start = (this.getDecimalForValue(timestamps[1]) - first) / 2;
+      }
+      last = this.getDecimalForValue(timestamps[timestamps.length - 1]);
+      if (timestamps.length === 1) {
+        end = last;
+      } else {
+        end = (last - this.getDecimalForValue(timestamps[timestamps.length - 2])) / 2;
+      }
+    }
+    const limit = timestamps.length < 3 ? 0.5 : 0.25;
+    start = _limitValue(start, 0, limit);
+    end = _limitValue(end, 0, limit);
+    this._offsets = {
+      start,
+      end,
+      factor: 1 / (start + 1 + end)
+    };
+  }
+  _generate() {
+    const adapter = this._adapter;
+    const min = this.min;
+    const max = this.max;
+    const options = this.options;
+    const timeOpts = options.time;
+    const minor = timeOpts.unit || determineUnitForAutoTicks(timeOpts.minUnit, min, max, this._getLabelCapacity(min));
+    const stepSize = valueOrDefault(options.ticks.stepSize, 1);
+    const weekday = minor === "week" ? timeOpts.isoWeekday : false;
+    const hasWeekday = isNumber(weekday) || weekday === true;
+    const ticks = {};
+    let first = min;
+    let time, count;
+    if (hasWeekday) {
+      first = +adapter.startOf(first, "isoWeek", weekday);
+    }
+    first = +adapter.startOf(first, hasWeekday ? "day" : minor);
+    if (adapter.diff(max, min, minor) > 1e5 * stepSize) {
+      throw new Error(min + " and " + max + " are too far apart with stepSize of " + stepSize + " " + minor);
+    }
+    const timestamps = options.ticks.source === "data" && this.getDataTimestamps();
+    for (time = first, count = 0; time < max; time = +adapter.add(time, stepSize, minor), count++) {
+      addTick(ticks, time, timestamps);
+    }
+    if (time === max || options.bounds === "ticks" || count === 1) {
+      addTick(ticks, time, timestamps);
+    }
+    return Object.keys(ticks).sort(sorter).map((x) => +x);
+  }
+  getLabelForValue(value) {
+    const adapter = this._adapter;
+    const timeOpts = this.options.time;
+    if (timeOpts.tooltipFormat) {
+      return adapter.format(value, timeOpts.tooltipFormat);
+    }
+    return adapter.format(value, timeOpts.displayFormats.datetime);
+  }
+  format(value, format) {
+    const options = this.options;
+    const formats = options.time.displayFormats;
+    const unit = this._unit;
+    const fmt = format || formats[unit];
+    return this._adapter.format(value, fmt);
+  }
+  _tickFormatFunction(time, index2, ticks, format) {
+    const options = this.options;
+    const formatter = options.ticks.callback;
+    if (formatter) {
+      return callback(formatter, [
+        time,
+        index2,
+        ticks
+      ], this);
+    }
+    const formats = options.time.displayFormats;
+    const unit = this._unit;
+    const majorUnit = this._majorUnit;
+    const minorFormat = unit && formats[unit];
+    const majorFormat = majorUnit && formats[majorUnit];
+    const tick = ticks[index2];
+    const major = majorUnit && majorFormat && tick && tick.major;
+    return this._adapter.format(time, format || (major ? majorFormat : minorFormat));
+  }
+  generateTickLabels(ticks) {
+    let i, ilen, tick;
+    for (i = 0, ilen = ticks.length; i < ilen; ++i) {
+      tick = ticks[i];
+      tick.label = this._tickFormatFunction(tick.value, i, ticks);
+    }
+  }
+  getDecimalForValue(value) {
+    return value === null ? NaN : (value - this.min) / (this.max - this.min);
+  }
+  getPixelForValue(value) {
+    const offsets = this._offsets;
+    const pos = this.getDecimalForValue(value);
+    return this.getPixelForDecimal((offsets.start + pos) * offsets.factor);
+  }
+  getValueForPixel(pixel) {
+    const offsets = this._offsets;
+    const pos = this.getDecimalForPixel(pixel) / offsets.factor - offsets.end;
+    return this.min + pos * (this.max - this.min);
+  }
+  _getLabelSize(label) {
+    const ticksOpts = this.options.ticks;
+    const tickLabelWidth = this.ctx.measureText(label).width;
+    const angle = toRadians(this.isHorizontal() ? ticksOpts.maxRotation : ticksOpts.minRotation);
+    const cosRotation = Math.cos(angle);
+    const sinRotation = Math.sin(angle);
+    const tickFontSize = this._resolveTickFontOptions(0).size;
+    return {
+      w: tickLabelWidth * cosRotation + tickFontSize * sinRotation,
+      h: tickLabelWidth * sinRotation + tickFontSize * cosRotation
+    };
+  }
+  _getLabelCapacity(exampleTime) {
+    const timeOpts = this.options.time;
+    const displayFormats = timeOpts.displayFormats;
+    const format = displayFormats[timeOpts.unit] || displayFormats.millisecond;
+    const exampleLabel = this._tickFormatFunction(exampleTime, 0, ticksFromTimestamps(this, [
+      exampleTime
+    ], this._majorUnit), format);
+    const size = this._getLabelSize(exampleLabel);
+    const capacity = Math.floor(this.isHorizontal() ? this.width / size.w : this.height / size.h) - 1;
+    return capacity > 0 ? capacity : 1;
+  }
+  getDataTimestamps() {
+    let timestamps = this._cache.data || [];
+    let i, ilen;
+    if (timestamps.length) {
+      return timestamps;
+    }
+    const metas = this.getMatchingVisibleMetas();
+    if (this._normalized && metas.length) {
+      return this._cache.data = metas[0].controller.getAllParsedValues(this);
+    }
+    for (i = 0, ilen = metas.length; i < ilen; ++i) {
+      timestamps = timestamps.concat(metas[i].controller.getAllParsedValues(this));
+    }
+    return this._cache.data = this.normalize(timestamps);
+  }
+  getLabelTimestamps() {
+    const timestamps = this._cache.labels || [];
+    let i, ilen;
+    if (timestamps.length) {
+      return timestamps;
+    }
+    const labels = this.getLabels();
+    for (i = 0, ilen = labels.length; i < ilen; ++i) {
+      timestamps.push(parse(this, labels[i]));
+    }
+    return this._cache.labels = this._normalized ? timestamps : this.normalize(timestamps);
+  }
+  normalize(values) {
+    return _arrayUnique(values.sort(sorter));
+  }
+};
 function interpolate2(table, val, reverse) {
   let lo = 0;
   let hi = table.length - 1;
@@ -8730,8002 +14773,124 @@ function interpolate2(table, val, reverse) {
   const span = nextSource - prevSource;
   return span ? prevTarget + (nextTarget - prevTarget) * (val - prevSource) / span : prevTarget;
 }
-var Animator, animator, transparent, interpolators, Animation, Animations, isDirectUpdateMode, cloneIfNotShared, createStack, DatasetController, BarController, BubbleController, DoughnutController, LineController, PolarAreaController, PieController, RadarController, ScatterController, controllers, DateAdapterBase, adapters, Interaction, STATIC_POSITIONS, layouts, BasePlatform, BasicPlatform, EXPANDO_KEY, EVENT_TYPES, isNullOrEmpty, eventListenerOptions, drpListeningCharts, oldDevicePixelRatio, DomPlatform, Element, reverseAlign, offsetFromEdge, getTicksLimit, Scale, TypedRegistry, Registry, registry, PluginService, keyCache, keysCached, addIfFound, Config, hasFunction, version, KNOWN_POSITIONS, instances, getChart, Chart, ArcElement, usePath2D, LineElement, PointElement, BarElement, elements, BORDER_COLORS, BACKGROUND_COLORS, plugin_colors, plugin_decimation, simpleArc, index, getBoxSize, itemsEqual, Legend, plugin_legend, Title, plugin_title, map2, plugin_subtitle, positioners, defaultCallbacks, Tooltip, plugin_tooltip, plugins, addIfString, validIndex, CategoryScale, LinearScaleBase, LinearScale, log10Floor, changeExponent, LogarithmicScale, RadialLinearScale, INTERVALS, UNITS, TimeScale, TimeSeriesScale, scales, registerables;
-var init_chart = __esm({
-  "node_modules/chart.js/dist/chart.js"() {
-    init_helpers_dataset();
-    Animator = class {
-      constructor() {
-        this._request = null;
-        this._charts = /* @__PURE__ */ new Map();
-        this._running = false;
-        this._lastDate = void 0;
-      }
-      _notify(chart, anims, date, type) {
-        const callbacks = anims.listeners[type];
-        const numSteps = anims.duration;
-        callbacks.forEach((fn) => fn({
-          chart,
-          initial: anims.initial,
-          numSteps,
-          currentStep: Math.min(date - anims.start, numSteps)
-        }));
-      }
-      _refresh() {
-        if (this._request) {
-          return;
-        }
-        this._running = true;
-        this._request = requestAnimFrame.call(window, () => {
-          this._update();
-          this._request = null;
-          if (this._running) {
-            this._refresh();
-          }
-        });
-      }
-      _update(date = Date.now()) {
-        let remaining = 0;
-        this._charts.forEach((anims, chart) => {
-          if (!anims.running || !anims.items.length) {
-            return;
-          }
-          const items = anims.items;
-          let i = items.length - 1;
-          let draw2 = false;
-          let item;
-          for (; i >= 0; --i) {
-            item = items[i];
-            if (item._active) {
-              if (item._total > anims.duration) {
-                anims.duration = item._total;
-              }
-              item.tick(date);
-              draw2 = true;
-            } else {
-              items[i] = items[items.length - 1];
-              items.pop();
-            }
-          }
-          if (draw2) {
-            chart.draw();
-            this._notify(chart, anims, date, "progress");
-          }
-          if (!items.length) {
-            anims.running = false;
-            this._notify(chart, anims, date, "complete");
-            anims.initial = false;
-          }
-          remaining += items.length;
-        });
-        this._lastDate = date;
-        if (remaining === 0) {
-          this._running = false;
-        }
-      }
-      _getAnims(chart) {
-        const charts = this._charts;
-        let anims = charts.get(chart);
-        if (!anims) {
-          anims = {
-            running: false,
-            initial: true,
-            items: [],
-            listeners: {
-              complete: [],
-              progress: []
-            }
-          };
-          charts.set(chart, anims);
-        }
-        return anims;
-      }
-      listen(chart, event, cb) {
-        this._getAnims(chart).listeners[event].push(cb);
-      }
-      add(chart, items) {
-        if (!items || !items.length) {
-          return;
-        }
-        this._getAnims(chart).items.push(...items);
-      }
-      has(chart) {
-        return this._getAnims(chart).items.length > 0;
-      }
-      start(chart) {
-        const anims = this._charts.get(chart);
-        if (!anims) {
-          return;
-        }
-        anims.running = true;
-        anims.start = Date.now();
-        anims.duration = anims.items.reduce((acc, cur) => Math.max(acc, cur._duration), 0);
-        this._refresh();
-      }
-      running(chart) {
-        if (!this._running) {
-          return false;
-        }
-        const anims = this._charts.get(chart);
-        if (!anims || !anims.running || !anims.items.length) {
-          return false;
-        }
-        return true;
-      }
-      stop(chart) {
-        const anims = this._charts.get(chart);
-        if (!anims || !anims.items.length) {
-          return;
-        }
-        const items = anims.items;
-        let i = items.length - 1;
-        for (; i >= 0; --i) {
-          items[i].cancel();
-        }
-        anims.items = [];
-        this._notify(chart, anims, Date.now(), "complete");
-      }
-      remove(chart) {
-        return this._charts.delete(chart);
-      }
-    };
-    animator = /* @__PURE__ */ new Animator();
-    transparent = "transparent";
-    interpolators = {
-      boolean(from2, to2, factor) {
-        return factor > 0.5 ? to2 : from2;
-      },
-      color(from2, to2, factor) {
-        const c0 = color(from2 || transparent);
-        const c1 = c0.valid && color(to2 || transparent);
-        return c1 && c1.valid ? c1.mix(c0, factor).hexString() : to2;
-      },
-      number(from2, to2, factor) {
-        return from2 + (to2 - from2) * factor;
-      }
-    };
-    Animation = class {
-      constructor(cfg, target, prop, to2) {
-        const currentValue = target[prop];
-        to2 = resolve([
-          cfg.to,
-          to2,
-          currentValue,
-          cfg.from
-        ]);
-        const from2 = resolve([
-          cfg.from,
-          currentValue,
-          to2
-        ]);
-        this._active = true;
-        this._fn = cfg.fn || interpolators[cfg.type || typeof from2];
-        this._easing = effects[cfg.easing] || effects.linear;
-        this._start = Math.floor(Date.now() + (cfg.delay || 0));
-        this._duration = this._total = Math.floor(cfg.duration);
-        this._loop = !!cfg.loop;
-        this._target = target;
-        this._prop = prop;
-        this._from = from2;
-        this._to = to2;
-        this._promises = void 0;
-      }
-      active() {
-        return this._active;
-      }
-      update(cfg, to2, date) {
-        if (this._active) {
-          this._notify(false);
-          const currentValue = this._target[this._prop];
-          const elapsed = date - this._start;
-          const remain = this._duration - elapsed;
-          this._start = date;
-          this._duration = Math.floor(Math.max(remain, cfg.duration));
-          this._total += elapsed;
-          this._loop = !!cfg.loop;
-          this._to = resolve([
-            cfg.to,
-            to2,
-            currentValue,
-            cfg.from
-          ]);
-          this._from = resolve([
-            cfg.from,
-            currentValue,
-            to2
-          ]);
-        }
-      }
-      cancel() {
-        if (this._active) {
-          this.tick(Date.now());
-          this._active = false;
-          this._notify(false);
-        }
-      }
-      tick(date) {
-        const elapsed = date - this._start;
-        const duration = this._duration;
-        const prop = this._prop;
-        const from2 = this._from;
-        const loop = this._loop;
-        const to2 = this._to;
-        let factor;
-        this._active = from2 !== to2 && (loop || elapsed < duration);
-        if (!this._active) {
-          this._target[prop] = to2;
-          this._notify(true);
-          return;
-        }
-        if (elapsed < 0) {
-          this._target[prop] = from2;
-          return;
-        }
-        factor = elapsed / duration % 2;
-        factor = loop && factor > 1 ? 2 - factor : factor;
-        factor = this._easing(Math.min(1, Math.max(0, factor)));
-        this._target[prop] = this._fn(from2, to2, factor);
-      }
-      wait() {
-        const promises = this._promises || (this._promises = []);
-        return new Promise((res, rej) => {
-          promises.push({
-            res,
-            rej
-          });
-        });
-      }
-      _notify(resolved) {
-        const method = resolved ? "res" : "rej";
-        const promises = this._promises || [];
-        for (let i = 0; i < promises.length; i++) {
-          promises[i][method]();
-        }
-      }
-    };
-    Animations = class {
-      constructor(chart, config) {
-        this._chart = chart;
-        this._properties = /* @__PURE__ */ new Map();
-        this.configure(config);
-      }
-      configure(config) {
-        if (!isObject(config)) {
-          return;
-        }
-        const animationOptions = Object.keys(defaults.animation);
-        const animatedProps = this._properties;
-        Object.getOwnPropertyNames(config).forEach((key) => {
-          const cfg = config[key];
-          if (!isObject(cfg)) {
-            return;
-          }
-          const resolved = {};
-          for (const option of animationOptions) {
-            resolved[option] = cfg[option];
-          }
-          (isArray(cfg.properties) && cfg.properties || [
-            key
-          ]).forEach((prop) => {
-            if (prop === key || !animatedProps.has(prop)) {
-              animatedProps.set(prop, resolved);
-            }
-          });
-        });
-      }
-      _animateOptions(target, values) {
-        const newOptions = values.options;
-        const options = resolveTargetOptions(target, newOptions);
-        if (!options) {
-          return [];
-        }
-        const animations = this._createAnimations(options, newOptions);
-        if (newOptions.$shared) {
-          awaitAll(target.options.$animations, newOptions).then(() => {
-            target.options = newOptions;
-          }, () => {
-          });
-        }
-        return animations;
-      }
-      _createAnimations(target, values) {
-        const animatedProps = this._properties;
-        const animations = [];
-        const running = target.$animations || (target.$animations = {});
-        const props = Object.keys(values);
-        const date = Date.now();
-        let i;
-        for (i = props.length - 1; i >= 0; --i) {
-          const prop = props[i];
-          if (prop.charAt(0) === "$") {
-            continue;
-          }
-          if (prop === "options") {
-            animations.push(...this._animateOptions(target, values));
-            continue;
-          }
-          const value = values[prop];
-          let animation = running[prop];
-          const cfg = animatedProps.get(prop);
-          if (animation) {
-            if (cfg && animation.active()) {
-              animation.update(cfg, value, date);
-              continue;
-            } else {
-              animation.cancel();
-            }
-          }
-          if (!cfg || !cfg.duration) {
-            target[prop] = value;
-            continue;
-          }
-          running[prop] = animation = new Animation(cfg, target, prop, value);
-          animations.push(animation);
-        }
-        return animations;
-      }
-      update(target, values) {
-        if (this._properties.size === 0) {
-          Object.assign(target, values);
-          return;
-        }
-        const animations = this._createAnimations(target, values);
-        if (animations.length) {
-          animator.add(this._chart, animations);
-          return true;
-        }
-      }
-    };
-    isDirectUpdateMode = (mode) => mode === "reset" || mode === "none";
-    cloneIfNotShared = (cached, shared) => shared ? cached : Object.assign({}, cached);
-    createStack = (canStack, meta, chart) => canStack && !meta.hidden && meta._stacked && {
-      keys: getSortedDatasetIndices(chart, true),
-      values: null
-    };
-    DatasetController = class {
-      static defaults = {};
-      static datasetElementType = null;
-      static dataElementType = null;
-      constructor(chart, datasetIndex) {
-        this.chart = chart;
-        this._ctx = chart.ctx;
-        this.index = datasetIndex;
-        this._cachedDataOpts = {};
-        this._cachedMeta = this.getMeta();
-        this._type = this._cachedMeta.type;
-        this.options = void 0;
-        this._parsing = false;
-        this._data = void 0;
-        this._objectData = void 0;
-        this._sharedOptions = void 0;
-        this._drawStart = void 0;
-        this._drawCount = void 0;
-        this.enableOptionSharing = false;
-        this.supportsDecimation = false;
-        this.$context = void 0;
-        this._syncList = [];
-        this.datasetElementType = new.target.datasetElementType;
-        this.dataElementType = new.target.dataElementType;
-        this.initialize();
-      }
-      initialize() {
-        const meta = this._cachedMeta;
-        this.configure();
-        this.linkScales();
-        meta._stacked = isStacked(meta.vScale, meta);
-        this.addElements();
-        if (this.options.fill && !this.chart.isPluginEnabled("filler")) {
-          console.warn("Tried to use the 'fill' option without the 'Filler' plugin enabled. Please import and register the 'Filler' plugin and make sure it is not disabled in the options");
-        }
-      }
-      updateIndex(datasetIndex) {
-        if (this.index !== datasetIndex) {
-          clearStacks(this._cachedMeta);
-        }
-        this.index = datasetIndex;
-      }
-      linkScales() {
-        const chart = this.chart;
-        const meta = this._cachedMeta;
-        const dataset = this.getDataset();
-        const chooseId = (axis, x, y, r) => axis === "x" ? x : axis === "r" ? r : y;
-        const xid = meta.xAxisID = valueOrDefault(dataset.xAxisID, getFirstScaleId(chart, "x"));
-        const yid = meta.yAxisID = valueOrDefault(dataset.yAxisID, getFirstScaleId(chart, "y"));
-        const rid = meta.rAxisID = valueOrDefault(dataset.rAxisID, getFirstScaleId(chart, "r"));
-        const indexAxis = meta.indexAxis;
-        const iid = meta.iAxisID = chooseId(indexAxis, xid, yid, rid);
-        const vid = meta.vAxisID = chooseId(indexAxis, yid, xid, rid);
-        meta.xScale = this.getScaleForId(xid);
-        meta.yScale = this.getScaleForId(yid);
-        meta.rScale = this.getScaleForId(rid);
-        meta.iScale = this.getScaleForId(iid);
-        meta.vScale = this.getScaleForId(vid);
-      }
-      getDataset() {
-        return this.chart.data.datasets[this.index];
-      }
-      getMeta() {
-        return this.chart.getDatasetMeta(this.index);
-      }
-      getScaleForId(scaleID) {
-        return this.chart.scales[scaleID];
-      }
-      _getOtherScale(scale) {
-        const meta = this._cachedMeta;
-        return scale === meta.iScale ? meta.vScale : meta.iScale;
-      }
-      reset() {
-        this._update("reset");
-      }
-      _destroy() {
-        const meta = this._cachedMeta;
-        if (this._data) {
-          unlistenArrayEvents(this._data, this);
-        }
-        if (meta._stacked) {
-          clearStacks(meta);
-        }
-      }
-      _dataCheck() {
-        const dataset = this.getDataset();
-        const data = dataset.data || (dataset.data = []);
-        const _data = this._data;
-        if (isObject(data)) {
-          const meta = this._cachedMeta;
-          this._data = convertObjectDataToArray(data, meta);
-        } else if (_data !== data) {
-          if (_data) {
-            unlistenArrayEvents(_data, this);
-            const meta = this._cachedMeta;
-            clearStacks(meta);
-            meta._parsed = [];
-          }
-          if (data && Object.isExtensible(data)) {
-            listenArrayEvents(data, this);
-          }
-          this._syncList = [];
-          this._data = data;
-        }
-      }
-      addElements() {
-        const meta = this._cachedMeta;
-        this._dataCheck();
-        if (this.datasetElementType) {
-          meta.dataset = new this.datasetElementType();
-        }
-      }
-      buildOrUpdateElements(resetNewElements) {
-        const meta = this._cachedMeta;
-        const dataset = this.getDataset();
-        let stackChanged = false;
-        this._dataCheck();
-        const oldStacked = meta._stacked;
-        meta._stacked = isStacked(meta.vScale, meta);
-        if (meta.stack !== dataset.stack) {
-          stackChanged = true;
-          clearStacks(meta);
-          meta.stack = dataset.stack;
-        }
-        this._resyncElements(resetNewElements);
-        if (stackChanged || oldStacked !== meta._stacked) {
-          updateStacks(this, meta._parsed);
-          meta._stacked = isStacked(meta.vScale, meta);
-        }
-      }
-      configure() {
-        const config = this.chart.config;
-        const scopeKeys = config.datasetScopeKeys(this._type);
-        const scopes = config.getOptionScopes(this.getDataset(), scopeKeys, true);
-        this.options = config.createResolver(scopes, this.getContext());
-        this._parsing = this.options.parsing;
-        this._cachedDataOpts = {};
-      }
-      parse(start, count) {
-        const { _cachedMeta: meta, _data: data } = this;
-        const { iScale, _stacked } = meta;
-        const iAxis = iScale.axis;
-        let sorted = start === 0 && count === data.length ? true : meta._sorted;
-        let prev = start > 0 && meta._parsed[start - 1];
-        let i, cur, parsed;
-        if (this._parsing === false) {
-          meta._parsed = data;
-          meta._sorted = true;
-          parsed = data;
-        } else {
-          if (isArray(data[start])) {
-            parsed = this.parseArrayData(meta, data, start, count);
-          } else if (isObject(data[start])) {
-            parsed = this.parseObjectData(meta, data, start, count);
-          } else {
-            parsed = this.parsePrimitiveData(meta, data, start, count);
-          }
-          const isNotInOrderComparedToPrev = () => cur[iAxis] === null || prev && cur[iAxis] < prev[iAxis];
-          for (i = 0; i < count; ++i) {
-            meta._parsed[i + start] = cur = parsed[i];
-            if (sorted) {
-              if (isNotInOrderComparedToPrev()) {
-                sorted = false;
-              }
-              prev = cur;
-            }
-          }
-          meta._sorted = sorted;
-        }
-        if (_stacked) {
-          updateStacks(this, parsed);
-        }
-      }
-      parsePrimitiveData(meta, data, start, count) {
-        const { iScale, vScale } = meta;
-        const iAxis = iScale.axis;
-        const vAxis = vScale.axis;
-        const labels = iScale.getLabels();
-        const singleScale = iScale === vScale;
-        const parsed = new Array(count);
-        let i, ilen, index2;
-        for (i = 0, ilen = count; i < ilen; ++i) {
-          index2 = i + start;
-          parsed[i] = {
-            [iAxis]: singleScale || iScale.parse(labels[index2], index2),
-            [vAxis]: vScale.parse(data[index2], index2)
-          };
-        }
-        return parsed;
-      }
-      parseArrayData(meta, data, start, count) {
-        const { xScale, yScale } = meta;
-        const parsed = new Array(count);
-        let i, ilen, index2, item;
-        for (i = 0, ilen = count; i < ilen; ++i) {
-          index2 = i + start;
-          item = data[index2];
-          parsed[i] = {
-            x: xScale.parse(item[0], index2),
-            y: yScale.parse(item[1], index2)
-          };
-        }
-        return parsed;
-      }
-      parseObjectData(meta, data, start, count) {
-        const { xScale, yScale } = meta;
-        const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
-        const parsed = new Array(count);
-        let i, ilen, index2, item;
-        for (i = 0, ilen = count; i < ilen; ++i) {
-          index2 = i + start;
-          item = data[index2];
-          parsed[i] = {
-            x: xScale.parse(resolveObjectKey(item, xAxisKey), index2),
-            y: yScale.parse(resolveObjectKey(item, yAxisKey), index2)
-          };
-        }
-        return parsed;
-      }
-      getParsed(index2) {
-        return this._cachedMeta._parsed[index2];
-      }
-      getDataElement(index2) {
-        return this._cachedMeta.data[index2];
-      }
-      applyStack(scale, parsed, mode) {
-        const chart = this.chart;
-        const meta = this._cachedMeta;
-        const value = parsed[scale.axis];
-        const stack = {
-          keys: getSortedDatasetIndices(chart, true),
-          values: parsed._stacks[scale.axis]._visualValues
-        };
-        return applyStack(stack, value, meta.index, {
-          mode
-        });
-      }
-      updateRangeFromParsed(range, scale, parsed, stack) {
-        const parsedValue = parsed[scale.axis];
-        let value = parsedValue === null ? NaN : parsedValue;
-        const values = stack && parsed._stacks[scale.axis];
-        if (stack && values) {
-          stack.values = values;
-          value = applyStack(stack, parsedValue, this._cachedMeta.index);
-        }
-        range.min = Math.min(range.min, value);
-        range.max = Math.max(range.max, value);
-      }
-      getMinMax(scale, canStack) {
-        const meta = this._cachedMeta;
-        const _parsed = meta._parsed;
-        const sorted = meta._sorted && scale === meta.iScale;
-        const ilen = _parsed.length;
-        const otherScale = this._getOtherScale(scale);
-        const stack = createStack(canStack, meta, this.chart);
-        const range = {
-          min: Number.POSITIVE_INFINITY,
-          max: Number.NEGATIVE_INFINITY
-        };
-        const { min: otherMin, max: otherMax } = getUserBounds(otherScale);
-        let i, parsed;
-        function _skip() {
-          parsed = _parsed[i];
-          const otherValue = parsed[otherScale.axis];
-          return !isNumberFinite(parsed[scale.axis]) || otherMin > otherValue || otherMax < otherValue;
-        }
-        for (i = 0; i < ilen; ++i) {
-          if (_skip()) {
-            continue;
-          }
-          this.updateRangeFromParsed(range, scale, parsed, stack);
-          if (sorted) {
-            break;
-          }
-        }
-        if (sorted) {
-          for (i = ilen - 1; i >= 0; --i) {
-            if (_skip()) {
-              continue;
-            }
-            this.updateRangeFromParsed(range, scale, parsed, stack);
-            break;
-          }
-        }
-        return range;
-      }
-      getAllParsedValues(scale) {
-        const parsed = this._cachedMeta._parsed;
-        const values = [];
-        let i, ilen, value;
-        for (i = 0, ilen = parsed.length; i < ilen; ++i) {
-          value = parsed[i][scale.axis];
-          if (isNumberFinite(value)) {
-            values.push(value);
-          }
-        }
-        return values;
-      }
-      getMaxOverflow() {
-        return false;
-      }
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const iScale = meta.iScale;
-        const vScale = meta.vScale;
-        const parsed = this.getParsed(index2);
-        return {
-          label: iScale ? "" + iScale.getLabelForValue(parsed[iScale.axis]) : "",
-          value: vScale ? "" + vScale.getLabelForValue(parsed[vScale.axis]) : ""
-        };
-      }
-      _update(mode) {
-        const meta = this._cachedMeta;
-        this.update(mode || "default");
-        meta._clip = toClip(valueOrDefault(this.options.clip, defaultClip(meta.xScale, meta.yScale, this.getMaxOverflow())));
-      }
-      update(mode) {
-      }
-      draw() {
-        const ctx = this._ctx;
-        const chart = this.chart;
-        const meta = this._cachedMeta;
-        const elements2 = meta.data || [];
-        const area = chart.chartArea;
-        const active = [];
-        const start = this._drawStart || 0;
-        const count = this._drawCount || elements2.length - start;
-        const drawActiveElementsOnTop = this.options.drawActiveElementsOnTop;
-        let i;
-        if (meta.dataset) {
-          meta.dataset.draw(ctx, area, start, count);
-        }
-        for (i = start; i < start + count; ++i) {
-          const element = elements2[i];
-          if (element.hidden) {
-            continue;
-          }
-          if (element.active && drawActiveElementsOnTop) {
-            active.push(element);
-          } else {
-            element.draw(ctx, area);
-          }
-        }
-        for (i = 0; i < active.length; ++i) {
-          active[i].draw(ctx, area);
-        }
-      }
-      getStyle(index2, active) {
-        const mode = active ? "active" : "default";
-        return index2 === void 0 && this._cachedMeta.dataset ? this.resolveDatasetElementOptions(mode) : this.resolveDataElementOptions(index2 || 0, mode);
-      }
-      getContext(index2, active, mode) {
-        const dataset = this.getDataset();
-        let context;
-        if (index2 >= 0 && index2 < this._cachedMeta.data.length) {
-          const element = this._cachedMeta.data[index2];
-          context = element.$context || (element.$context = createDataContext(this.getContext(), index2, element));
-          context.parsed = this.getParsed(index2);
-          context.raw = dataset.data[index2];
-          context.index = context.dataIndex = index2;
-        } else {
-          context = this.$context || (this.$context = createDatasetContext(this.chart.getContext(), this.index));
-          context.dataset = dataset;
-          context.index = context.datasetIndex = this.index;
-        }
-        context.active = !!active;
-        context.mode = mode;
-        return context;
-      }
-      resolveDatasetElementOptions(mode) {
-        return this._resolveElementOptions(this.datasetElementType.id, mode);
-      }
-      resolveDataElementOptions(index2, mode) {
-        return this._resolveElementOptions(this.dataElementType.id, mode, index2);
-      }
-      _resolveElementOptions(elementType, mode = "default", index2) {
-        const active = mode === "active";
-        const cache = this._cachedDataOpts;
-        const cacheKey = elementType + "-" + mode;
-        const cached = cache[cacheKey];
-        const sharing = this.enableOptionSharing && defined(index2);
-        if (cached) {
-          return cloneIfNotShared(cached, sharing);
-        }
-        const config = this.chart.config;
-        const scopeKeys = config.datasetElementScopeKeys(this._type, elementType);
-        const prefixes = active ? [
-          `${elementType}Hover`,
-          "hover",
-          elementType,
-          ""
-        ] : [
-          elementType,
-          ""
-        ];
-        const scopes = config.getOptionScopes(this.getDataset(), scopeKeys);
-        const names2 = Object.keys(defaults.elements[elementType]);
-        const context = () => this.getContext(index2, active, mode);
-        const values = config.resolveNamedOptions(scopes, names2, context, prefixes);
-        if (values.$shared) {
-          values.$shared = sharing;
-          cache[cacheKey] = Object.freeze(cloneIfNotShared(values, sharing));
-        }
-        return values;
-      }
-      _resolveAnimations(index2, transition, active) {
-        const chart = this.chart;
-        const cache = this._cachedDataOpts;
-        const cacheKey = `animation-${transition}`;
-        const cached = cache[cacheKey];
-        if (cached) {
-          return cached;
-        }
-        let options;
-        if (chart.options.animation !== false) {
-          const config = this.chart.config;
-          const scopeKeys = config.datasetAnimationScopeKeys(this._type, transition);
-          const scopes = config.getOptionScopes(this.getDataset(), scopeKeys);
-          options = config.createResolver(scopes, this.getContext(index2, active, transition));
-        }
-        const animations = new Animations(chart, options && options.animations);
-        if (options && options._cacheable) {
-          cache[cacheKey] = Object.freeze(animations);
-        }
-        return animations;
-      }
-      getSharedOptions(options) {
-        if (!options.$shared) {
-          return;
-        }
-        return this._sharedOptions || (this._sharedOptions = Object.assign({}, options));
-      }
-      includeOptions(mode, sharedOptions) {
-        return !sharedOptions || isDirectUpdateMode(mode) || this.chart._animationsDisabled;
-      }
-      _getSharedOptions(start, mode) {
-        const firstOpts = this.resolveDataElementOptions(start, mode);
-        const previouslySharedOptions = this._sharedOptions;
-        const sharedOptions = this.getSharedOptions(firstOpts);
-        const includeOptions = this.includeOptions(mode, sharedOptions) || sharedOptions !== previouslySharedOptions;
-        this.updateSharedOptions(sharedOptions, mode, firstOpts);
-        return {
-          sharedOptions,
-          includeOptions
-        };
-      }
-      updateElement(element, index2, properties, mode) {
-        if (isDirectUpdateMode(mode)) {
-          Object.assign(element, properties);
-        } else {
-          this._resolveAnimations(index2, mode).update(element, properties);
-        }
-      }
-      updateSharedOptions(sharedOptions, mode, newOptions) {
-        if (sharedOptions && !isDirectUpdateMode(mode)) {
-          this._resolveAnimations(void 0, mode).update(sharedOptions, newOptions);
-        }
-      }
-      _setStyle(element, index2, mode, active) {
-        element.active = active;
-        const options = this.getStyle(index2, active);
-        this._resolveAnimations(index2, mode, active).update(element, {
-          options: !active && this.getSharedOptions(options) || options
-        });
-      }
-      removeHoverStyle(element, datasetIndex, index2) {
-        this._setStyle(element, index2, "active", false);
-      }
-      setHoverStyle(element, datasetIndex, index2) {
-        this._setStyle(element, index2, "active", true);
-      }
-      _removeDatasetHoverStyle() {
-        const element = this._cachedMeta.dataset;
-        if (element) {
-          this._setStyle(element, void 0, "active", false);
-        }
-      }
-      _setDatasetHoverStyle() {
-        const element = this._cachedMeta.dataset;
-        if (element) {
-          this._setStyle(element, void 0, "active", true);
-        }
-      }
-      _resyncElements(resetNewElements) {
-        const data = this._data;
-        const elements2 = this._cachedMeta.data;
-        for (const [method, arg1, arg2] of this._syncList) {
-          this[method](arg1, arg2);
-        }
-        this._syncList = [];
-        const numMeta = elements2.length;
-        const numData = data.length;
-        const count = Math.min(numData, numMeta);
-        if (count) {
-          this.parse(0, count);
-        }
-        if (numData > numMeta) {
-          this._insertElements(numMeta, numData - numMeta, resetNewElements);
-        } else if (numData < numMeta) {
-          this._removeElements(numData, numMeta - numData);
-        }
-      }
-      _insertElements(start, count, resetNewElements = true) {
-        const meta = this._cachedMeta;
-        const data = meta.data;
-        const end = start + count;
-        let i;
-        const move = (arr) => {
-          arr.length += count;
-          for (i = arr.length - 1; i >= end; i--) {
-            arr[i] = arr[i - count];
-          }
-        };
-        move(data);
-        for (i = start; i < end; ++i) {
-          data[i] = new this.dataElementType();
-        }
-        if (this._parsing) {
-          move(meta._parsed);
-        }
-        this.parse(start, count);
-        if (resetNewElements) {
-          this.updateElements(data, start, count, "reset");
-        }
-      }
-      updateElements(element, start, count, mode) {
-      }
-      _removeElements(start, count) {
-        const meta = this._cachedMeta;
-        if (this._parsing) {
-          const removed = meta._parsed.splice(start, count);
-          if (meta._stacked) {
-            clearStacks(meta, removed);
-          }
-        }
-        meta.data.splice(start, count);
-      }
-      _sync(args) {
-        if (this._parsing) {
-          this._syncList.push(args);
-        } else {
-          const [method, arg1, arg2] = args;
-          this[method](arg1, arg2);
-        }
-        this.chart._dataChanges.push([
-          this.index,
-          ...args
-        ]);
-      }
-      _onDataPush() {
-        const count = arguments.length;
-        this._sync([
-          "_insertElements",
-          this.getDataset().data.length - count,
-          count
-        ]);
-      }
-      _onDataPop() {
-        this._sync([
-          "_removeElements",
-          this._cachedMeta.data.length - 1,
-          1
-        ]);
-      }
-      _onDataShift() {
-        this._sync([
-          "_removeElements",
-          0,
-          1
-        ]);
-      }
-      _onDataSplice(start, count) {
-        if (count) {
-          this._sync([
-            "_removeElements",
-            start,
-            count
-          ]);
-        }
-        const newCount = arguments.length - 2;
-        if (newCount) {
-          this._sync([
-            "_insertElements",
-            start,
-            newCount
-          ]);
-        }
-      }
-      _onDataUnshift() {
-        this._sync([
-          "_insertElements",
-          0,
-          arguments.length
-        ]);
-      }
-    };
-    BarController = class extends DatasetController {
-      static id = "bar";
-      static defaults = {
-        datasetElementType: false,
-        dataElementType: "bar",
-        categoryPercentage: 0.8,
-        barPercentage: 0.9,
-        grouped: true,
-        animations: {
-          numbers: {
-            type: "number",
-            properties: [
-              "x",
-              "y",
-              "base",
-              "width",
-              "height"
-            ]
-          }
-        }
-      };
-      static overrides = {
-        scales: {
-          _index_: {
-            type: "category",
-            offset: true,
-            grid: {
-              offset: true
-            }
-          },
-          _value_: {
-            type: "linear",
-            beginAtZero: true
-          }
-        }
-      };
-      parsePrimitiveData(meta, data, start, count) {
-        return parseArrayOrPrimitive(meta, data, start, count);
-      }
-      parseArrayData(meta, data, start, count) {
-        return parseArrayOrPrimitive(meta, data, start, count);
-      }
-      parseObjectData(meta, data, start, count) {
-        const { iScale, vScale } = meta;
-        const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
-        const iAxisKey = iScale.axis === "x" ? xAxisKey : yAxisKey;
-        const vAxisKey = vScale.axis === "x" ? xAxisKey : yAxisKey;
-        const parsed = [];
-        let i, ilen, item, obj;
-        for (i = start, ilen = start + count; i < ilen; ++i) {
-          obj = data[i];
-          item = {};
-          item[iScale.axis] = iScale.parse(resolveObjectKey(obj, iAxisKey), i);
-          parsed.push(parseValue(resolveObjectKey(obj, vAxisKey), item, vScale, i));
-        }
-        return parsed;
-      }
-      updateRangeFromParsed(range, scale, parsed, stack) {
-        super.updateRangeFromParsed(range, scale, parsed, stack);
-        const custom = parsed._custom;
-        if (custom && scale === this._cachedMeta.vScale) {
-          range.min = Math.min(range.min, custom.min);
-          range.max = Math.max(range.max, custom.max);
-        }
-      }
-      getMaxOverflow() {
-        return 0;
-      }
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const { iScale, vScale } = meta;
-        const parsed = this.getParsed(index2);
-        const custom = parsed._custom;
-        const value = isFloatBar(custom) ? "[" + custom.start + ", " + custom.end + "]" : "" + vScale.getLabelForValue(parsed[vScale.axis]);
-        return {
-          label: "" + iScale.getLabelForValue(parsed[iScale.axis]),
-          value
-        };
-      }
-      initialize() {
-        this.enableOptionSharing = true;
-        super.initialize();
-        const meta = this._cachedMeta;
-        meta.stack = this.getDataset().stack;
-      }
-      update(mode) {
-        const meta = this._cachedMeta;
-        this.updateElements(meta.data, 0, meta.data.length, mode);
-      }
-      updateElements(bars, start, count, mode) {
-        const reset = mode === "reset";
-        const { index: index2, _cachedMeta: { vScale } } = this;
-        const base = vScale.getBasePixel();
-        const horizontal = vScale.isHorizontal();
-        const ruler = this._getRuler();
-        const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-        for (let i = start; i < start + count; i++) {
-          const parsed = this.getParsed(i);
-          const vpixels = reset || isNullOrUndef(parsed[vScale.axis]) ? {
-            base,
-            head: base
-          } : this._calculateBarValuePixels(i);
-          const ipixels = this._calculateBarIndexPixels(i, ruler);
-          const stack = (parsed._stacks || {})[vScale.axis];
-          const properties = {
-            horizontal,
-            base: vpixels.base,
-            enableBorderRadius: !stack || isFloatBar(parsed._custom) || index2 === stack._top || index2 === stack._bottom,
-            x: horizontal ? vpixels.head : ipixels.center,
-            y: horizontal ? ipixels.center : vpixels.head,
-            height: horizontal ? ipixels.size : Math.abs(vpixels.size),
-            width: horizontal ? Math.abs(vpixels.size) : ipixels.size
-          };
-          if (includeOptions) {
-            properties.options = sharedOptions || this.resolveDataElementOptions(i, bars[i].active ? "active" : mode);
-          }
-          const options = properties.options || bars[i].options;
-          setBorderSkipped(properties, options, stack, index2);
-          setInflateAmount(properties, options, ruler.ratio);
-          this.updateElement(bars[i], i, properties, mode);
-        }
-      }
-      _getStacks(last, dataIndex) {
-        const { iScale } = this._cachedMeta;
-        const metasets = iScale.getMatchingVisibleMetas(this._type).filter((meta) => meta.controller.options.grouped);
-        const stacked = iScale.options.stacked;
-        const stacks = [];
-        const currentParsed = this._cachedMeta.controller.getParsed(dataIndex);
-        const iScaleValue = currentParsed && currentParsed[iScale.axis];
-        const skipNull = (meta) => {
-          const parsed = meta._parsed.find((item) => item[iScale.axis] === iScaleValue);
-          const val = parsed && parsed[meta.vScale.axis];
-          if (isNullOrUndef(val) || isNaN(val)) {
-            return true;
-          }
-        };
-        for (const meta of metasets) {
-          if (dataIndex !== void 0 && skipNull(meta)) {
-            continue;
-          }
-          if (stacked === false || stacks.indexOf(meta.stack) === -1 || stacked === void 0 && meta.stack === void 0) {
-            stacks.push(meta.stack);
-          }
-          if (meta.index === last) {
-            break;
-          }
-        }
-        if (!stacks.length) {
-          stacks.push(void 0);
-        }
-        return stacks;
-      }
-      _getStackCount(index2) {
-        return this._getStacks(void 0, index2).length;
-      }
-      _getAxisCount() {
-        return this._getAxis().length;
-      }
-      getFirstScaleIdForIndexAxis() {
-        const scales2 = this.chart.scales;
-        const indexScaleId = this.chart.options.indexAxis;
-        return Object.keys(scales2).filter((key) => scales2[key].axis === indexScaleId).shift();
-      }
-      _getAxis() {
-        const axis = {};
-        const firstScaleAxisId = this.getFirstScaleIdForIndexAxis();
-        for (const dataset of this.chart.data.datasets) {
-          axis[valueOrDefault(this.chart.options.indexAxis === "x" ? dataset.xAxisID : dataset.yAxisID, firstScaleAxisId)] = true;
-        }
-        return Object.keys(axis);
-      }
-      _getStackIndex(datasetIndex, name, dataIndex) {
-        const stacks = this._getStacks(datasetIndex, dataIndex);
-        const index2 = name !== void 0 ? stacks.indexOf(name) : -1;
-        return index2 === -1 ? stacks.length - 1 : index2;
-      }
-      _getRuler() {
-        const opts = this.options;
-        const meta = this._cachedMeta;
-        const iScale = meta.iScale;
-        const pixels = [];
-        let i, ilen;
-        for (i = 0, ilen = meta.data.length; i < ilen; ++i) {
-          pixels.push(iScale.getPixelForValue(this.getParsed(i)[iScale.axis], i));
-        }
-        const barThickness = opts.barThickness;
-        const min = barThickness || computeMinSampleSize(meta);
-        return {
-          min,
-          pixels,
-          start: iScale._startPixel,
-          end: iScale._endPixel,
-          stackCount: this._getStackCount(),
-          scale: iScale,
-          grouped: opts.grouped,
-          ratio: barThickness ? 1 : opts.categoryPercentage * opts.barPercentage
-        };
-      }
-      _calculateBarValuePixels(index2) {
-        const { _cachedMeta: { vScale, _stacked, index: datasetIndex }, options: { base: baseValue, minBarLength } } = this;
-        const actualBase = baseValue || 0;
-        const parsed = this.getParsed(index2);
-        const custom = parsed._custom;
-        const floating = isFloatBar(custom);
-        let value = parsed[vScale.axis];
-        let start = 0;
-        let length = _stacked ? this.applyStack(vScale, parsed, _stacked) : value;
-        let head, size;
-        if (length !== value) {
-          start = length - value;
-          length = value;
-        }
-        if (floating) {
-          value = custom.barStart;
-          length = custom.barEnd - custom.barStart;
-          if (value !== 0 && sign(value) !== sign(custom.barEnd)) {
-            start = 0;
-          }
-          start += value;
-        }
-        const startValue = !isNullOrUndef(baseValue) && !floating ? baseValue : start;
-        let base = vScale.getPixelForValue(startValue);
-        if (this.chart.getDataVisibility(index2)) {
-          head = vScale.getPixelForValue(start + length);
-        } else {
-          head = base;
-        }
-        size = head - base;
-        if (Math.abs(size) < minBarLength) {
-          size = barSign(size, vScale, actualBase) * minBarLength;
-          if (value === actualBase) {
-            base -= size / 2;
-          }
-          const startPixel = vScale.getPixelForDecimal(0);
-          const endPixel = vScale.getPixelForDecimal(1);
-          const min = Math.min(startPixel, endPixel);
-          const max = Math.max(startPixel, endPixel);
-          base = Math.max(Math.min(base, max), min);
-          head = base + size;
-          if (_stacked && !floating) {
-            parsed._stacks[vScale.axis]._visualValues[datasetIndex] = vScale.getValueForPixel(head) - vScale.getValueForPixel(base);
-          }
-        }
-        if (base === vScale.getPixelForValue(actualBase)) {
-          const halfGrid = sign(size) * vScale.getLineWidthForValue(actualBase) / 2;
-          base += halfGrid;
-          size -= halfGrid;
-        }
-        return {
-          size,
-          base,
-          head,
-          center: head + size / 2
-        };
-      }
-      _calculateBarIndexPixels(index2, ruler) {
-        const scale = ruler.scale;
-        const options = this.options;
-        const skipNull = options.skipNull;
-        const maxBarThickness = valueOrDefault(options.maxBarThickness, Infinity);
-        let center, size;
-        const axisCount = this._getAxisCount();
-        if (ruler.grouped) {
-          const stackCount = skipNull ? this._getStackCount(index2) : ruler.stackCount;
-          const range = options.barThickness === "flex" ? computeFlexCategoryTraits(index2, ruler, options, stackCount * axisCount) : computeFitCategoryTraits(index2, ruler, options, stackCount * axisCount);
-          const axisID = this.chart.options.indexAxis === "x" ? this.getDataset().xAxisID : this.getDataset().yAxisID;
-          const axisNumber = this._getAxis().indexOf(valueOrDefault(axisID, this.getFirstScaleIdForIndexAxis()));
-          const stackIndex = this._getStackIndex(this.index, this._cachedMeta.stack, skipNull ? index2 : void 0) + axisNumber;
-          center = range.start + range.chunk * stackIndex + range.chunk / 2;
-          size = Math.min(maxBarThickness, range.chunk * range.ratio);
-        } else {
-          center = scale.getPixelForValue(this.getParsed(index2)[scale.axis], index2);
-          size = Math.min(maxBarThickness, ruler.min * ruler.ratio);
-        }
-        return {
-          base: center - size / 2,
-          head: center + size / 2,
-          center,
-          size
-        };
-      }
-      draw() {
-        const meta = this._cachedMeta;
-        const vScale = meta.vScale;
-        const rects = meta.data;
-        const ilen = rects.length;
-        let i = 0;
-        for (; i < ilen; ++i) {
-          if (this.getParsed(i)[vScale.axis] !== null && !rects[i].hidden) {
-            rects[i].draw(this._ctx);
-          }
-        }
-      }
-    };
-    BubbleController = class extends DatasetController {
-      static id = "bubble";
-      static defaults = {
-        datasetElementType: false,
-        dataElementType: "point",
-        animations: {
-          numbers: {
-            type: "number",
-            properties: [
-              "x",
-              "y",
-              "borderWidth",
-              "radius"
-            ]
-          }
-        }
-      };
-      static overrides = {
-        scales: {
-          x: {
-            type: "linear"
-          },
-          y: {
-            type: "linear"
-          }
-        }
-      };
-      initialize() {
-        this.enableOptionSharing = true;
-        super.initialize();
-      }
-      parsePrimitiveData(meta, data, start, count) {
-        const parsed = super.parsePrimitiveData(meta, data, start, count);
-        for (let i = 0; i < parsed.length; i++) {
-          parsed[i]._custom = this.resolveDataElementOptions(i + start).radius;
-        }
-        return parsed;
-      }
-      parseArrayData(meta, data, start, count) {
-        const parsed = super.parseArrayData(meta, data, start, count);
-        for (let i = 0; i < parsed.length; i++) {
-          const item = data[start + i];
-          parsed[i]._custom = valueOrDefault(item[2], this.resolveDataElementOptions(i + start).radius);
-        }
-        return parsed;
-      }
-      parseObjectData(meta, data, start, count) {
-        const parsed = super.parseObjectData(meta, data, start, count);
-        for (let i = 0; i < parsed.length; i++) {
-          const item = data[start + i];
-          parsed[i]._custom = valueOrDefault(item && item.r && +item.r, this.resolveDataElementOptions(i + start).radius);
-        }
-        return parsed;
-      }
-      getMaxOverflow() {
-        const data = this._cachedMeta.data;
-        let max = 0;
-        for (let i = data.length - 1; i >= 0; --i) {
-          max = Math.max(max, data[i].size(this.resolveDataElementOptions(i)) / 2);
-        }
-        return max > 0 && max;
-      }
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const labels = this.chart.data.labels || [];
-        const { xScale, yScale } = meta;
-        const parsed = this.getParsed(index2);
-        const x = xScale.getLabelForValue(parsed.x);
-        const y = yScale.getLabelForValue(parsed.y);
-        const r = parsed._custom;
-        return {
-          label: labels[index2] || "",
-          value: "(" + x + ", " + y + (r ? ", " + r : "") + ")"
-        };
-      }
-      update(mode) {
-        const points = this._cachedMeta.data;
-        this.updateElements(points, 0, points.length, mode);
-      }
-      updateElements(points, start, count, mode) {
-        const reset = mode === "reset";
-        const { iScale, vScale } = this._cachedMeta;
-        const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-        const iAxis = iScale.axis;
-        const vAxis = vScale.axis;
-        for (let i = start; i < start + count; i++) {
-          const point = points[i];
-          const parsed = !reset && this.getParsed(i);
-          const properties = {};
-          const iPixel = properties[iAxis] = reset ? iScale.getPixelForDecimal(0.5) : iScale.getPixelForValue(parsed[iAxis]);
-          const vPixel = properties[vAxis] = reset ? vScale.getBasePixel() : vScale.getPixelForValue(parsed[vAxis]);
-          properties.skip = isNaN(iPixel) || isNaN(vPixel);
-          if (includeOptions) {
-            properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
-            if (reset) {
-              properties.options.radius = 0;
-            }
-          }
-          this.updateElement(point, i, properties, mode);
-        }
-      }
-      resolveDataElementOptions(index2, mode) {
-        const parsed = this.getParsed(index2);
-        let values = super.resolveDataElementOptions(index2, mode);
-        if (values.$shared) {
-          values = Object.assign({}, values, {
-            $shared: false
-          });
-        }
-        const radius = values.radius;
-        if (mode !== "active") {
-          values.radius = 0;
-        }
-        values.radius += valueOrDefault(parsed && parsed._custom, radius);
-        return values;
-      }
-    };
-    DoughnutController = class extends DatasetController {
-      static id = "doughnut";
-      static defaults = {
-        datasetElementType: false,
-        dataElementType: "arc",
-        animation: {
-          animateRotate: true,
-          animateScale: false
-        },
-        animations: {
-          numbers: {
-            type: "number",
-            properties: [
-              "circumference",
-              "endAngle",
-              "innerRadius",
-              "outerRadius",
-              "startAngle",
-              "x",
-              "y",
-              "offset",
-              "borderWidth",
-              "spacing"
-            ]
-          }
-        },
-        cutout: "50%",
-        rotation: 0,
-        circumference: 360,
-        radius: "100%",
-        spacing: 0,
-        indexAxis: "r"
-      };
-      static descriptors = {
-        _scriptable: (name) => name !== "spacing",
-        _indexable: (name) => name !== "spacing" && !name.startsWith("borderDash") && !name.startsWith("hoverBorderDash")
-      };
-      static overrides = {
-        aspectRatio: 1,
-        plugins: {
-          legend: {
-            labels: {
-              generateLabels(chart) {
-                const data = chart.data;
-                const { labels: { pointStyle, textAlign, color: color2, useBorderRadius, borderRadius } } = chart.legend.options;
-                if (data.labels.length && data.datasets.length) {
-                  return data.labels.map((label, i) => {
-                    const meta = chart.getDatasetMeta(0);
-                    const style2 = meta.controller.getStyle(i);
-                    return {
-                      text: label,
-                      fillStyle: style2.backgroundColor,
-                      fontColor: color2,
-                      hidden: !chart.getDataVisibility(i),
-                      lineDash: style2.borderDash,
-                      lineDashOffset: style2.borderDashOffset,
-                      lineJoin: style2.borderJoinStyle,
-                      lineWidth: style2.borderWidth,
-                      strokeStyle: style2.borderColor,
-                      textAlign,
-                      pointStyle,
-                      borderRadius: useBorderRadius && (borderRadius || style2.borderRadius),
-                      index: i
-                    };
-                  });
-                }
-                return [];
-              }
-            },
-            onClick(e, legendItem, legend) {
-              legend.chart.toggleDataVisibility(legendItem.index);
-              legend.chart.update();
-            }
-          }
-        }
-      };
-      constructor(chart, datasetIndex) {
-        super(chart, datasetIndex);
-        this.enableOptionSharing = true;
-        this.innerRadius = void 0;
-        this.outerRadius = void 0;
-        this.offsetX = void 0;
-        this.offsetY = void 0;
-      }
-      linkScales() {
-      }
-      parse(start, count) {
-        const data = this.getDataset().data;
-        const meta = this._cachedMeta;
-        if (this._parsing === false) {
-          meta._parsed = data;
-        } else {
-          let getter = (i2) => +data[i2];
-          if (isObject(data[start])) {
-            const { key = "value" } = this._parsing;
-            getter = (i2) => +resolveObjectKey(data[i2], key);
-          }
-          let i, ilen;
-          for (i = start, ilen = start + count; i < ilen; ++i) {
-            meta._parsed[i] = getter(i);
-          }
-        }
-      }
-      _getRotation() {
-        return toRadians(this.options.rotation - 90);
-      }
-      _getCircumference() {
-        return toRadians(this.options.circumference);
-      }
-      _getRotationExtents() {
-        let min = TAU;
-        let max = -TAU;
-        for (let i = 0; i < this.chart.data.datasets.length; ++i) {
-          if (this.chart.isDatasetVisible(i) && this.chart.getDatasetMeta(i).type === this._type) {
-            const controller = this.chart.getDatasetMeta(i).controller;
-            const rotation = controller._getRotation();
-            const circumference = controller._getCircumference();
-            min = Math.min(min, rotation);
-            max = Math.max(max, rotation + circumference);
-          }
-        }
-        return {
-          rotation: min,
-          circumference: max - min
-        };
-      }
-      update(mode) {
-        const chart = this.chart;
-        const { chartArea } = chart;
-        const meta = this._cachedMeta;
-        const arcs = meta.data;
-        const spacing = this.getMaxBorderWidth() + this.getMaxOffset(arcs) + this.options.spacing;
-        const maxSize = Math.max((Math.min(chartArea.width, chartArea.height) - spacing) / 2, 0);
-        const cutout = Math.min(toPercentage(this.options.cutout, maxSize), 1);
-        const chartWeight = this._getRingWeight(this.index);
-        const { circumference, rotation } = this._getRotationExtents();
-        const { ratioX, ratioY, offsetX, offsetY } = getRatioAndOffset(rotation, circumference, cutout);
-        const maxWidth = (chartArea.width - spacing) / ratioX;
-        const maxHeight = (chartArea.height - spacing) / ratioY;
-        const maxRadius = Math.max(Math.min(maxWidth, maxHeight) / 2, 0);
-        const outerRadius = toDimension(this.options.radius, maxRadius);
-        const innerRadius = Math.max(outerRadius * cutout, 0);
-        const radiusLength = (outerRadius - innerRadius) / this._getVisibleDatasetWeightTotal();
-        this.offsetX = offsetX * outerRadius;
-        this.offsetY = offsetY * outerRadius;
-        meta.total = this.calculateTotal();
-        this.outerRadius = outerRadius - radiusLength * this._getRingWeightOffset(this.index);
-        this.innerRadius = Math.max(this.outerRadius - radiusLength * chartWeight, 0);
-        this.updateElements(arcs, 0, arcs.length, mode);
-      }
-      _circumference(i, reset) {
-        const opts = this.options;
-        const meta = this._cachedMeta;
-        const circumference = this._getCircumference();
-        if (reset && opts.animation.animateRotate || !this.chart.getDataVisibility(i) || meta._parsed[i] === null || meta.data[i].hidden) {
-          return 0;
-        }
-        return this.calculateCircumference(meta._parsed[i] * circumference / TAU);
-      }
-      updateElements(arcs, start, count, mode) {
-        const reset = mode === "reset";
-        const chart = this.chart;
-        const chartArea = chart.chartArea;
-        const opts = chart.options;
-        const animationOpts = opts.animation;
-        const centerX = (chartArea.left + chartArea.right) / 2;
-        const centerY = (chartArea.top + chartArea.bottom) / 2;
-        const animateScale = reset && animationOpts.animateScale;
-        const innerRadius = animateScale ? 0 : this.innerRadius;
-        const outerRadius = animateScale ? 0 : this.outerRadius;
-        const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-        let startAngle = this._getRotation();
-        let i;
-        for (i = 0; i < start; ++i) {
-          startAngle += this._circumference(i, reset);
-        }
-        for (i = start; i < start + count; ++i) {
-          const circumference = this._circumference(i, reset);
-          const arc = arcs[i];
-          const properties = {
-            x: centerX + this.offsetX,
-            y: centerY + this.offsetY,
-            startAngle,
-            endAngle: startAngle + circumference,
-            circumference,
-            outerRadius,
-            innerRadius
-          };
-          if (includeOptions) {
-            properties.options = sharedOptions || this.resolveDataElementOptions(i, arc.active ? "active" : mode);
-          }
-          startAngle += circumference;
-          this.updateElement(arc, i, properties, mode);
-        }
-      }
-      calculateTotal() {
-        const meta = this._cachedMeta;
-        const metaData = meta.data;
-        let total = 0;
-        let i;
-        for (i = 0; i < metaData.length; i++) {
-          const value = meta._parsed[i];
-          if (value !== null && !isNaN(value) && this.chart.getDataVisibility(i) && !metaData[i].hidden) {
-            total += Math.abs(value);
-          }
-        }
-        return total;
-      }
-      calculateCircumference(value) {
-        const total = this._cachedMeta.total;
-        if (total > 0 && !isNaN(value)) {
-          return TAU * (Math.abs(value) / total);
-        }
-        return 0;
-      }
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const chart = this.chart;
-        const labels = chart.data.labels || [];
-        const value = formatNumber(meta._parsed[index2], chart.options.locale);
-        return {
-          label: labels[index2] || "",
-          value
-        };
-      }
-      getMaxBorderWidth(arcs) {
-        let max = 0;
-        const chart = this.chart;
-        let i, ilen, meta, controller, options;
-        if (!arcs) {
-          for (i = 0, ilen = chart.data.datasets.length; i < ilen; ++i) {
-            if (chart.isDatasetVisible(i)) {
-              meta = chart.getDatasetMeta(i);
-              arcs = meta.data;
-              controller = meta.controller;
-              break;
-            }
-          }
-        }
-        if (!arcs) {
-          return 0;
-        }
-        for (i = 0, ilen = arcs.length; i < ilen; ++i) {
-          options = controller.resolveDataElementOptions(i);
-          if (options.borderAlign !== "inner") {
-            max = Math.max(max, options.borderWidth || 0, options.hoverBorderWidth || 0);
-          }
-        }
-        return max;
-      }
-      getMaxOffset(arcs) {
-        let max = 0;
-        for (let i = 0, ilen = arcs.length; i < ilen; ++i) {
-          const options = this.resolveDataElementOptions(i);
-          max = Math.max(max, options.offset || 0, options.hoverOffset || 0);
-        }
-        return max;
-      }
-      _getRingWeightOffset(datasetIndex) {
-        let ringWeightOffset = 0;
-        for (let i = 0; i < datasetIndex; ++i) {
-          if (this.chart.isDatasetVisible(i)) {
-            ringWeightOffset += this._getRingWeight(i);
-          }
-        }
-        return ringWeightOffset;
-      }
-      _getRingWeight(datasetIndex) {
-        return Math.max(valueOrDefault(this.chart.data.datasets[datasetIndex].weight, 1), 0);
-      }
-      _getVisibleDatasetWeightTotal() {
-        return this._getRingWeightOffset(this.chart.data.datasets.length) || 1;
-      }
-    };
-    LineController = class extends DatasetController {
-      static id = "line";
-      static defaults = {
-        datasetElementType: "line",
-        dataElementType: "point",
-        showLine: true,
-        spanGaps: false
-      };
-      static overrides = {
-        scales: {
-          _index_: {
-            type: "category"
-          },
-          _value_: {
-            type: "linear"
-          }
-        }
-      };
-      initialize() {
-        this.enableOptionSharing = true;
-        this.supportsDecimation = true;
-        super.initialize();
-      }
-      update(mode) {
-        const meta = this._cachedMeta;
-        const { dataset: line, data: points = [], _dataset } = meta;
-        const animationsDisabled = this.chart._animationsDisabled;
-        let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
-        this._drawStart = start;
-        this._drawCount = count;
-        if (_scaleRangesChanged(meta)) {
-          start = 0;
-          count = points.length;
-        }
-        line._chart = this.chart;
-        line._datasetIndex = this.index;
-        line._decimated = !!_dataset._decimated;
-        line.points = points;
-        const options = this.resolveDatasetElementOptions(mode);
-        if (!this.options.showLine) {
-          options.borderWidth = 0;
-        }
-        options.segment = this.options.segment;
-        this.updateElement(line, void 0, {
-          animated: !animationsDisabled,
-          options
-        }, mode);
-        this.updateElements(points, start, count, mode);
-      }
-      updateElements(points, start, count, mode) {
-        const reset = mode === "reset";
-        const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
-        const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-        const iAxis = iScale.axis;
-        const vAxis = vScale.axis;
-        const { spanGaps, segment } = this.options;
-        const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
-        const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
-        const end = start + count;
-        const pointsCount = points.length;
-        let prevParsed = start > 0 && this.getParsed(start - 1);
-        for (let i = 0; i < pointsCount; ++i) {
-          const point = points[i];
-          const properties = directUpdate ? point : {};
-          if (i < start || i >= end) {
-            properties.skip = true;
-            continue;
-          }
-          const parsed = this.getParsed(i);
-          const nullData = isNullOrUndef(parsed[vAxis]);
-          const iPixel = properties[iAxis] = iScale.getPixelForValue(parsed[iAxis], i);
-          const vPixel = properties[vAxis] = reset || nullData ? vScale.getBasePixel() : vScale.getPixelForValue(_stacked ? this.applyStack(vScale, parsed, _stacked) : parsed[vAxis], i);
-          properties.skip = isNaN(iPixel) || isNaN(vPixel) || nullData;
-          properties.stop = i > 0 && Math.abs(parsed[iAxis] - prevParsed[iAxis]) > maxGapLength;
-          if (segment) {
-            properties.parsed = parsed;
-            properties.raw = _dataset.data[i];
-          }
-          if (includeOptions) {
-            properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
-          }
-          if (!directUpdate) {
-            this.updateElement(point, i, properties, mode);
-          }
-          prevParsed = parsed;
-        }
-      }
-      getMaxOverflow() {
-        const meta = this._cachedMeta;
-        const dataset = meta.dataset;
-        const border = dataset.options && dataset.options.borderWidth || 0;
-        const data = meta.data || [];
-        if (!data.length) {
-          return border;
-        }
-        const firstPoint = data[0].size(this.resolveDataElementOptions(0));
-        const lastPoint = data[data.length - 1].size(this.resolveDataElementOptions(data.length - 1));
-        return Math.max(border, firstPoint, lastPoint) / 2;
-      }
-      draw() {
-        const meta = this._cachedMeta;
-        meta.dataset.updateControlPoints(this.chart.chartArea, meta.iScale.axis);
-        super.draw();
-      }
-    };
-    PolarAreaController = class extends DatasetController {
-      static id = "polarArea";
-      static defaults = {
-        dataElementType: "arc",
-        animation: {
-          animateRotate: true,
-          animateScale: true
-        },
-        animations: {
-          numbers: {
-            type: "number",
-            properties: [
-              "x",
-              "y",
-              "startAngle",
-              "endAngle",
-              "innerRadius",
-              "outerRadius"
-            ]
-          }
-        },
-        indexAxis: "r",
-        startAngle: 0
-      };
-      static overrides = {
-        aspectRatio: 1,
-        plugins: {
-          legend: {
-            labels: {
-              generateLabels(chart) {
-                const data = chart.data;
-                if (data.labels.length && data.datasets.length) {
-                  const { labels: { pointStyle, color: color2 } } = chart.legend.options;
-                  return data.labels.map((label, i) => {
-                    const meta = chart.getDatasetMeta(0);
-                    const style2 = meta.controller.getStyle(i);
-                    return {
-                      text: label,
-                      fillStyle: style2.backgroundColor,
-                      strokeStyle: style2.borderColor,
-                      fontColor: color2,
-                      lineWidth: style2.borderWidth,
-                      pointStyle,
-                      hidden: !chart.getDataVisibility(i),
-                      index: i
-                    };
-                  });
-                }
-                return [];
-              }
-            },
-            onClick(e, legendItem, legend) {
-              legend.chart.toggleDataVisibility(legendItem.index);
-              legend.chart.update();
-            }
-          }
-        },
-        scales: {
-          r: {
-            type: "radialLinear",
-            angleLines: {
-              display: false
-            },
-            beginAtZero: true,
-            grid: {
-              circular: true
-            },
-            pointLabels: {
-              display: false
-            },
-            startAngle: 0
-          }
-        }
-      };
-      constructor(chart, datasetIndex) {
-        super(chart, datasetIndex);
-        this.innerRadius = void 0;
-        this.outerRadius = void 0;
-      }
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const chart = this.chart;
-        const labels = chart.data.labels || [];
-        const value = formatNumber(meta._parsed[index2].r, chart.options.locale);
-        return {
-          label: labels[index2] || "",
-          value
-        };
-      }
-      parseObjectData(meta, data, start, count) {
-        return _parseObjectDataRadialScale.bind(this)(meta, data, start, count);
-      }
-      update(mode) {
-        const arcs = this._cachedMeta.data;
-        this._updateRadius();
-        this.updateElements(arcs, 0, arcs.length, mode);
-      }
-      getMinMax() {
-        const meta = this._cachedMeta;
-        const range = {
-          min: Number.POSITIVE_INFINITY,
-          max: Number.NEGATIVE_INFINITY
-        };
-        meta.data.forEach((element, index2) => {
-          const parsed = this.getParsed(index2).r;
-          if (!isNaN(parsed) && this.chart.getDataVisibility(index2)) {
-            if (parsed < range.min) {
-              range.min = parsed;
-            }
-            if (parsed > range.max) {
-              range.max = parsed;
-            }
-          }
-        });
-        return range;
-      }
-      _updateRadius() {
-        const chart = this.chart;
-        const chartArea = chart.chartArea;
-        const opts = chart.options;
-        const minSize = Math.min(chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
-        const outerRadius = Math.max(minSize / 2, 0);
-        const innerRadius = Math.max(opts.cutoutPercentage ? outerRadius / 100 * opts.cutoutPercentage : 1, 0);
-        const radiusLength = (outerRadius - innerRadius) / chart.getVisibleDatasetCount();
-        this.outerRadius = outerRadius - radiusLength * this.index;
-        this.innerRadius = this.outerRadius - radiusLength;
-      }
-      updateElements(arcs, start, count, mode) {
-        const reset = mode === "reset";
-        const chart = this.chart;
-        const opts = chart.options;
-        const animationOpts = opts.animation;
-        const scale = this._cachedMeta.rScale;
-        const centerX = scale.xCenter;
-        const centerY = scale.yCenter;
-        const datasetStartAngle = scale.getIndexAngle(0) - 0.5 * PI;
-        let angle = datasetStartAngle;
-        let i;
-        const defaultAngle = 360 / this.countVisibleElements();
-        for (i = 0; i < start; ++i) {
-          angle += this._computeAngle(i, mode, defaultAngle);
-        }
-        for (i = start; i < start + count; i++) {
-          const arc = arcs[i];
-          let startAngle = angle;
-          let endAngle = angle + this._computeAngle(i, mode, defaultAngle);
-          let outerRadius = chart.getDataVisibility(i) ? scale.getDistanceFromCenterForValue(this.getParsed(i).r) : 0;
-          angle = endAngle;
-          if (reset) {
-            if (animationOpts.animateScale) {
-              outerRadius = 0;
-            }
-            if (animationOpts.animateRotate) {
-              startAngle = endAngle = datasetStartAngle;
-            }
-          }
-          const properties = {
-            x: centerX,
-            y: centerY,
-            innerRadius: 0,
-            outerRadius,
-            startAngle,
-            endAngle,
-            options: this.resolveDataElementOptions(i, arc.active ? "active" : mode)
-          };
-          this.updateElement(arc, i, properties, mode);
-        }
-      }
-      countVisibleElements() {
-        const meta = this._cachedMeta;
-        let count = 0;
-        meta.data.forEach((element, index2) => {
-          if (!isNaN(this.getParsed(index2).r) && this.chart.getDataVisibility(index2)) {
-            count++;
-          }
-        });
-        return count;
-      }
-      _computeAngle(index2, mode, defaultAngle) {
-        return this.chart.getDataVisibility(index2) ? toRadians(this.resolveDataElementOptions(index2, mode).angle || defaultAngle) : 0;
-      }
-    };
-    PieController = class extends DoughnutController {
-      static id = "pie";
-      static defaults = {
-        cutout: 0,
-        rotation: 0,
-        circumference: 360,
-        radius: "100%"
-      };
-    };
-    RadarController = class extends DatasetController {
-      static id = "radar";
-      static defaults = {
-        datasetElementType: "line",
-        dataElementType: "point",
-        indexAxis: "r",
-        showLine: true,
-        elements: {
-          line: {
-            fill: "start"
-          }
-        }
-      };
-      static overrides = {
-        aspectRatio: 1,
-        scales: {
-          r: {
-            type: "radialLinear"
-          }
-        }
-      };
-      getLabelAndValue(index2) {
-        const vScale = this._cachedMeta.vScale;
-        const parsed = this.getParsed(index2);
-        return {
-          label: vScale.getLabels()[index2],
-          value: "" + vScale.getLabelForValue(parsed[vScale.axis])
-        };
-      }
-      parseObjectData(meta, data, start, count) {
-        return _parseObjectDataRadialScale.bind(this)(meta, data, start, count);
-      }
-      update(mode) {
-        const meta = this._cachedMeta;
-        const line = meta.dataset;
-        const points = meta.data || [];
-        const labels = meta.iScale.getLabels();
-        line.points = points;
-        if (mode !== "resize") {
-          const options = this.resolveDatasetElementOptions(mode);
-          if (!this.options.showLine) {
-            options.borderWidth = 0;
-          }
-          const properties = {
-            _loop: true,
-            _fullLoop: labels.length === points.length,
-            options
-          };
-          this.updateElement(line, void 0, properties, mode);
-        }
-        this.updateElements(points, 0, points.length, mode);
-      }
-      updateElements(points, start, count, mode) {
-        const scale = this._cachedMeta.rScale;
-        const reset = mode === "reset";
-        for (let i = start; i < start + count; i++) {
-          const point = points[i];
-          const options = this.resolveDataElementOptions(i, point.active ? "active" : mode);
-          const pointPosition = scale.getPointPositionForValue(i, this.getParsed(i).r);
-          const x = reset ? scale.xCenter : pointPosition.x;
-          const y = reset ? scale.yCenter : pointPosition.y;
-          const properties = {
-            x,
-            y,
-            angle: pointPosition.angle,
-            skip: isNaN(x) || isNaN(y),
-            options
-          };
-          this.updateElement(point, i, properties, mode);
-        }
-      }
-    };
-    ScatterController = class extends DatasetController {
-      static id = "scatter";
-      static defaults = {
-        datasetElementType: false,
-        dataElementType: "point",
-        showLine: false,
-        fill: false
-      };
-      static overrides = {
-        interaction: {
-          mode: "point"
-        },
-        scales: {
-          x: {
-            type: "linear"
-          },
-          y: {
-            type: "linear"
-          }
-        }
-      };
-      getLabelAndValue(index2) {
-        const meta = this._cachedMeta;
-        const labels = this.chart.data.labels || [];
-        const { xScale, yScale } = meta;
-        const parsed = this.getParsed(index2);
-        const x = xScale.getLabelForValue(parsed.x);
-        const y = yScale.getLabelForValue(parsed.y);
-        return {
-          label: labels[index2] || "",
-          value: "(" + x + ", " + y + ")"
-        };
-      }
-      update(mode) {
-        const meta = this._cachedMeta;
-        const { data: points = [] } = meta;
-        const animationsDisabled = this.chart._animationsDisabled;
-        let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
-        this._drawStart = start;
-        this._drawCount = count;
-        if (_scaleRangesChanged(meta)) {
-          start = 0;
-          count = points.length;
-        }
-        if (this.options.showLine) {
-          if (!this.datasetElementType) {
-            this.addElements();
-          }
-          const { dataset: line, _dataset } = meta;
-          line._chart = this.chart;
-          line._datasetIndex = this.index;
-          line._decimated = !!_dataset._decimated;
-          line.points = points;
-          const options = this.resolveDatasetElementOptions(mode);
-          options.segment = this.options.segment;
-          this.updateElement(line, void 0, {
-            animated: !animationsDisabled,
-            options
-          }, mode);
-        } else if (this.datasetElementType) {
-          delete meta.dataset;
-          this.datasetElementType = false;
-        }
-        this.updateElements(points, start, count, mode);
-      }
-      addElements() {
-        const { showLine } = this.options;
-        if (!this.datasetElementType && showLine) {
-          this.datasetElementType = this.chart.registry.getElement("line");
-        }
-        super.addElements();
-      }
-      updateElements(points, start, count, mode) {
-        const reset = mode === "reset";
-        const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
-        const firstOpts = this.resolveDataElementOptions(start, mode);
-        const sharedOptions = this.getSharedOptions(firstOpts);
-        const includeOptions = this.includeOptions(mode, sharedOptions);
-        const iAxis = iScale.axis;
-        const vAxis = vScale.axis;
-        const { spanGaps, segment } = this.options;
-        const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
-        const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
-        let prevParsed = start > 0 && this.getParsed(start - 1);
-        for (let i = start; i < start + count; ++i) {
-          const point = points[i];
-          const parsed = this.getParsed(i);
-          const properties = directUpdate ? point : {};
-          const nullData = isNullOrUndef(parsed[vAxis]);
-          const iPixel = properties[iAxis] = iScale.getPixelForValue(parsed[iAxis], i);
-          const vPixel = properties[vAxis] = reset || nullData ? vScale.getBasePixel() : vScale.getPixelForValue(_stacked ? this.applyStack(vScale, parsed, _stacked) : parsed[vAxis], i);
-          properties.skip = isNaN(iPixel) || isNaN(vPixel) || nullData;
-          properties.stop = i > 0 && Math.abs(parsed[iAxis] - prevParsed[iAxis]) > maxGapLength;
-          if (segment) {
-            properties.parsed = parsed;
-            properties.raw = _dataset.data[i];
-          }
-          if (includeOptions) {
-            properties.options = sharedOptions || this.resolveDataElementOptions(i, point.active ? "active" : mode);
-          }
-          if (!directUpdate) {
-            this.updateElement(point, i, properties, mode);
-          }
-          prevParsed = parsed;
-        }
-        this.updateSharedOptions(sharedOptions, mode, firstOpts);
-      }
-      getMaxOverflow() {
-        const meta = this._cachedMeta;
-        const data = meta.data || [];
-        if (!this.options.showLine) {
-          let max = 0;
-          for (let i = data.length - 1; i >= 0; --i) {
-            max = Math.max(max, data[i].size(this.resolveDataElementOptions(i)) / 2);
-          }
-          return max > 0 && max;
-        }
-        const dataset = meta.dataset;
-        const border = dataset.options && dataset.options.borderWidth || 0;
-        if (!data.length) {
-          return border;
-        }
-        const firstPoint = data[0].size(this.resolveDataElementOptions(0));
-        const lastPoint = data[data.length - 1].size(this.resolveDataElementOptions(data.length - 1));
-        return Math.max(border, firstPoint, lastPoint) / 2;
-      }
-    };
-    controllers = /* @__PURE__ */ Object.freeze({
-      __proto__: null,
-      BarController,
-      BubbleController,
-      DoughnutController,
-      LineController,
-      PieController,
-      PolarAreaController,
-      RadarController,
-      ScatterController
-    });
-    DateAdapterBase = class _DateAdapterBase {
-      /**
-      * Override default date adapter methods.
-      * Accepts type parameter to define options type.
-      * @example
-      * Chart._adapters._date.override<{myAdapterOption: string}>({
-      *   init() {
-      *     console.log(this.options.myAdapterOption);
-      *   }
-      * })
-      */
-      static override(members) {
-        Object.assign(_DateAdapterBase.prototype, members);
-      }
-      options;
-      constructor(options) {
-        this.options = options || {};
-      }
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      init() {
-      }
-      formats() {
-        return abstract();
-      }
-      parse() {
-        return abstract();
-      }
-      format() {
-        return abstract();
-      }
-      add() {
-        return abstract();
-      }
-      diff() {
-        return abstract();
-      }
-      startOf() {
-        return abstract();
-      }
-      endOf() {
-        return abstract();
-      }
-    };
-    adapters = {
-      _date: DateAdapterBase
-    };
-    Interaction = {
-      evaluateInteractionItems,
-      modes: {
-        index(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          const axis = options.axis || "x";
-          const includeInvisible = options.includeInvisible || false;
-          const items = options.intersect ? getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible) : getNearestItems(chart, position, axis, false, useFinalPosition, includeInvisible);
-          const elements2 = [];
-          if (!items.length) {
-            return [];
-          }
-          chart.getSortedVisibleDatasetMetas().forEach((meta) => {
-            const index2 = items[0].index;
-            const element = meta.data[index2];
-            if (element && !element.skip) {
-              elements2.push({
-                element,
-                datasetIndex: meta.index,
-                index: index2
-              });
-            }
-          });
-          return elements2;
-        },
-        dataset(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          const axis = options.axis || "xy";
-          const includeInvisible = options.includeInvisible || false;
-          let items = options.intersect ? getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible) : getNearestItems(chart, position, axis, false, useFinalPosition, includeInvisible);
-          if (items.length > 0) {
-            const datasetIndex = items[0].datasetIndex;
-            const data = chart.getDatasetMeta(datasetIndex).data;
-            items = [];
-            for (let i = 0; i < data.length; ++i) {
-              items.push({
-                element: data[i],
-                datasetIndex,
-                index: i
-              });
-            }
-          }
-          return items;
-        },
-        point(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          const axis = options.axis || "xy";
-          const includeInvisible = options.includeInvisible || false;
-          return getIntersectItems(chart, position, axis, useFinalPosition, includeInvisible);
-        },
-        nearest(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          const axis = options.axis || "xy";
-          const includeInvisible = options.includeInvisible || false;
-          return getNearestItems(chart, position, axis, options.intersect, useFinalPosition, includeInvisible);
-        },
-        x(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          return getAxisItems(chart, position, "x", options.intersect, useFinalPosition);
-        },
-        y(chart, e, options, useFinalPosition) {
-          const position = getRelativePosition(e, chart);
-          return getAxisItems(chart, position, "y", options.intersect, useFinalPosition);
-        }
-      }
-    };
-    STATIC_POSITIONS = [
-      "left",
-      "top",
-      "right",
-      "bottom"
-    ];
-    layouts = {
-      addBox(chart, item) {
-        if (!chart.boxes) {
-          chart.boxes = [];
-        }
-        item.fullSize = item.fullSize || false;
-        item.position = item.position || "top";
-        item.weight = item.weight || 0;
-        item._layers = item._layers || function() {
-          return [
-            {
-              z: 0,
-              draw(chartArea) {
-                item.draw(chartArea);
-              }
-            }
-          ];
-        };
-        chart.boxes.push(item);
-      },
-      removeBox(chart, layoutItem) {
-        const index2 = chart.boxes ? chart.boxes.indexOf(layoutItem) : -1;
-        if (index2 !== -1) {
-          chart.boxes.splice(index2, 1);
-        }
-      },
-      configure(chart, item, options) {
-        item.fullSize = options.fullSize;
-        item.position = options.position;
-        item.weight = options.weight;
-      },
-      update(chart, width, height, minPadding) {
-        if (!chart) {
-          return;
-        }
-        const padding = toPadding(chart.options.layout.padding);
-        const availableWidth = Math.max(width - padding.width, 0);
-        const availableHeight = Math.max(height - padding.height, 0);
-        const boxes = buildLayoutBoxes(chart.boxes);
-        const verticalBoxes = boxes.vertical;
-        const horizontalBoxes = boxes.horizontal;
-        each(chart.boxes, (box) => {
-          if (typeof box.beforeLayout === "function") {
-            box.beforeLayout();
-          }
-        });
-        const visibleVerticalBoxCount = verticalBoxes.reduce((total, wrap) => wrap.box.options && wrap.box.options.display === false ? total : total + 1, 0) || 1;
-        const params = Object.freeze({
-          outerWidth: width,
-          outerHeight: height,
-          padding,
-          availableWidth,
-          availableHeight,
-          vBoxMaxWidth: availableWidth / 2 / visibleVerticalBoxCount,
-          hBoxMaxHeight: availableHeight / 2
-        });
-        const maxPadding = Object.assign({}, padding);
-        updateMaxPadding(maxPadding, toPadding(minPadding));
-        const chartArea = Object.assign({
-          maxPadding,
-          w: availableWidth,
-          h: availableHeight,
-          x: padding.left,
-          y: padding.top
-        }, padding);
-        const stacks = setLayoutDims(verticalBoxes.concat(horizontalBoxes), params);
-        fitBoxes(boxes.fullSize, chartArea, params, stacks);
-        fitBoxes(verticalBoxes, chartArea, params, stacks);
-        if (fitBoxes(horizontalBoxes, chartArea, params, stacks)) {
-          fitBoxes(verticalBoxes, chartArea, params, stacks);
-        }
-        handleMaxPadding(chartArea);
-        placeBoxes(boxes.leftAndTop, chartArea, params, stacks);
-        chartArea.x += chartArea.w;
-        chartArea.y += chartArea.h;
-        placeBoxes(boxes.rightAndBottom, chartArea, params, stacks);
-        chart.chartArea = {
-          left: chartArea.left,
-          top: chartArea.top,
-          right: chartArea.left + chartArea.w,
-          bottom: chartArea.top + chartArea.h,
-          height: chartArea.h,
-          width: chartArea.w
-        };
-        each(boxes.chartArea, (layout) => {
-          const box = layout.box;
-          Object.assign(box, chart.chartArea);
-          box.update(chartArea.w, chartArea.h, {
-            left: 0,
-            top: 0,
-            right: 0,
-            bottom: 0
-          });
-        });
-      }
-    };
-    BasePlatform = class {
-      acquireContext(canvas, aspectRatio) {
-      }
-      releaseContext(context) {
-        return false;
-      }
-      addEventListener(chart, type, listener) {
-      }
-      removeEventListener(chart, type, listener) {
-      }
-      getDevicePixelRatio() {
-        return 1;
-      }
-      getMaximumSize(element, width, height, aspectRatio) {
-        width = Math.max(0, width || element.width);
-        height = height || element.height;
-        return {
-          width,
-          height: Math.max(0, aspectRatio ? Math.floor(width / aspectRatio) : height)
-        };
-      }
-      isAttached(canvas) {
-        return true;
-      }
-      updateConfig(config) {
-      }
-    };
-    BasicPlatform = class extends BasePlatform {
-      acquireContext(item) {
-        return item && item.getContext && item.getContext("2d") || null;
-      }
-      updateConfig(config) {
-        config.options.animation = false;
-      }
-    };
-    EXPANDO_KEY = "$chartjs";
-    EVENT_TYPES = {
-      touchstart: "mousedown",
-      touchmove: "mousemove",
-      touchend: "mouseup",
-      pointerenter: "mouseenter",
-      pointerdown: "mousedown",
-      pointermove: "mousemove",
-      pointerup: "mouseup",
-      pointerleave: "mouseout",
-      pointerout: "mouseout"
-    };
-    isNullOrEmpty = (value) => value === null || value === "";
-    eventListenerOptions = supportsEventListenerOptions ? {
-      passive: true
-    } : false;
-    drpListeningCharts = /* @__PURE__ */ new Map();
-    oldDevicePixelRatio = 0;
-    DomPlatform = class extends BasePlatform {
-      acquireContext(canvas, aspectRatio) {
-        const context = canvas && canvas.getContext && canvas.getContext("2d");
-        if (context && context.canvas === canvas) {
-          initCanvas(canvas, aspectRatio);
-          return context;
-        }
-        return null;
-      }
-      releaseContext(context) {
-        const canvas = context.canvas;
-        if (!canvas[EXPANDO_KEY]) {
-          return false;
-        }
-        const initial = canvas[EXPANDO_KEY].initial;
-        [
-          "height",
-          "width"
-        ].forEach((prop) => {
-          const value = initial[prop];
-          if (isNullOrUndef(value)) {
-            canvas.removeAttribute(prop);
-          } else {
-            canvas.setAttribute(prop, value);
-          }
-        });
-        const style2 = initial.style || {};
-        Object.keys(style2).forEach((key) => {
-          canvas.style[key] = style2[key];
-        });
-        canvas.width = canvas.width;
-        delete canvas[EXPANDO_KEY];
-        return true;
-      }
-      addEventListener(chart, type, listener) {
-        this.removeEventListener(chart, type);
-        const proxies = chart.$proxies || (chart.$proxies = {});
-        const handlers = {
-          attach: createAttachObserver,
-          detach: createDetachObserver,
-          resize: createResizeObserver
-        };
-        const handler = handlers[type] || createProxyAndListen;
-        proxies[type] = handler(chart, type, listener);
-      }
-      removeEventListener(chart, type) {
-        const proxies = chart.$proxies || (chart.$proxies = {});
-        const proxy = proxies[type];
-        if (!proxy) {
-          return;
-        }
-        const handlers = {
-          attach: releaseObserver,
-          detach: releaseObserver,
-          resize: releaseObserver
-        };
-        const handler = handlers[type] || removeListener;
-        handler(chart, type, proxy);
-        proxies[type] = void 0;
-      }
-      getDevicePixelRatio() {
-        return window.devicePixelRatio;
-      }
-      getMaximumSize(canvas, width, height, aspectRatio) {
-        return getMaximumSize(canvas, width, height, aspectRatio);
-      }
-      isAttached(canvas) {
-        const container = canvas && _getParentNode(canvas);
-        return !!(container && container.isConnected);
-      }
-    };
-    Element = class {
-      static defaults = {};
-      static defaultRoutes = void 0;
-      x;
-      y;
-      active = false;
-      options;
-      $animations;
-      tooltipPosition(useFinalPosition) {
-        const { x, y } = this.getProps([
-          "x",
-          "y"
-        ], useFinalPosition);
-        return {
-          x,
-          y
-        };
-      }
-      hasValue() {
-        return isNumber(this.x) && isNumber(this.y);
-      }
-      getProps(props, final) {
-        const anims = this.$animations;
-        if (!final || !anims) {
-          return this;
-        }
-        const ret = {};
-        props.forEach((prop) => {
-          ret[prop] = anims[prop] && anims[prop].active() ? anims[prop]._to : this[prop];
-        });
-        return ret;
-      }
-    };
-    reverseAlign = (align) => align === "left" ? "right" : align === "right" ? "left" : align;
-    offsetFromEdge = (scale, edge, offset) => edge === "top" || edge === "left" ? scale[edge] + offset : scale[edge] - offset;
-    getTicksLimit = (ticksLength, maxTicksLimit) => Math.min(maxTicksLimit || ticksLength, ticksLength);
-    Scale = class _Scale extends Element {
-      constructor(cfg) {
-        super();
-        this.id = cfg.id;
-        this.type = cfg.type;
-        this.options = void 0;
-        this.ctx = cfg.ctx;
-        this.chart = cfg.chart;
-        this.top = void 0;
-        this.bottom = void 0;
-        this.left = void 0;
-        this.right = void 0;
-        this.width = void 0;
-        this.height = void 0;
-        this._margins = {
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0
-        };
-        this.maxWidth = void 0;
-        this.maxHeight = void 0;
-        this.paddingTop = void 0;
-        this.paddingBottom = void 0;
-        this.paddingLeft = void 0;
-        this.paddingRight = void 0;
-        this.axis = void 0;
-        this.labelRotation = void 0;
-        this.min = void 0;
-        this.max = void 0;
-        this._range = void 0;
-        this.ticks = [];
-        this._gridLineItems = null;
-        this._labelItems = null;
-        this._labelSizes = null;
-        this._length = 0;
-        this._maxLength = 0;
-        this._longestTextCache = {};
-        this._startPixel = void 0;
-        this._endPixel = void 0;
-        this._reversePixels = false;
-        this._userMax = void 0;
-        this._userMin = void 0;
-        this._suggestedMax = void 0;
-        this._suggestedMin = void 0;
-        this._ticksLength = 0;
-        this._borderValue = 0;
-        this._cache = {};
-        this._dataLimitsCached = false;
-        this.$context = void 0;
-      }
-      init(options) {
-        this.options = options.setContext(this.getContext());
-        this.axis = options.axis;
-        this._userMin = this.parse(options.min);
-        this._userMax = this.parse(options.max);
-        this._suggestedMin = this.parse(options.suggestedMin);
-        this._suggestedMax = this.parse(options.suggestedMax);
-      }
-      parse(raw, index2) {
-        return raw;
-      }
-      getUserBounds() {
-        let { _userMin, _userMax, _suggestedMin, _suggestedMax } = this;
-        _userMin = finiteOrDefault(_userMin, Number.POSITIVE_INFINITY);
-        _userMax = finiteOrDefault(_userMax, Number.NEGATIVE_INFINITY);
-        _suggestedMin = finiteOrDefault(_suggestedMin, Number.POSITIVE_INFINITY);
-        _suggestedMax = finiteOrDefault(_suggestedMax, Number.NEGATIVE_INFINITY);
-        return {
-          min: finiteOrDefault(_userMin, _suggestedMin),
-          max: finiteOrDefault(_userMax, _suggestedMax),
-          minDefined: isNumberFinite(_userMin),
-          maxDefined: isNumberFinite(_userMax)
-        };
-      }
-      getMinMax(canStack) {
-        let { min, max, minDefined, maxDefined } = this.getUserBounds();
-        let range;
-        if (minDefined && maxDefined) {
-          return {
-            min,
-            max
-          };
-        }
-        const metas = this.getMatchingVisibleMetas();
-        for (let i = 0, ilen = metas.length; i < ilen; ++i) {
-          range = metas[i].controller.getMinMax(this, canStack);
-          if (!minDefined) {
-            min = Math.min(min, range.min);
-          }
-          if (!maxDefined) {
-            max = Math.max(max, range.max);
-          }
-        }
-        min = maxDefined && min > max ? max : min;
-        max = minDefined && min > max ? min : max;
-        return {
-          min: finiteOrDefault(min, finiteOrDefault(max, min)),
-          max: finiteOrDefault(max, finiteOrDefault(min, max))
-        };
-      }
-      getPadding() {
-        return {
-          left: this.paddingLeft || 0,
-          top: this.paddingTop || 0,
-          right: this.paddingRight || 0,
-          bottom: this.paddingBottom || 0
-        };
-      }
-      getTicks() {
-        return this.ticks;
-      }
-      getLabels() {
-        const data = this.chart.data;
-        return this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels || [];
-      }
-      getLabelItems(chartArea = this.chart.chartArea) {
-        const items = this._labelItems || (this._labelItems = this._computeLabelItems(chartArea));
-        return items;
-      }
-      beforeLayout() {
-        this._cache = {};
-        this._dataLimitsCached = false;
-      }
-      beforeUpdate() {
-        callback(this.options.beforeUpdate, [
-          this
-        ]);
-      }
-      update(maxWidth, maxHeight, margins) {
-        const { beginAtZero, grace, ticks: tickOpts } = this.options;
-        const sampleSize = tickOpts.sampleSize;
-        this.beforeUpdate();
-        this.maxWidth = maxWidth;
-        this.maxHeight = maxHeight;
-        this._margins = margins = Object.assign({
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0
-        }, margins);
-        this.ticks = null;
-        this._labelSizes = null;
-        this._gridLineItems = null;
-        this._labelItems = null;
-        this.beforeSetDimensions();
-        this.setDimensions();
-        this.afterSetDimensions();
-        this._maxLength = this.isHorizontal() ? this.width + margins.left + margins.right : this.height + margins.top + margins.bottom;
-        if (!this._dataLimitsCached) {
-          this.beforeDataLimits();
-          this.determineDataLimits();
-          this.afterDataLimits();
-          this._range = _addGrace(this, grace, beginAtZero);
-          this._dataLimitsCached = true;
-        }
-        this.beforeBuildTicks();
-        this.ticks = this.buildTicks() || [];
-        this.afterBuildTicks();
-        const samplingEnabled = sampleSize < this.ticks.length;
-        this._convertTicksToLabels(samplingEnabled ? sample(this.ticks, sampleSize) : this.ticks);
-        this.configure();
-        this.beforeCalculateLabelRotation();
-        this.calculateLabelRotation();
-        this.afterCalculateLabelRotation();
-        if (tickOpts.display && (tickOpts.autoSkip || tickOpts.source === "auto")) {
-          this.ticks = autoSkip(this, this.ticks);
-          this._labelSizes = null;
-          this.afterAutoSkip();
-        }
-        if (samplingEnabled) {
-          this._convertTicksToLabels(this.ticks);
-        }
-        this.beforeFit();
-        this.fit();
-        this.afterFit();
-        this.afterUpdate();
-      }
-      configure() {
-        let reversePixels = this.options.reverse;
-        let startPixel, endPixel;
-        if (this.isHorizontal()) {
-          startPixel = this.left;
-          endPixel = this.right;
-        } else {
-          startPixel = this.top;
-          endPixel = this.bottom;
-          reversePixels = !reversePixels;
-        }
-        this._startPixel = startPixel;
-        this._endPixel = endPixel;
-        this._reversePixels = reversePixels;
-        this._length = endPixel - startPixel;
-        this._alignToPixels = this.options.alignToPixels;
-      }
-      afterUpdate() {
-        callback(this.options.afterUpdate, [
-          this
-        ]);
-      }
-      beforeSetDimensions() {
-        callback(this.options.beforeSetDimensions, [
-          this
-        ]);
-      }
-      setDimensions() {
-        if (this.isHorizontal()) {
-          this.width = this.maxWidth;
-          this.left = 0;
-          this.right = this.width;
-        } else {
-          this.height = this.maxHeight;
-          this.top = 0;
-          this.bottom = this.height;
-        }
-        this.paddingLeft = 0;
-        this.paddingTop = 0;
-        this.paddingRight = 0;
-        this.paddingBottom = 0;
-      }
-      afterSetDimensions() {
-        callback(this.options.afterSetDimensions, [
-          this
-        ]);
-      }
-      _callHooks(name) {
-        this.chart.notifyPlugins(name, this.getContext());
-        callback(this.options[name], [
-          this
-        ]);
-      }
-      beforeDataLimits() {
-        this._callHooks("beforeDataLimits");
-      }
-      determineDataLimits() {
-      }
-      afterDataLimits() {
-        this._callHooks("afterDataLimits");
-      }
-      beforeBuildTicks() {
-        this._callHooks("beforeBuildTicks");
-      }
-      buildTicks() {
-        return [];
-      }
-      afterBuildTicks() {
-        this._callHooks("afterBuildTicks");
-      }
-      beforeTickToLabelConversion() {
-        callback(this.options.beforeTickToLabelConversion, [
-          this
-        ]);
-      }
-      generateTickLabels(ticks) {
-        const tickOpts = this.options.ticks;
-        let i, ilen, tick;
-        for (i = 0, ilen = ticks.length; i < ilen; i++) {
-          tick = ticks[i];
-          tick.label = callback(tickOpts.callback, [
-            tick.value,
-            i,
-            ticks
-          ], this);
-        }
-      }
-      afterTickToLabelConversion() {
-        callback(this.options.afterTickToLabelConversion, [
-          this
-        ]);
-      }
-      beforeCalculateLabelRotation() {
-        callback(this.options.beforeCalculateLabelRotation, [
-          this
-        ]);
-      }
-      calculateLabelRotation() {
-        const options = this.options;
-        const tickOpts = options.ticks;
-        const numTicks = getTicksLimit(this.ticks.length, options.ticks.maxTicksLimit);
-        const minRotation = tickOpts.minRotation || 0;
-        const maxRotation = tickOpts.maxRotation;
-        let labelRotation = minRotation;
-        let tickWidth, maxHeight, maxLabelDiagonal;
-        if (!this._isVisible() || !tickOpts.display || minRotation >= maxRotation || numTicks <= 1 || !this.isHorizontal()) {
-          this.labelRotation = minRotation;
-          return;
-        }
-        const labelSizes = this._getLabelSizes();
-        const maxLabelWidth = labelSizes.widest.width;
-        const maxLabelHeight = labelSizes.highest.height;
-        const maxWidth = _limitValue(this.chart.width - maxLabelWidth, 0, this.maxWidth);
-        tickWidth = options.offset ? this.maxWidth / numTicks : maxWidth / (numTicks - 1);
-        if (maxLabelWidth + 6 > tickWidth) {
-          tickWidth = maxWidth / (numTicks - (options.offset ? 0.5 : 1));
-          maxHeight = this.maxHeight - getTickMarkLength(options.grid) - tickOpts.padding - getTitleHeight(options.title, this.chart.options.font);
-          maxLabelDiagonal = Math.sqrt(maxLabelWidth * maxLabelWidth + maxLabelHeight * maxLabelHeight);
-          labelRotation = toDegrees(Math.min(Math.asin(_limitValue((labelSizes.highest.height + 6) / tickWidth, -1, 1)), Math.asin(_limitValue(maxHeight / maxLabelDiagonal, -1, 1)) - Math.asin(_limitValue(maxLabelHeight / maxLabelDiagonal, -1, 1))));
-          labelRotation = Math.max(minRotation, Math.min(maxRotation, labelRotation));
-        }
-        this.labelRotation = labelRotation;
-      }
-      afterCalculateLabelRotation() {
-        callback(this.options.afterCalculateLabelRotation, [
-          this
-        ]);
-      }
-      afterAutoSkip() {
-      }
-      beforeFit() {
-        callback(this.options.beforeFit, [
-          this
-        ]);
-      }
-      fit() {
-        const minSize = {
-          width: 0,
-          height: 0
-        };
-        const { chart, options: { ticks: tickOpts, title: titleOpts, grid: gridOpts } } = this;
-        const display = this._isVisible();
-        const isHorizontal = this.isHorizontal();
-        if (display) {
-          const titleHeight = getTitleHeight(titleOpts, chart.options.font);
-          if (isHorizontal) {
-            minSize.width = this.maxWidth;
-            minSize.height = getTickMarkLength(gridOpts) + titleHeight;
-          } else {
-            minSize.height = this.maxHeight;
-            minSize.width = getTickMarkLength(gridOpts) + titleHeight;
-          }
-          if (tickOpts.display && this.ticks.length) {
-            const { first, last, widest, highest } = this._getLabelSizes();
-            const tickPadding = tickOpts.padding * 2;
-            const angleRadians = toRadians(this.labelRotation);
-            const cos = Math.cos(angleRadians);
-            const sin = Math.sin(angleRadians);
-            if (isHorizontal) {
-              const labelHeight = tickOpts.mirror ? 0 : sin * widest.width + cos * highest.height;
-              minSize.height = Math.min(this.maxHeight, minSize.height + labelHeight + tickPadding);
-            } else {
-              const labelWidth = tickOpts.mirror ? 0 : cos * widest.width + sin * highest.height;
-              minSize.width = Math.min(this.maxWidth, minSize.width + labelWidth + tickPadding);
-            }
-            this._calculatePadding(first, last, sin, cos);
-          }
-        }
-        this._handleMargins();
-        if (isHorizontal) {
-          this.width = this._length = chart.width - this._margins.left - this._margins.right;
-          this.height = minSize.height;
-        } else {
-          this.width = minSize.width;
-          this.height = this._length = chart.height - this._margins.top - this._margins.bottom;
-        }
-      }
-      _calculatePadding(first, last, sin, cos) {
-        const { ticks: { align, padding }, position } = this.options;
-        const isRotated = this.labelRotation !== 0;
-        const labelsBelowTicks = position !== "top" && this.axis === "x";
-        if (this.isHorizontal()) {
-          const offsetLeft = this.getPixelForTick(0) - this.left;
-          const offsetRight = this.right - this.getPixelForTick(this.ticks.length - 1);
-          let paddingLeft = 0;
-          let paddingRight = 0;
-          if (isRotated) {
-            if (labelsBelowTicks) {
-              paddingLeft = cos * first.width;
-              paddingRight = sin * last.height;
-            } else {
-              paddingLeft = sin * first.height;
-              paddingRight = cos * last.width;
-            }
-          } else if (align === "start") {
-            paddingRight = last.width;
-          } else if (align === "end") {
-            paddingLeft = first.width;
-          } else if (align !== "inner") {
-            paddingLeft = first.width / 2;
-            paddingRight = last.width / 2;
-          }
-          this.paddingLeft = Math.max((paddingLeft - offsetLeft + padding) * this.width / (this.width - offsetLeft), 0);
-          this.paddingRight = Math.max((paddingRight - offsetRight + padding) * this.width / (this.width - offsetRight), 0);
-        } else {
-          let paddingTop = last.height / 2;
-          let paddingBottom = first.height / 2;
-          if (align === "start") {
-            paddingTop = 0;
-            paddingBottom = first.height;
-          } else if (align === "end") {
-            paddingTop = last.height;
-            paddingBottom = 0;
-          }
-          this.paddingTop = paddingTop + padding;
-          this.paddingBottom = paddingBottom + padding;
-        }
-      }
-      _handleMargins() {
-        if (this._margins) {
-          this._margins.left = Math.max(this.paddingLeft, this._margins.left);
-          this._margins.top = Math.max(this.paddingTop, this._margins.top);
-          this._margins.right = Math.max(this.paddingRight, this._margins.right);
-          this._margins.bottom = Math.max(this.paddingBottom, this._margins.bottom);
-        }
-      }
-      afterFit() {
-        callback(this.options.afterFit, [
-          this
-        ]);
-      }
-      isHorizontal() {
-        const { axis, position } = this.options;
-        return position === "top" || position === "bottom" || axis === "x";
-      }
-      isFullSize() {
-        return this.options.fullSize;
-      }
-      _convertTicksToLabels(ticks) {
-        this.beforeTickToLabelConversion();
-        this.generateTickLabels(ticks);
-        let i, ilen;
-        for (i = 0, ilen = ticks.length; i < ilen; i++) {
-          if (isNullOrUndef(ticks[i].label)) {
-            ticks.splice(i, 1);
-            ilen--;
-            i--;
-          }
-        }
-        this.afterTickToLabelConversion();
-      }
-      _getLabelSizes() {
-        let labelSizes = this._labelSizes;
-        if (!labelSizes) {
-          const sampleSize = this.options.ticks.sampleSize;
-          let ticks = this.ticks;
-          if (sampleSize < ticks.length) {
-            ticks = sample(ticks, sampleSize);
-          }
-          this._labelSizes = labelSizes = this._computeLabelSizes(ticks, ticks.length, this.options.ticks.maxTicksLimit);
-        }
-        return labelSizes;
-      }
-      _computeLabelSizes(ticks, length, maxTicksLimit) {
-        const { ctx, _longestTextCache: caches } = this;
-        const widths = [];
-        const heights = [];
-        const increment = Math.floor(length / getTicksLimit(length, maxTicksLimit));
-        let widestLabelSize = 0;
-        let highestLabelSize = 0;
-        let i, j, jlen, label, tickFont, fontString, cache, lineHeight, width, height, nestedLabel;
-        for (i = 0; i < length; i += increment) {
-          label = ticks[i].label;
-          tickFont = this._resolveTickFontOptions(i);
-          ctx.font = fontString = tickFont.string;
-          cache = caches[fontString] = caches[fontString] || {
-            data: {},
-            gc: []
-          };
-          lineHeight = tickFont.lineHeight;
-          width = height = 0;
-          if (!isNullOrUndef(label) && !isArray(label)) {
-            width = _measureText(ctx, cache.data, cache.gc, width, label);
-            height = lineHeight;
-          } else if (isArray(label)) {
-            for (j = 0, jlen = label.length; j < jlen; ++j) {
-              nestedLabel = label[j];
-              if (!isNullOrUndef(nestedLabel) && !isArray(nestedLabel)) {
-                width = _measureText(ctx, cache.data, cache.gc, width, nestedLabel);
-                height += lineHeight;
-              }
-            }
-          }
-          widths.push(width);
-          heights.push(height);
-          widestLabelSize = Math.max(width, widestLabelSize);
-          highestLabelSize = Math.max(height, highestLabelSize);
-        }
-        garbageCollect(caches, length);
-        const widest = widths.indexOf(widestLabelSize);
-        const highest = heights.indexOf(highestLabelSize);
-        const valueAt = (idx) => ({
-          width: widths[idx] || 0,
-          height: heights[idx] || 0
-        });
-        return {
-          first: valueAt(0),
-          last: valueAt(length - 1),
-          widest: valueAt(widest),
-          highest: valueAt(highest),
-          widths,
-          heights
-        };
-      }
-      getLabelForValue(value) {
-        return value;
-      }
-      getPixelForValue(value, index2) {
-        return NaN;
-      }
-      getValueForPixel(pixel) {
-      }
-      getPixelForTick(index2) {
-        const ticks = this.ticks;
-        if (index2 < 0 || index2 > ticks.length - 1) {
-          return null;
-        }
-        return this.getPixelForValue(ticks[index2].value);
-      }
-      getPixelForDecimal(decimal) {
-        if (this._reversePixels) {
-          decimal = 1 - decimal;
-        }
-        const pixel = this._startPixel + decimal * this._length;
-        return _int16Range(this._alignToPixels ? _alignPixel(this.chart, pixel, 0) : pixel);
-      }
-      getDecimalForPixel(pixel) {
-        const decimal = (pixel - this._startPixel) / this._length;
-        return this._reversePixels ? 1 - decimal : decimal;
-      }
-      getBasePixel() {
-        return this.getPixelForValue(this.getBaseValue());
-      }
-      getBaseValue() {
-        const { min, max } = this;
-        return min < 0 && max < 0 ? max : min > 0 && max > 0 ? min : 0;
-      }
-      getContext(index2) {
-        const ticks = this.ticks || [];
-        if (index2 >= 0 && index2 < ticks.length) {
-          const tick = ticks[index2];
-          return tick.$context || (tick.$context = createTickContext(this.getContext(), index2, tick));
-        }
-        return this.$context || (this.$context = createScaleContext(this.chart.getContext(), this));
-      }
-      _tickSize() {
-        const optionTicks = this.options.ticks;
-        const rot = toRadians(this.labelRotation);
-        const cos = Math.abs(Math.cos(rot));
-        const sin = Math.abs(Math.sin(rot));
-        const labelSizes = this._getLabelSizes();
-        const padding = optionTicks.autoSkipPadding || 0;
-        const w = labelSizes ? labelSizes.widest.width + padding : 0;
-        const h = labelSizes ? labelSizes.highest.height + padding : 0;
-        return this.isHorizontal() ? h * cos > w * sin ? w / cos : h / sin : h * sin < w * cos ? h / cos : w / sin;
-      }
-      _isVisible() {
-        const display = this.options.display;
-        if (display !== "auto") {
-          return !!display;
-        }
-        return this.getMatchingVisibleMetas().length > 0;
-      }
-      _computeGridLineItems(chartArea) {
-        const axis = this.axis;
-        const chart = this.chart;
-        const options = this.options;
-        const { grid, position, border } = options;
-        const offset = grid.offset;
-        const isHorizontal = this.isHorizontal();
-        const ticks = this.ticks;
-        const ticksLength = ticks.length + (offset ? 1 : 0);
-        const tl = getTickMarkLength(grid);
-        const items = [];
-        const borderOpts = border.setContext(this.getContext());
-        const axisWidth = borderOpts.display ? borderOpts.width : 0;
-        const axisHalfWidth = axisWidth / 2;
-        const alignBorderValue = function(pixel) {
-          return _alignPixel(chart, pixel, axisWidth);
-        };
-        let borderValue, i, lineValue, alignedLineValue;
-        let tx1, ty1, tx2, ty2, x1, y1, x2, y2;
-        if (position === "top") {
-          borderValue = alignBorderValue(this.bottom);
-          ty1 = this.bottom - tl;
-          ty2 = borderValue - axisHalfWidth;
-          y1 = alignBorderValue(chartArea.top) + axisHalfWidth;
-          y2 = chartArea.bottom;
-        } else if (position === "bottom") {
-          borderValue = alignBorderValue(this.top);
-          y1 = chartArea.top;
-          y2 = alignBorderValue(chartArea.bottom) - axisHalfWidth;
-          ty1 = borderValue + axisHalfWidth;
-          ty2 = this.top + tl;
-        } else if (position === "left") {
-          borderValue = alignBorderValue(this.right);
-          tx1 = this.right - tl;
-          tx2 = borderValue - axisHalfWidth;
-          x1 = alignBorderValue(chartArea.left) + axisHalfWidth;
-          x2 = chartArea.right;
-        } else if (position === "right") {
-          borderValue = alignBorderValue(this.left);
-          x1 = chartArea.left;
-          x2 = alignBorderValue(chartArea.right) - axisHalfWidth;
-          tx1 = borderValue + axisHalfWidth;
-          tx2 = this.left + tl;
-        } else if (axis === "x") {
-          if (position === "center") {
-            borderValue = alignBorderValue((chartArea.top + chartArea.bottom) / 2 + 0.5);
-          } else if (isObject(position)) {
-            const positionAxisID = Object.keys(position)[0];
-            const value = position[positionAxisID];
-            borderValue = alignBorderValue(this.chart.scales[positionAxisID].getPixelForValue(value));
-          }
-          y1 = chartArea.top;
-          y2 = chartArea.bottom;
-          ty1 = borderValue + axisHalfWidth;
-          ty2 = ty1 + tl;
-        } else if (axis === "y") {
-          if (position === "center") {
-            borderValue = alignBorderValue((chartArea.left + chartArea.right) / 2);
-          } else if (isObject(position)) {
-            const positionAxisID = Object.keys(position)[0];
-            const value = position[positionAxisID];
-            borderValue = alignBorderValue(this.chart.scales[positionAxisID].getPixelForValue(value));
-          }
-          tx1 = borderValue - axisHalfWidth;
-          tx2 = tx1 - tl;
-          x1 = chartArea.left;
-          x2 = chartArea.right;
-        }
-        const limit = valueOrDefault(options.ticks.maxTicksLimit, ticksLength);
-        const step = Math.max(1, Math.ceil(ticksLength / limit));
-        for (i = 0; i < ticksLength; i += step) {
-          const context = this.getContext(i);
-          const optsAtIndex = grid.setContext(context);
-          const optsAtIndexBorder = border.setContext(context);
-          const lineWidth = optsAtIndex.lineWidth;
-          const lineColor = optsAtIndex.color;
-          const borderDash = optsAtIndexBorder.dash || [];
-          const borderDashOffset = optsAtIndexBorder.dashOffset;
-          const tickWidth = optsAtIndex.tickWidth;
-          const tickColor = optsAtIndex.tickColor;
-          const tickBorderDash = optsAtIndex.tickBorderDash || [];
-          const tickBorderDashOffset = optsAtIndex.tickBorderDashOffset;
-          lineValue = getPixelForGridLine(this, i, offset);
-          if (lineValue === void 0) {
-            continue;
-          }
-          alignedLineValue = _alignPixel(chart, lineValue, lineWidth);
-          if (isHorizontal) {
-            tx1 = tx2 = x1 = x2 = alignedLineValue;
-          } else {
-            ty1 = ty2 = y1 = y2 = alignedLineValue;
-          }
-          items.push({
-            tx1,
-            ty1,
-            tx2,
-            ty2,
-            x1,
-            y1,
-            x2,
-            y2,
-            width: lineWidth,
-            color: lineColor,
-            borderDash,
-            borderDashOffset,
-            tickWidth,
-            tickColor,
-            tickBorderDash,
-            tickBorderDashOffset
-          });
-        }
-        this._ticksLength = ticksLength;
-        this._borderValue = borderValue;
-        return items;
-      }
-      _computeLabelItems(chartArea) {
-        const axis = this.axis;
-        const options = this.options;
-        const { position, ticks: optionTicks } = options;
-        const isHorizontal = this.isHorizontal();
-        const ticks = this.ticks;
-        const { align, crossAlign, padding, mirror } = optionTicks;
-        const tl = getTickMarkLength(options.grid);
-        const tickAndPadding = tl + padding;
-        const hTickAndPadding = mirror ? -padding : tickAndPadding;
-        const rotation = -toRadians(this.labelRotation);
-        const items = [];
-        let i, ilen, tick, label, x, y, textAlign, pixel, font, lineHeight, lineCount, textOffset;
-        let textBaseline = "middle";
-        if (position === "top") {
-          y = this.bottom - hTickAndPadding;
-          textAlign = this._getXAxisLabelAlignment();
-        } else if (position === "bottom") {
-          y = this.top + hTickAndPadding;
-          textAlign = this._getXAxisLabelAlignment();
-        } else if (position === "left") {
-          const ret = this._getYAxisLabelAlignment(tl);
-          textAlign = ret.textAlign;
-          x = ret.x;
-        } else if (position === "right") {
-          const ret = this._getYAxisLabelAlignment(tl);
-          textAlign = ret.textAlign;
-          x = ret.x;
-        } else if (axis === "x") {
-          if (position === "center") {
-            y = (chartArea.top + chartArea.bottom) / 2 + tickAndPadding;
-          } else if (isObject(position)) {
-            const positionAxisID = Object.keys(position)[0];
-            const value = position[positionAxisID];
-            y = this.chart.scales[positionAxisID].getPixelForValue(value) + tickAndPadding;
-          }
-          textAlign = this._getXAxisLabelAlignment();
-        } else if (axis === "y") {
-          if (position === "center") {
-            x = (chartArea.left + chartArea.right) / 2 - tickAndPadding;
-          } else if (isObject(position)) {
-            const positionAxisID = Object.keys(position)[0];
-            const value = position[positionAxisID];
-            x = this.chart.scales[positionAxisID].getPixelForValue(value);
-          }
-          textAlign = this._getYAxisLabelAlignment(tl).textAlign;
-        }
-        if (axis === "y") {
-          if (align === "start") {
-            textBaseline = "top";
-          } else if (align === "end") {
-            textBaseline = "bottom";
-          }
-        }
-        const labelSizes = this._getLabelSizes();
-        for (i = 0, ilen = ticks.length; i < ilen; ++i) {
-          tick = ticks[i];
-          label = tick.label;
-          const optsAtIndex = optionTicks.setContext(this.getContext(i));
-          pixel = this.getPixelForTick(i) + optionTicks.labelOffset;
-          font = this._resolveTickFontOptions(i);
-          lineHeight = font.lineHeight;
-          lineCount = isArray(label) ? label.length : 1;
-          const halfCount = lineCount / 2;
-          const color2 = optsAtIndex.color;
-          const strokeColor = optsAtIndex.textStrokeColor;
-          const strokeWidth = optsAtIndex.textStrokeWidth;
-          let tickTextAlign = textAlign;
-          if (isHorizontal) {
-            x = pixel;
-            if (textAlign === "inner") {
-              if (i === ilen - 1) {
-                tickTextAlign = !this.options.reverse ? "right" : "left";
-              } else if (i === 0) {
-                tickTextAlign = !this.options.reverse ? "left" : "right";
-              } else {
-                tickTextAlign = "center";
-              }
-            }
-            if (position === "top") {
-              if (crossAlign === "near" || rotation !== 0) {
-                textOffset = -lineCount * lineHeight + lineHeight / 2;
-              } else if (crossAlign === "center") {
-                textOffset = -labelSizes.highest.height / 2 - halfCount * lineHeight + lineHeight;
-              } else {
-                textOffset = -labelSizes.highest.height + lineHeight / 2;
-              }
-            } else {
-              if (crossAlign === "near" || rotation !== 0) {
-                textOffset = lineHeight / 2;
-              } else if (crossAlign === "center") {
-                textOffset = labelSizes.highest.height / 2 - halfCount * lineHeight;
-              } else {
-                textOffset = labelSizes.highest.height - lineCount * lineHeight;
-              }
-            }
-            if (mirror) {
-              textOffset *= -1;
-            }
-            if (rotation !== 0 && !optsAtIndex.showLabelBackdrop) {
-              x += lineHeight / 2 * Math.sin(rotation);
-            }
-          } else {
-            y = pixel;
-            textOffset = (1 - lineCount) * lineHeight / 2;
-          }
-          let backdrop;
-          if (optsAtIndex.showLabelBackdrop) {
-            const labelPadding = toPadding(optsAtIndex.backdropPadding);
-            const height = labelSizes.heights[i];
-            const width = labelSizes.widths[i];
-            let top = textOffset - labelPadding.top;
-            let left = 0 - labelPadding.left;
-            switch (textBaseline) {
-              case "middle":
-                top -= height / 2;
-                break;
-              case "bottom":
-                top -= height;
-                break;
-            }
-            switch (textAlign) {
-              case "center":
-                left -= width / 2;
-                break;
-              case "right":
-                left -= width;
-                break;
-              case "inner":
-                if (i === ilen - 1) {
-                  left -= width;
-                } else if (i > 0) {
-                  left -= width / 2;
-                }
-                break;
-            }
-            backdrop = {
-              left,
-              top,
-              width: width + labelPadding.width,
-              height: height + labelPadding.height,
-              color: optsAtIndex.backdropColor
-            };
-          }
-          items.push({
-            label,
-            font,
-            textOffset,
-            options: {
-              rotation,
-              color: color2,
-              strokeColor,
-              strokeWidth,
-              textAlign: tickTextAlign,
-              textBaseline,
-              translation: [
-                x,
-                y
-              ],
-              backdrop
-            }
-          });
-        }
-        return items;
-      }
-      _getXAxisLabelAlignment() {
-        const { position, ticks } = this.options;
-        const rotation = -toRadians(this.labelRotation);
-        if (rotation) {
-          return position === "top" ? "left" : "right";
-        }
-        let align = "center";
-        if (ticks.align === "start") {
-          align = "left";
-        } else if (ticks.align === "end") {
-          align = "right";
-        } else if (ticks.align === "inner") {
-          align = "inner";
-        }
-        return align;
-      }
-      _getYAxisLabelAlignment(tl) {
-        const { position, ticks: { crossAlign, mirror, padding } } = this.options;
-        const labelSizes = this._getLabelSizes();
-        const tickAndPadding = tl + padding;
-        const widest = labelSizes.widest.width;
-        let textAlign;
-        let x;
-        if (position === "left") {
-          if (mirror) {
-            x = this.right + padding;
-            if (crossAlign === "near") {
-              textAlign = "left";
-            } else if (crossAlign === "center") {
-              textAlign = "center";
-              x += widest / 2;
-            } else {
-              textAlign = "right";
-              x += widest;
-            }
-          } else {
-            x = this.right - tickAndPadding;
-            if (crossAlign === "near") {
-              textAlign = "right";
-            } else if (crossAlign === "center") {
-              textAlign = "center";
-              x -= widest / 2;
-            } else {
-              textAlign = "left";
-              x = this.left;
-            }
-          }
-        } else if (position === "right") {
-          if (mirror) {
-            x = this.left + padding;
-            if (crossAlign === "near") {
-              textAlign = "right";
-            } else if (crossAlign === "center") {
-              textAlign = "center";
-              x -= widest / 2;
-            } else {
-              textAlign = "left";
-              x -= widest;
-            }
-          } else {
-            x = this.left + tickAndPadding;
-            if (crossAlign === "near") {
-              textAlign = "left";
-            } else if (crossAlign === "center") {
-              textAlign = "center";
-              x += widest / 2;
-            } else {
-              textAlign = "right";
-              x = this.right;
-            }
-          }
-        } else {
-          textAlign = "right";
-        }
-        return {
-          textAlign,
-          x
-        };
-      }
-      _computeLabelArea() {
-        if (this.options.ticks.mirror) {
-          return;
-        }
-        const chart = this.chart;
-        const position = this.options.position;
-        if (position === "left" || position === "right") {
-          return {
-            top: 0,
-            left: this.left,
-            bottom: chart.height,
-            right: this.right
-          };
-        }
-        if (position === "top" || position === "bottom") {
-          return {
-            top: this.top,
-            left: 0,
-            bottom: this.bottom,
-            right: chart.width
-          };
-        }
-      }
-      drawBackground() {
-        const { ctx, options: { backgroundColor }, left, top, width, height } = this;
-        if (backgroundColor) {
-          ctx.save();
-          ctx.fillStyle = backgroundColor;
-          ctx.fillRect(left, top, width, height);
-          ctx.restore();
-        }
-      }
-      getLineWidthForValue(value) {
-        const grid = this.options.grid;
-        if (!this._isVisible() || !grid.display) {
-          return 0;
-        }
-        const ticks = this.ticks;
-        const index2 = ticks.findIndex((t) => t.value === value);
-        if (index2 >= 0) {
-          const opts = grid.setContext(this.getContext(index2));
-          return opts.lineWidth;
-        }
-        return 0;
-      }
-      drawGrid(chartArea) {
-        const grid = this.options.grid;
-        const ctx = this.ctx;
-        const items = this._gridLineItems || (this._gridLineItems = this._computeGridLineItems(chartArea));
-        let i, ilen;
-        const drawLine = (p1, p2, style2) => {
-          if (!style2.width || !style2.color) {
-            return;
-          }
-          ctx.save();
-          ctx.lineWidth = style2.width;
-          ctx.strokeStyle = style2.color;
-          ctx.setLineDash(style2.borderDash || []);
-          ctx.lineDashOffset = style2.borderDashOffset;
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
-          ctx.restore();
-        };
-        if (grid.display) {
-          for (i = 0, ilen = items.length; i < ilen; ++i) {
-            const item = items[i];
-            if (grid.drawOnChartArea) {
-              drawLine({
-                x: item.x1,
-                y: item.y1
-              }, {
-                x: item.x2,
-                y: item.y2
-              }, item);
-            }
-            if (grid.drawTicks) {
-              drawLine({
-                x: item.tx1,
-                y: item.ty1
-              }, {
-                x: item.tx2,
-                y: item.ty2
-              }, {
-                color: item.tickColor,
-                width: item.tickWidth,
-                borderDash: item.tickBorderDash,
-                borderDashOffset: item.tickBorderDashOffset
-              });
-            }
-          }
-        }
-      }
-      drawBorder() {
-        const { chart, ctx, options: { border, grid } } = this;
-        const borderOpts = border.setContext(this.getContext());
-        const axisWidth = border.display ? borderOpts.width : 0;
-        if (!axisWidth) {
-          return;
-        }
-        const lastLineWidth = grid.setContext(this.getContext(0)).lineWidth;
-        const borderValue = this._borderValue;
-        let x1, x2, y1, y2;
-        if (this.isHorizontal()) {
-          x1 = _alignPixel(chart, this.left, axisWidth) - axisWidth / 2;
-          x2 = _alignPixel(chart, this.right, lastLineWidth) + lastLineWidth / 2;
-          y1 = y2 = borderValue;
-        } else {
-          y1 = _alignPixel(chart, this.top, axisWidth) - axisWidth / 2;
-          y2 = _alignPixel(chart, this.bottom, lastLineWidth) + lastLineWidth / 2;
-          x1 = x2 = borderValue;
-        }
-        ctx.save();
-        ctx.lineWidth = borderOpts.width;
-        ctx.strokeStyle = borderOpts.color;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        ctx.restore();
-      }
-      drawLabels(chartArea) {
-        const optionTicks = this.options.ticks;
-        if (!optionTicks.display) {
-          return;
-        }
-        const ctx = this.ctx;
-        const area = this._computeLabelArea();
-        if (area) {
-          clipArea(ctx, area);
-        }
-        const items = this.getLabelItems(chartArea);
-        for (const item of items) {
-          const renderTextOptions = item.options;
-          const tickFont = item.font;
-          const label = item.label;
-          const y = item.textOffset;
-          renderText(ctx, label, 0, y, tickFont, renderTextOptions);
-        }
-        if (area) {
-          unclipArea(ctx);
-        }
-      }
-      drawTitle() {
-        const { ctx, options: { position, title, reverse } } = this;
-        if (!title.display) {
-          return;
-        }
-        const font = toFont(title.font);
-        const padding = toPadding(title.padding);
-        const align = title.align;
-        let offset = font.lineHeight / 2;
-        if (position === "bottom" || position === "center" || isObject(position)) {
-          offset += padding.bottom;
-          if (isArray(title.text)) {
-            offset += font.lineHeight * (title.text.length - 1);
-          }
-        } else {
-          offset += padding.top;
-        }
-        const { titleX, titleY, maxWidth, rotation } = titleArgs(this, offset, position, align);
-        renderText(ctx, title.text, 0, 0, font, {
-          color: title.color,
-          maxWidth,
-          rotation,
-          textAlign: titleAlign(align, position, reverse),
-          textBaseline: "middle",
-          translation: [
-            titleX,
-            titleY
-          ]
-        });
-      }
-      draw(chartArea) {
-        if (!this._isVisible()) {
-          return;
-        }
-        this.drawBackground();
-        this.drawGrid(chartArea);
-        this.drawBorder();
-        this.drawTitle();
-        this.drawLabels(chartArea);
-      }
-      _layers() {
-        const opts = this.options;
-        const tz = opts.ticks && opts.ticks.z || 0;
-        const gz = valueOrDefault(opts.grid && opts.grid.z, -1);
-        const bz = valueOrDefault(opts.border && opts.border.z, 0);
-        if (!this._isVisible() || this.draw !== _Scale.prototype.draw) {
-          return [
-            {
-              z: tz,
-              draw: (chartArea) => {
-                this.draw(chartArea);
-              }
-            }
-          ];
-        }
-        return [
-          {
-            z: gz,
-            draw: (chartArea) => {
-              this.drawBackground();
-              this.drawGrid(chartArea);
-              this.drawTitle();
-            }
-          },
-          {
-            z: bz,
-            draw: () => {
-              this.drawBorder();
-            }
-          },
-          {
-            z: tz,
-            draw: (chartArea) => {
-              this.drawLabels(chartArea);
-            }
-          }
-        ];
-      }
-      getMatchingVisibleMetas(type) {
-        const metas = this.chart.getSortedVisibleDatasetMetas();
-        const axisID = this.axis + "AxisID";
-        const result = [];
-        let i, ilen;
-        for (i = 0, ilen = metas.length; i < ilen; ++i) {
-          const meta = metas[i];
-          if (meta[axisID] === this.id && (!type || meta.type === type)) {
-            result.push(meta);
-          }
-        }
-        return result;
-      }
-      _resolveTickFontOptions(index2) {
-        const opts = this.options.ticks.setContext(this.getContext(index2));
-        return toFont(opts.font);
-      }
-      _maxDigits() {
-        const fontSize = this._resolveTickFontOptions(0).lineHeight;
-        return (this.isHorizontal() ? this.width : this.height) / fontSize;
-      }
-    };
-    TypedRegistry = class {
-      constructor(type, scope, override) {
-        this.type = type;
-        this.scope = scope;
-        this.override = override;
-        this.items = /* @__PURE__ */ Object.create(null);
-      }
-      isForType(type) {
-        return Object.prototype.isPrototypeOf.call(this.type.prototype, type.prototype);
-      }
-      register(item) {
-        const proto = Object.getPrototypeOf(item);
-        let parentScope;
-        if (isIChartComponent(proto)) {
-          parentScope = this.register(proto);
-        }
-        const items = this.items;
-        const id = item.id;
-        const scope = this.scope + "." + id;
-        if (!id) {
-          throw new Error("class does not have id: " + item);
-        }
-        if (id in items) {
-          return scope;
-        }
-        items[id] = item;
-        registerDefaults(item, scope, parentScope);
-        if (this.override) {
-          defaults.override(item.id, item.overrides);
-        }
-        return scope;
-      }
-      get(id) {
-        return this.items[id];
-      }
-      unregister(item) {
-        const items = this.items;
-        const id = item.id;
-        const scope = this.scope;
-        if (id in items) {
-          delete items[id];
-        }
-        if (scope && id in defaults[scope]) {
-          delete defaults[scope][id];
-          if (this.override) {
-            delete overrides[id];
-          }
-        }
-      }
-    };
-    Registry = class {
-      constructor() {
-        this.controllers = new TypedRegistry(DatasetController, "datasets", true);
-        this.elements = new TypedRegistry(Element, "elements");
-        this.plugins = new TypedRegistry(Object, "plugins");
-        this.scales = new TypedRegistry(Scale, "scales");
-        this._typedRegistries = [
-          this.controllers,
-          this.scales,
-          this.elements
-        ];
-      }
-      add(...args) {
-        this._each("register", args);
-      }
-      remove(...args) {
-        this._each("unregister", args);
-      }
-      addControllers(...args) {
-        this._each("register", args, this.controllers);
-      }
-      addElements(...args) {
-        this._each("register", args, this.elements);
-      }
-      addPlugins(...args) {
-        this._each("register", args, this.plugins);
-      }
-      addScales(...args) {
-        this._each("register", args, this.scales);
-      }
-      getController(id) {
-        return this._get(id, this.controllers, "controller");
-      }
-      getElement(id) {
-        return this._get(id, this.elements, "element");
-      }
-      getPlugin(id) {
-        return this._get(id, this.plugins, "plugin");
-      }
-      getScale(id) {
-        return this._get(id, this.scales, "scale");
-      }
-      removeControllers(...args) {
-        this._each("unregister", args, this.controllers);
-      }
-      removeElements(...args) {
-        this._each("unregister", args, this.elements);
-      }
-      removePlugins(...args) {
-        this._each("unregister", args, this.plugins);
-      }
-      removeScales(...args) {
-        this._each("unregister", args, this.scales);
-      }
-      _each(method, args, typedRegistry) {
-        [
-          ...args
-        ].forEach((arg) => {
-          const reg = typedRegistry || this._getRegistryForType(arg);
-          if (typedRegistry || reg.isForType(arg) || reg === this.plugins && arg.id) {
-            this._exec(method, reg, arg);
-          } else {
-            each(arg, (item) => {
-              const itemReg = typedRegistry || this._getRegistryForType(item);
-              this._exec(method, itemReg, item);
-            });
-          }
-        });
-      }
-      _exec(method, registry2, component) {
-        const camelMethod = _capitalize(method);
-        callback(component["before" + camelMethod], [], component);
-        registry2[method](component);
-        callback(component["after" + camelMethod], [], component);
-      }
-      _getRegistryForType(type) {
-        for (let i = 0; i < this._typedRegistries.length; i++) {
-          const reg = this._typedRegistries[i];
-          if (reg.isForType(type)) {
-            return reg;
-          }
-        }
-        return this.plugins;
-      }
-      _get(id, typedRegistry, type) {
-        const item = typedRegistry.get(id);
-        if (item === void 0) {
-          throw new Error('"' + id + '" is not a registered ' + type + ".");
-        }
-        return item;
-      }
-    };
-    registry = /* @__PURE__ */ new Registry();
-    PluginService = class {
-      constructor() {
-        this._init = void 0;
-      }
-      notify(chart, hook, args, filter) {
-        if (hook === "beforeInit") {
-          this._init = this._createDescriptors(chart, true);
-          this._notify(this._init, chart, "install");
-        }
-        if (this._init === void 0) {
-          return;
-        }
-        const descriptors2 = filter ? this._descriptors(chart).filter(filter) : this._descriptors(chart);
-        const result = this._notify(descriptors2, chart, hook, args);
-        if (hook === "afterDestroy") {
-          this._notify(descriptors2, chart, "stop");
-          this._notify(this._init, chart, "uninstall");
-          this._init = void 0;
-        }
-        return result;
-      }
-      _notify(descriptors2, chart, hook, args) {
-        args = args || {};
-        for (const descriptor of descriptors2) {
-          const plugin = descriptor.plugin;
-          const method = plugin[hook];
-          const params = [
-            chart,
-            args,
-            descriptor.options
-          ];
-          if (callback(method, params, plugin) === false && args.cancelable) {
-            return false;
-          }
-        }
-        return true;
-      }
-      invalidate() {
-        if (!isNullOrUndef(this._cache)) {
-          this._oldCache = this._cache;
-          this._cache = void 0;
-        }
-      }
-      _descriptors(chart) {
-        if (this._cache) {
-          return this._cache;
-        }
-        const descriptors2 = this._cache = this._createDescriptors(chart);
-        this._notifyStateChanges(chart);
-        return descriptors2;
-      }
-      _createDescriptors(chart, all) {
-        const config = chart && chart.config;
-        const options = valueOrDefault(config.options && config.options.plugins, {});
-        const plugins2 = allPlugins(config);
-        return options === false && !all ? [] : createDescriptors(chart, plugins2, options, all);
-      }
-      _notifyStateChanges(chart) {
-        const previousDescriptors = this._oldCache || [];
-        const descriptors2 = this._cache;
-        const diff = (a, b) => a.filter((x) => !b.some((y) => x.plugin.id === y.plugin.id));
-        this._notify(diff(previousDescriptors, descriptors2), chart, "stop");
-        this._notify(diff(descriptors2, previousDescriptors), chart, "start");
-      }
-    };
-    keyCache = /* @__PURE__ */ new Map();
-    keysCached = /* @__PURE__ */ new Set();
-    addIfFound = (set2, obj, key) => {
-      const opts = resolveObjectKey(obj, key);
-      if (opts !== void 0) {
-        set2.add(opts);
-      }
-    };
-    Config = class {
-      constructor(config) {
-        this._config = initConfig(config);
-        this._scopeCache = /* @__PURE__ */ new Map();
-        this._resolverCache = /* @__PURE__ */ new Map();
-      }
-      get platform() {
-        return this._config.platform;
-      }
-      get type() {
-        return this._config.type;
-      }
-      set type(type) {
-        this._config.type = type;
-      }
-      get data() {
-        return this._config.data;
-      }
-      set data(data) {
-        this._config.data = initData(data);
-      }
-      get options() {
-        return this._config.options;
-      }
-      set options(options) {
-        this._config.options = options;
-      }
-      get plugins() {
-        return this._config.plugins;
-      }
-      update() {
-        const config = this._config;
-        this.clearCache();
-        initOptions(config);
-      }
-      clearCache() {
-        this._scopeCache.clear();
-        this._resolverCache.clear();
-      }
-      datasetScopeKeys(datasetType) {
-        return cachedKeys(datasetType, () => [
-          [
-            `datasets.${datasetType}`,
-            ""
-          ]
-        ]);
-      }
-      datasetAnimationScopeKeys(datasetType, transition) {
-        return cachedKeys(`${datasetType}.transition.${transition}`, () => [
-          [
-            `datasets.${datasetType}.transitions.${transition}`,
-            `transitions.${transition}`
-          ],
-          [
-            `datasets.${datasetType}`,
-            ""
-          ]
-        ]);
-      }
-      datasetElementScopeKeys(datasetType, elementType) {
-        return cachedKeys(`${datasetType}-${elementType}`, () => [
-          [
-            `datasets.${datasetType}.elements.${elementType}`,
-            `datasets.${datasetType}`,
-            `elements.${elementType}`,
-            ""
-          ]
-        ]);
-      }
-      pluginScopeKeys(plugin) {
-        const id = plugin.id;
-        const type = this.type;
-        return cachedKeys(`${type}-plugin-${id}`, () => [
-          [
-            `plugins.${id}`,
-            ...plugin.additionalOptionScopes || []
-          ]
-        ]);
-      }
-      _cachedScopes(mainScope, resetCache) {
-        const _scopeCache = this._scopeCache;
-        let cache = _scopeCache.get(mainScope);
-        if (!cache || resetCache) {
-          cache = /* @__PURE__ */ new Map();
-          _scopeCache.set(mainScope, cache);
-        }
-        return cache;
-      }
-      getOptionScopes(mainScope, keyLists, resetCache) {
-        const { options, type } = this;
-        const cache = this._cachedScopes(mainScope, resetCache);
-        const cached = cache.get(keyLists);
-        if (cached) {
-          return cached;
-        }
-        const scopes = /* @__PURE__ */ new Set();
-        keyLists.forEach((keys) => {
-          if (mainScope) {
-            scopes.add(mainScope);
-            keys.forEach((key) => addIfFound(scopes, mainScope, key));
-          }
-          keys.forEach((key) => addIfFound(scopes, options, key));
-          keys.forEach((key) => addIfFound(scopes, overrides[type] || {}, key));
-          keys.forEach((key) => addIfFound(scopes, defaults, key));
-          keys.forEach((key) => addIfFound(scopes, descriptors, key));
-        });
-        const array = Array.from(scopes);
-        if (array.length === 0) {
-          array.push(/* @__PURE__ */ Object.create(null));
-        }
-        if (keysCached.has(keyLists)) {
-          cache.set(keyLists, array);
-        }
-        return array;
-      }
-      chartOptionScopes() {
-        const { options, type } = this;
-        return [
-          options,
-          overrides[type] || {},
-          defaults.datasets[type] || {},
-          {
-            type
-          },
-          defaults,
-          descriptors
-        ];
-      }
-      resolveNamedOptions(scopes, names2, context, prefixes = [
-        ""
-      ]) {
-        const result = {
-          $shared: true
-        };
-        const { resolver, subPrefixes } = getResolver(this._resolverCache, scopes, prefixes);
-        let options = resolver;
-        if (needContext(resolver, names2)) {
-          result.$shared = false;
-          context = isFunction(context) ? context() : context;
-          const subResolver = this.createResolver(scopes, context, subPrefixes);
-          options = _attachContext(resolver, context, subResolver);
-        }
-        for (const prop of names2) {
-          result[prop] = options[prop];
-        }
-        return result;
-      }
-      createResolver(scopes, context, prefixes = [
-        ""
-      ], descriptorDefaults) {
-        const { resolver } = getResolver(this._resolverCache, scopes, prefixes);
-        return isObject(context) ? _attachContext(resolver, context, void 0, descriptorDefaults) : resolver;
-      }
-    };
-    hasFunction = (value) => isObject(value) && Object.getOwnPropertyNames(value).some((key) => isFunction(value[key]));
-    version = "4.5.1";
-    KNOWN_POSITIONS = [
-      "top",
-      "bottom",
-      "left",
-      "right",
-      "chartArea"
-    ];
-    instances = {};
-    getChart = (key) => {
-      const canvas = getCanvas(key);
-      return Object.values(instances).filter((c) => c.canvas === canvas).pop();
-    };
-    Chart = class {
-      static defaults = defaults;
-      static instances = instances;
-      static overrides = overrides;
-      static registry = registry;
-      static version = version;
-      static getChart = getChart;
-      static register(...items) {
-        registry.add(...items);
-        invalidatePlugins();
-      }
-      static unregister(...items) {
-        registry.remove(...items);
-        invalidatePlugins();
-      }
-      constructor(item, userConfig) {
-        const config = this.config = new Config(userConfig);
-        const initialCanvas = getCanvas(item);
-        const existingChart = getChart(initialCanvas);
-        if (existingChart) {
-          throw new Error("Canvas is already in use. Chart with ID '" + existingChart.id + "' must be destroyed before the canvas with ID '" + existingChart.canvas.id + "' can be reused.");
-        }
-        const options = config.createResolver(config.chartOptionScopes(), this.getContext());
-        this.platform = new (config.platform || _detectPlatform(initialCanvas))();
-        this.platform.updateConfig(config);
-        const context = this.platform.acquireContext(initialCanvas, options.aspectRatio);
-        const canvas = context && context.canvas;
-        const height = canvas && canvas.height;
-        const width = canvas && canvas.width;
-        this.id = uid();
-        this.ctx = context;
-        this.canvas = canvas;
-        this.width = width;
-        this.height = height;
-        this._options = options;
-        this._aspectRatio = this.aspectRatio;
-        this._layers = [];
-        this._metasets = [];
-        this._stacks = void 0;
-        this.boxes = [];
-        this.currentDevicePixelRatio = void 0;
-        this.chartArea = void 0;
-        this._active = [];
-        this._lastEvent = void 0;
-        this._listeners = {};
-        this._responsiveListeners = void 0;
-        this._sortedMetasets = [];
-        this.scales = {};
-        this._plugins = new PluginService();
-        this.$proxies = {};
-        this._hiddenIndices = {};
-        this.attached = false;
-        this._animationsDisabled = void 0;
-        this.$context = void 0;
-        this._doResize = debounce((mode) => this.update(mode), options.resizeDelay || 0);
-        this._dataChanges = [];
-        instances[this.id] = this;
-        if (!context || !canvas) {
-          console.error("Failed to create chart: can't acquire context from the given item");
-          return;
-        }
-        animator.listen(this, "complete", onAnimationsComplete);
-        animator.listen(this, "progress", onAnimationProgress);
-        this._initialize();
-        if (this.attached) {
-          this.update();
-        }
-      }
-      get aspectRatio() {
-        const { options: { aspectRatio, maintainAspectRatio }, width, height, _aspectRatio } = this;
-        if (!isNullOrUndef(aspectRatio)) {
-          return aspectRatio;
-        }
-        if (maintainAspectRatio && _aspectRatio) {
-          return _aspectRatio;
-        }
-        return height ? width / height : null;
-      }
-      get data() {
-        return this.config.data;
-      }
-      set data(data) {
-        this.config.data = data;
-      }
-      get options() {
-        return this._options;
-      }
-      set options(options) {
-        this.config.options = options;
-      }
-      get registry() {
-        return registry;
-      }
-      _initialize() {
-        this.notifyPlugins("beforeInit");
-        if (this.options.responsive) {
-          this.resize();
-        } else {
-          retinaScale(this, this.options.devicePixelRatio);
-        }
-        this.bindEvents();
-        this.notifyPlugins("afterInit");
-        return this;
-      }
-      clear() {
-        clearCanvas(this.canvas, this.ctx);
-        return this;
-      }
-      stop() {
-        animator.stop(this);
-        return this;
-      }
-      resize(width, height) {
-        if (!animator.running(this)) {
-          this._resize(width, height);
-        } else {
-          this._resizeBeforeDraw = {
-            width,
-            height
-          };
-        }
-      }
-      _resize(width, height) {
-        const options = this.options;
-        const canvas = this.canvas;
-        const aspectRatio = options.maintainAspectRatio && this.aspectRatio;
-        const newSize = this.platform.getMaximumSize(canvas, width, height, aspectRatio);
-        const newRatio = options.devicePixelRatio || this.platform.getDevicePixelRatio();
-        const mode = this.width ? "resize" : "attach";
-        this.width = newSize.width;
-        this.height = newSize.height;
-        this._aspectRatio = this.aspectRatio;
-        if (!retinaScale(this, newRatio, true)) {
-          return;
-        }
-        this.notifyPlugins("resize", {
-          size: newSize
-        });
-        callback(options.onResize, [
-          this,
-          newSize
-        ], this);
-        if (this.attached) {
-          if (this._doResize(mode)) {
-            this.render();
-          }
-        }
-      }
-      ensureScalesHaveIDs() {
-        const options = this.options;
-        const scalesOptions = options.scales || {};
-        each(scalesOptions, (axisOptions, axisID) => {
-          axisOptions.id = axisID;
-        });
-      }
-      buildOrUpdateScales() {
-        const options = this.options;
-        const scaleOpts = options.scales;
-        const scales2 = this.scales;
-        const updated = Object.keys(scales2).reduce((obj, id) => {
-          obj[id] = false;
-          return obj;
-        }, {});
-        let items = [];
-        if (scaleOpts) {
-          items = items.concat(Object.keys(scaleOpts).map((id) => {
-            const scaleOptions = scaleOpts[id];
-            const axis = determineAxis(id, scaleOptions);
-            const isRadial = axis === "r";
-            const isHorizontal = axis === "x";
-            return {
-              options: scaleOptions,
-              dposition: isRadial ? "chartArea" : isHorizontal ? "bottom" : "left",
-              dtype: isRadial ? "radialLinear" : isHorizontal ? "category" : "linear"
-            };
-          }));
-        }
-        each(items, (item) => {
-          const scaleOptions = item.options;
-          const id = scaleOptions.id;
-          const axis = determineAxis(id, scaleOptions);
-          const scaleType = valueOrDefault(scaleOptions.type, item.dtype);
-          if (scaleOptions.position === void 0 || positionIsHorizontal(scaleOptions.position, axis) !== positionIsHorizontal(item.dposition)) {
-            scaleOptions.position = item.dposition;
-          }
-          updated[id] = true;
-          let scale = null;
-          if (id in scales2 && scales2[id].type === scaleType) {
-            scale = scales2[id];
-          } else {
-            const scaleClass = registry.getScale(scaleType);
-            scale = new scaleClass({
-              id,
-              type: scaleType,
-              ctx: this.ctx,
-              chart: this
-            });
-            scales2[scale.id] = scale;
-          }
-          scale.init(scaleOptions, options);
-        });
-        each(updated, (hasUpdated, id) => {
-          if (!hasUpdated) {
-            delete scales2[id];
-          }
-        });
-        each(scales2, (scale) => {
-          layouts.configure(this, scale, scale.options);
-          layouts.addBox(this, scale);
-        });
-      }
-      _updateMetasets() {
-        const metasets = this._metasets;
-        const numData = this.data.datasets.length;
-        const numMeta = metasets.length;
-        metasets.sort((a, b) => a.index - b.index);
-        if (numMeta > numData) {
-          for (let i = numData; i < numMeta; ++i) {
-            this._destroyDatasetMeta(i);
-          }
-          metasets.splice(numData, numMeta - numData);
-        }
-        this._sortedMetasets = metasets.slice(0).sort(compare2Level("order", "index"));
-      }
-      _removeUnreferencedMetasets() {
-        const { _metasets: metasets, data: { datasets } } = this;
-        if (metasets.length > datasets.length) {
-          delete this._stacks;
-        }
-        metasets.forEach((meta, index2) => {
-          if (datasets.filter((x) => x === meta._dataset).length === 0) {
-            this._destroyDatasetMeta(index2);
-          }
-        });
-      }
-      buildOrUpdateControllers() {
-        const newControllers = [];
-        const datasets = this.data.datasets;
-        let i, ilen;
-        this._removeUnreferencedMetasets();
-        for (i = 0, ilen = datasets.length; i < ilen; i++) {
-          const dataset = datasets[i];
-          let meta = this.getDatasetMeta(i);
-          const type = dataset.type || this.config.type;
-          if (meta.type && meta.type !== type) {
-            this._destroyDatasetMeta(i);
-            meta = this.getDatasetMeta(i);
-          }
-          meta.type = type;
-          meta.indexAxis = dataset.indexAxis || getIndexAxis(type, this.options);
-          meta.order = dataset.order || 0;
-          meta.index = i;
-          meta.label = "" + dataset.label;
-          meta.visible = this.isDatasetVisible(i);
-          if (meta.controller) {
-            meta.controller.updateIndex(i);
-            meta.controller.linkScales();
-          } else {
-            const ControllerClass = registry.getController(type);
-            const { datasetElementType, dataElementType } = defaults.datasets[type];
-            Object.assign(ControllerClass, {
-              dataElementType: registry.getElement(dataElementType),
-              datasetElementType: datasetElementType && registry.getElement(datasetElementType)
-            });
-            meta.controller = new ControllerClass(this, i);
-            newControllers.push(meta.controller);
-          }
-        }
-        this._updateMetasets();
-        return newControllers;
-      }
-      _resetElements() {
-        each(this.data.datasets, (dataset, datasetIndex) => {
-          this.getDatasetMeta(datasetIndex).controller.reset();
-        }, this);
-      }
-      reset() {
-        this._resetElements();
-        this.notifyPlugins("reset");
-      }
-      update(mode) {
-        const config = this.config;
-        config.update();
-        const options = this._options = config.createResolver(config.chartOptionScopes(), this.getContext());
-        const animsDisabled = this._animationsDisabled = !options.animation;
-        this._updateScales();
-        this._checkEventBindings();
-        this._updateHiddenIndices();
-        this._plugins.invalidate();
-        if (this.notifyPlugins("beforeUpdate", {
-          mode,
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        const newControllers = this.buildOrUpdateControllers();
-        this.notifyPlugins("beforeElementsUpdate");
-        let minPadding = 0;
-        for (let i = 0, ilen = this.data.datasets.length; i < ilen; i++) {
-          const { controller } = this.getDatasetMeta(i);
-          const reset = !animsDisabled && newControllers.indexOf(controller) === -1;
-          controller.buildOrUpdateElements(reset);
-          minPadding = Math.max(+controller.getMaxOverflow(), minPadding);
-        }
-        minPadding = this._minPadding = options.layout.autoPadding ? minPadding : 0;
-        this._updateLayout(minPadding);
-        if (!animsDisabled) {
-          each(newControllers, (controller) => {
-            controller.reset();
-          });
-        }
-        this._updateDatasets(mode);
-        this.notifyPlugins("afterUpdate", {
-          mode
-        });
-        this._layers.sort(compare2Level("z", "_idx"));
-        const { _active, _lastEvent } = this;
-        if (_lastEvent) {
-          this._eventHandler(_lastEvent, true);
-        } else if (_active.length) {
-          this._updateHoverStyles(_active, _active, true);
-        }
-        this.render();
-      }
-      _updateScales() {
-        each(this.scales, (scale) => {
-          layouts.removeBox(this, scale);
-        });
-        this.ensureScalesHaveIDs();
-        this.buildOrUpdateScales();
-      }
-      _checkEventBindings() {
-        const options = this.options;
-        const existingEvents = new Set(Object.keys(this._listeners));
-        const newEvents = new Set(options.events);
-        if (!setsEqual(existingEvents, newEvents) || !!this._responsiveListeners !== options.responsive) {
-          this.unbindEvents();
-          this.bindEvents();
-        }
-      }
-      _updateHiddenIndices() {
-        const { _hiddenIndices } = this;
-        const changes = this._getUniformDataChanges() || [];
-        for (const { method, start, count } of changes) {
-          const move = method === "_removeElements" ? -count : count;
-          moveNumericKeys(_hiddenIndices, start, move);
-        }
-      }
-      _getUniformDataChanges() {
-        const _dataChanges = this._dataChanges;
-        if (!_dataChanges || !_dataChanges.length) {
-          return;
-        }
-        this._dataChanges = [];
-        const datasetCount = this.data.datasets.length;
-        const makeSet = (idx) => new Set(_dataChanges.filter((c) => c[0] === idx).map((c, i) => i + "," + c.splice(1).join(",")));
-        const changeSet = makeSet(0);
-        for (let i = 1; i < datasetCount; i++) {
-          if (!setsEqual(changeSet, makeSet(i))) {
-            return;
-          }
-        }
-        return Array.from(changeSet).map((c) => c.split(",")).map((a) => ({
-          method: a[1],
-          start: +a[2],
-          count: +a[3]
-        }));
-      }
-      _updateLayout(minPadding) {
-        if (this.notifyPlugins("beforeLayout", {
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        layouts.update(this, this.width, this.height, minPadding);
-        const area = this.chartArea;
-        const noArea = area.width <= 0 || area.height <= 0;
-        this._layers = [];
-        each(this.boxes, (box) => {
-          if (noArea && box.position === "chartArea") {
-            return;
-          }
-          if (box.configure) {
-            box.configure();
-          }
-          this._layers.push(...box._layers());
-        }, this);
-        this._layers.forEach((item, index2) => {
-          item._idx = index2;
-        });
-        this.notifyPlugins("afterLayout");
-      }
-      _updateDatasets(mode) {
-        if (this.notifyPlugins("beforeDatasetsUpdate", {
-          mode,
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        for (let i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
-          this.getDatasetMeta(i).controller.configure();
-        }
-        for (let i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
-          this._updateDataset(i, isFunction(mode) ? mode({
-            datasetIndex: i
-          }) : mode);
-        }
-        this.notifyPlugins("afterDatasetsUpdate", {
-          mode
-        });
-      }
-      _updateDataset(index2, mode) {
-        const meta = this.getDatasetMeta(index2);
-        const args = {
-          meta,
-          index: index2,
-          mode,
-          cancelable: true
-        };
-        if (this.notifyPlugins("beforeDatasetUpdate", args) === false) {
-          return;
-        }
-        meta.controller._update(mode);
-        args.cancelable = false;
-        this.notifyPlugins("afterDatasetUpdate", args);
-      }
-      render() {
-        if (this.notifyPlugins("beforeRender", {
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        if (animator.has(this)) {
-          if (this.attached && !animator.running(this)) {
-            animator.start(this);
-          }
-        } else {
-          this.draw();
-          onAnimationsComplete({
-            chart: this
-          });
-        }
-      }
-      draw() {
-        let i;
-        if (this._resizeBeforeDraw) {
-          const { width, height } = this._resizeBeforeDraw;
-          this._resizeBeforeDraw = null;
-          this._resize(width, height);
-        }
-        this.clear();
-        if (this.width <= 0 || this.height <= 0) {
-          return;
-        }
-        if (this.notifyPlugins("beforeDraw", {
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        const layers = this._layers;
-        for (i = 0; i < layers.length && layers[i].z <= 0; ++i) {
-          layers[i].draw(this.chartArea);
-        }
-        this._drawDatasets();
-        for (; i < layers.length; ++i) {
-          layers[i].draw(this.chartArea);
-        }
-        this.notifyPlugins("afterDraw");
-      }
-      _getSortedDatasetMetas(filterVisible) {
-        const metasets = this._sortedMetasets;
-        const result = [];
-        let i, ilen;
-        for (i = 0, ilen = metasets.length; i < ilen; ++i) {
-          const meta = metasets[i];
-          if (!filterVisible || meta.visible) {
-            result.push(meta);
-          }
-        }
-        return result;
-      }
-      getSortedVisibleDatasetMetas() {
-        return this._getSortedDatasetMetas(true);
-      }
-      _drawDatasets() {
-        if (this.notifyPlugins("beforeDatasetsDraw", {
-          cancelable: true
-        }) === false) {
-          return;
-        }
-        const metasets = this.getSortedVisibleDatasetMetas();
-        for (let i = metasets.length - 1; i >= 0; --i) {
-          this._drawDataset(metasets[i]);
-        }
-        this.notifyPlugins("afterDatasetsDraw");
-      }
-      _drawDataset(meta) {
-        const ctx = this.ctx;
-        const args = {
-          meta,
-          index: meta.index,
-          cancelable: true
-        };
-        const clip = getDatasetClipArea(this, meta);
-        if (this.notifyPlugins("beforeDatasetDraw", args) === false) {
-          return;
-        }
-        if (clip) {
-          clipArea(ctx, clip);
-        }
-        meta.controller.draw();
-        if (clip) {
-          unclipArea(ctx);
-        }
-        args.cancelable = false;
-        this.notifyPlugins("afterDatasetDraw", args);
-      }
-      isPointInArea(point) {
-        return _isPointInArea(point, this.chartArea, this._minPadding);
-      }
-      getElementsAtEventForMode(e, mode, options, useFinalPosition) {
-        const method = Interaction.modes[mode];
-        if (typeof method === "function") {
-          return method(this, e, options, useFinalPosition);
-        }
-        return [];
-      }
-      getDatasetMeta(datasetIndex) {
-        const dataset = this.data.datasets[datasetIndex];
-        const metasets = this._metasets;
-        let meta = metasets.filter((x) => x && x._dataset === dataset).pop();
-        if (!meta) {
-          meta = {
-            type: null,
-            data: [],
-            dataset: null,
-            controller: null,
-            hidden: null,
-            xAxisID: null,
-            yAxisID: null,
-            order: dataset && dataset.order || 0,
-            index: datasetIndex,
-            _dataset: dataset,
-            _parsed: [],
-            _sorted: false
-          };
-          metasets.push(meta);
-        }
-        return meta;
-      }
-      getContext() {
-        return this.$context || (this.$context = createContext(null, {
-          chart: this,
-          type: "chart"
-        }));
-      }
-      getVisibleDatasetCount() {
-        return this.getSortedVisibleDatasetMetas().length;
-      }
-      isDatasetVisible(datasetIndex) {
-        const dataset = this.data.datasets[datasetIndex];
-        if (!dataset) {
-          return false;
-        }
-        const meta = this.getDatasetMeta(datasetIndex);
-        return typeof meta.hidden === "boolean" ? !meta.hidden : !dataset.hidden;
-      }
-      setDatasetVisibility(datasetIndex, visible) {
-        const meta = this.getDatasetMeta(datasetIndex);
-        meta.hidden = !visible;
-      }
-      toggleDataVisibility(index2) {
-        this._hiddenIndices[index2] = !this._hiddenIndices[index2];
-      }
-      getDataVisibility(index2) {
-        return !this._hiddenIndices[index2];
-      }
-      _updateVisibility(datasetIndex, dataIndex, visible) {
-        const mode = visible ? "show" : "hide";
-        const meta = this.getDatasetMeta(datasetIndex);
-        const anims = meta.controller._resolveAnimations(void 0, mode);
-        if (defined(dataIndex)) {
-          meta.data[dataIndex].hidden = !visible;
-          this.update();
-        } else {
-          this.setDatasetVisibility(datasetIndex, visible);
-          anims.update(meta, {
-            visible
-          });
-          this.update((ctx) => ctx.datasetIndex === datasetIndex ? mode : void 0);
-        }
-      }
-      hide(datasetIndex, dataIndex) {
-        this._updateVisibility(datasetIndex, dataIndex, false);
-      }
-      show(datasetIndex, dataIndex) {
-        this._updateVisibility(datasetIndex, dataIndex, true);
-      }
-      _destroyDatasetMeta(datasetIndex) {
-        const meta = this._metasets[datasetIndex];
-        if (meta && meta.controller) {
-          meta.controller._destroy();
-        }
-        delete this._metasets[datasetIndex];
-      }
-      _stop() {
-        let i, ilen;
-        this.stop();
-        animator.remove(this);
-        for (i = 0, ilen = this.data.datasets.length; i < ilen; ++i) {
-          this._destroyDatasetMeta(i);
-        }
-      }
-      destroy() {
-        this.notifyPlugins("beforeDestroy");
-        const { canvas, ctx } = this;
-        this._stop();
-        this.config.clearCache();
-        if (canvas) {
-          this.unbindEvents();
-          clearCanvas(canvas, ctx);
-          this.platform.releaseContext(ctx);
-          this.canvas = null;
-          this.ctx = null;
-        }
-        delete instances[this.id];
-        this.notifyPlugins("afterDestroy");
-      }
-      toBase64Image(...args) {
-        return this.canvas.toDataURL(...args);
-      }
-      bindEvents() {
-        this.bindUserEvents();
-        if (this.options.responsive) {
-          this.bindResponsiveEvents();
-        } else {
-          this.attached = true;
-        }
-      }
-      bindUserEvents() {
-        const listeners = this._listeners;
-        const platform = this.platform;
-        const _add = (type, listener2) => {
-          platform.addEventListener(this, type, listener2);
-          listeners[type] = listener2;
-        };
-        const listener = (e, x, y) => {
-          e.offsetX = x;
-          e.offsetY = y;
-          this._eventHandler(e);
-        };
-        each(this.options.events, (type) => _add(type, listener));
-      }
-      bindResponsiveEvents() {
-        if (!this._responsiveListeners) {
-          this._responsiveListeners = {};
-        }
-        const listeners = this._responsiveListeners;
-        const platform = this.platform;
-        const _add = (type, listener2) => {
-          platform.addEventListener(this, type, listener2);
-          listeners[type] = listener2;
-        };
-        const _remove = (type, listener2) => {
-          if (listeners[type]) {
-            platform.removeEventListener(this, type, listener2);
-            delete listeners[type];
-          }
-        };
-        const listener = (width, height) => {
-          if (this.canvas) {
-            this.resize(width, height);
-          }
-        };
-        let detached;
-        const attached = () => {
-          _remove("attach", attached);
-          this.attached = true;
-          this.resize();
-          _add("resize", listener);
-          _add("detach", detached);
-        };
-        detached = () => {
-          this.attached = false;
-          _remove("resize", listener);
-          this._stop();
-          this._resize(0, 0);
-          _add("attach", attached);
-        };
-        if (platform.isAttached(this.canvas)) {
-          attached();
-        } else {
-          detached();
-        }
-      }
-      unbindEvents() {
-        each(this._listeners, (listener, type) => {
-          this.platform.removeEventListener(this, type, listener);
-        });
-        this._listeners = {};
-        each(this._responsiveListeners, (listener, type) => {
-          this.platform.removeEventListener(this, type, listener);
-        });
-        this._responsiveListeners = void 0;
-      }
-      updateHoverStyle(items, mode, enabled) {
-        const prefix = enabled ? "set" : "remove";
-        let meta, item, i, ilen;
-        if (mode === "dataset") {
-          meta = this.getDatasetMeta(items[0].datasetIndex);
-          meta.controller["_" + prefix + "DatasetHoverStyle"]();
-        }
-        for (i = 0, ilen = items.length; i < ilen; ++i) {
-          item = items[i];
-          const controller = item && this.getDatasetMeta(item.datasetIndex).controller;
-          if (controller) {
-            controller[prefix + "HoverStyle"](item.element, item.datasetIndex, item.index);
-          }
-        }
-      }
-      getActiveElements() {
-        return this._active || [];
-      }
-      setActiveElements(activeElements) {
-        const lastActive = this._active || [];
-        const active = activeElements.map(({ datasetIndex, index: index2 }) => {
-          const meta = this.getDatasetMeta(datasetIndex);
-          if (!meta) {
-            throw new Error("No dataset found at index " + datasetIndex);
-          }
-          return {
-            datasetIndex,
-            element: meta.data[index2],
-            index: index2
-          };
-        });
-        const changed = !_elementsEqual(active, lastActive);
-        if (changed) {
-          this._active = active;
-          this._lastEvent = null;
-          this._updateHoverStyles(active, lastActive);
-        }
-      }
-      notifyPlugins(hook, args, filter) {
-        return this._plugins.notify(this, hook, args, filter);
-      }
-      isPluginEnabled(pluginId) {
-        return this._plugins._cache.filter((p) => p.plugin.id === pluginId).length === 1;
-      }
-      _updateHoverStyles(active, lastActive, replay) {
-        const hoverOptions = this.options.hover;
-        const diff = (a, b) => a.filter((x) => !b.some((y) => x.datasetIndex === y.datasetIndex && x.index === y.index));
-        const deactivated = diff(lastActive, active);
-        const activated = replay ? active : diff(active, lastActive);
-        if (deactivated.length) {
-          this.updateHoverStyle(deactivated, hoverOptions.mode, false);
-        }
-        if (activated.length && hoverOptions.mode) {
-          this.updateHoverStyle(activated, hoverOptions.mode, true);
-        }
-      }
-      _eventHandler(e, replay) {
-        const args = {
-          event: e,
-          replay,
-          cancelable: true,
-          inChartArea: this.isPointInArea(e)
-        };
-        const eventFilter = (plugin) => (plugin.options.events || this.options.events).includes(e.native.type);
-        if (this.notifyPlugins("beforeEvent", args, eventFilter) === false) {
-          return;
-        }
-        const changed = this._handleEvent(e, replay, args.inChartArea);
-        args.cancelable = false;
-        this.notifyPlugins("afterEvent", args, eventFilter);
-        if (changed || args.changed) {
-          this.render();
-        }
-        return this;
-      }
-      _handleEvent(e, replay, inChartArea) {
-        const { _active: lastActive = [], options } = this;
-        const useFinalPosition = replay;
-        const active = this._getActiveElements(e, lastActive, inChartArea, useFinalPosition);
-        const isClick = _isClickEvent(e);
-        const lastEvent = determineLastEvent(e, this._lastEvent, inChartArea, isClick);
-        if (inChartArea) {
-          this._lastEvent = null;
-          callback(options.onHover, [
-            e,
-            active,
-            this
-          ], this);
-          if (isClick) {
-            callback(options.onClick, [
-              e,
-              active,
-              this
-            ], this);
-          }
-        }
-        const changed = !_elementsEqual(active, lastActive);
-        if (changed || replay) {
-          this._active = active;
-          this._updateHoverStyles(active, lastActive, replay);
-        }
-        this._lastEvent = lastEvent;
-        return changed;
-      }
-      _getActiveElements(e, lastActive, inChartArea, useFinalPosition) {
-        if (e.type === "mouseout") {
-          return [];
-        }
-        if (!inChartArea) {
-          return lastActive;
-        }
-        const hoverOptions = this.options.hover;
-        return this.getElementsAtEventForMode(e, hoverOptions.mode, hoverOptions, useFinalPosition);
-      }
-    };
-    ArcElement = class extends Element {
-      static id = "arc";
-      static defaults = {
-        borderAlign: "center",
-        borderColor: "#fff",
-        borderDash: [],
-        borderDashOffset: 0,
-        borderJoinStyle: void 0,
-        borderRadius: 0,
-        borderWidth: 2,
-        offset: 0,
-        spacing: 0,
-        angle: void 0,
-        circular: true,
-        selfJoin: false
-      };
-      static defaultRoutes = {
-        backgroundColor: "backgroundColor"
-      };
-      static descriptors = {
-        _scriptable: true,
-        _indexable: (name) => name !== "borderDash"
-      };
-      circumference;
-      endAngle;
-      fullCircles;
-      innerRadius;
-      outerRadius;
-      pixelMargin;
-      startAngle;
-      constructor(cfg) {
-        super();
-        this.options = void 0;
-        this.circumference = void 0;
-        this.startAngle = void 0;
-        this.endAngle = void 0;
-        this.innerRadius = void 0;
-        this.outerRadius = void 0;
-        this.pixelMargin = 0;
-        this.fullCircles = 0;
-        if (cfg) {
-          Object.assign(this, cfg);
-        }
-      }
-      inRange(chartX, chartY, useFinalPosition) {
-        const point = this.getProps([
-          "x",
-          "y"
-        ], useFinalPosition);
-        const { angle, distance } = getAngleFromPoint(point, {
-          x: chartX,
-          y: chartY
-        });
-        const { startAngle, endAngle, innerRadius, outerRadius, circumference } = this.getProps([
-          "startAngle",
-          "endAngle",
-          "innerRadius",
-          "outerRadius",
-          "circumference"
-        ], useFinalPosition);
-        const rAdjust = (this.options.spacing + this.options.borderWidth) / 2;
-        const _circumference = valueOrDefault(circumference, endAngle - startAngle);
-        const nonZeroBetween = _angleBetween(angle, startAngle, endAngle) && startAngle !== endAngle;
-        const betweenAngles = _circumference >= TAU || nonZeroBetween;
-        const withinRadius = _isBetween(distance, innerRadius + rAdjust, outerRadius + rAdjust);
-        return betweenAngles && withinRadius;
-      }
-      getCenterPoint(useFinalPosition) {
-        const { x, y, startAngle, endAngle, innerRadius, outerRadius } = this.getProps([
-          "x",
-          "y",
-          "startAngle",
-          "endAngle",
-          "innerRadius",
-          "outerRadius"
-        ], useFinalPosition);
-        const { offset, spacing } = this.options;
-        const halfAngle = (startAngle + endAngle) / 2;
-        const halfRadius = (innerRadius + outerRadius + spacing + offset) / 2;
-        return {
-          x: x + Math.cos(halfAngle) * halfRadius,
-          y: y + Math.sin(halfAngle) * halfRadius
-        };
-      }
-      tooltipPosition(useFinalPosition) {
-        return this.getCenterPoint(useFinalPosition);
-      }
-      draw(ctx) {
-        const { options, circumference } = this;
-        const offset = (options.offset || 0) / 4;
-        const spacing = (options.spacing || 0) / 2;
-        const circular = options.circular;
-        this.pixelMargin = options.borderAlign === "inner" ? 0.33 : 0;
-        this.fullCircles = circumference > TAU ? Math.floor(circumference / TAU) : 0;
-        if (circumference === 0 || this.innerRadius < 0 || this.outerRadius < 0) {
-          return;
-        }
-        ctx.save();
-        const halfAngle = (this.startAngle + this.endAngle) / 2;
-        ctx.translate(Math.cos(halfAngle) * offset, Math.sin(halfAngle) * offset);
-        const fix = 1 - Math.sin(Math.min(PI, circumference || 0));
-        const radiusOffset = offset * fix;
-        ctx.fillStyle = options.backgroundColor;
-        ctx.strokeStyle = options.borderColor;
-        drawArc(ctx, this, radiusOffset, spacing, circular);
-        drawBorder(ctx, this, radiusOffset, spacing, circular);
-        ctx.restore();
-      }
-    };
-    usePath2D = typeof Path2D === "function";
-    LineElement = class extends Element {
-      static id = "line";
-      static defaults = {
-        borderCapStyle: "butt",
-        borderDash: [],
-        borderDashOffset: 0,
-        borderJoinStyle: "miter",
-        borderWidth: 3,
-        capBezierPoints: true,
-        cubicInterpolationMode: "default",
-        fill: false,
-        spanGaps: false,
-        stepped: false,
-        tension: 0
-      };
-      static defaultRoutes = {
-        backgroundColor: "backgroundColor",
-        borderColor: "borderColor"
-      };
-      static descriptors = {
-        _scriptable: true,
-        _indexable: (name) => name !== "borderDash" && name !== "fill"
-      };
-      constructor(cfg) {
-        super();
-        this.animated = true;
-        this.options = void 0;
-        this._chart = void 0;
-        this._loop = void 0;
-        this._fullLoop = void 0;
-        this._path = void 0;
-        this._points = void 0;
-        this._segments = void 0;
-        this._decimated = false;
-        this._pointsUpdated = false;
-        this._datasetIndex = void 0;
-        if (cfg) {
-          Object.assign(this, cfg);
-        }
-      }
-      updateControlPoints(chartArea, indexAxis) {
-        const options = this.options;
-        if ((options.tension || options.cubicInterpolationMode === "monotone") && !options.stepped && !this._pointsUpdated) {
-          const loop = options.spanGaps ? this._loop : this._fullLoop;
-          _updateBezierControlPoints(this._points, options, chartArea, loop, indexAxis);
-          this._pointsUpdated = true;
-        }
-      }
-      set points(points) {
-        this._points = points;
-        delete this._segments;
-        delete this._path;
-        this._pointsUpdated = false;
-      }
-      get points() {
-        return this._points;
-      }
-      get segments() {
-        return this._segments || (this._segments = _computeSegments(this, this.options.segment));
-      }
-      first() {
-        const segments = this.segments;
-        const points = this.points;
-        return segments.length && points[segments[0].start];
-      }
-      last() {
-        const segments = this.segments;
-        const points = this.points;
-        const count = segments.length;
-        return count && points[segments[count - 1].end];
-      }
-      interpolate(point, property) {
-        const options = this.options;
-        const value = point[property];
-        const points = this.points;
-        const segments = _boundSegments(this, {
-          property,
-          start: value,
-          end: value
-        });
-        if (!segments.length) {
-          return;
-        }
-        const result = [];
-        const _interpolate = _getInterpolationMethod(options);
-        let i, ilen;
-        for (i = 0, ilen = segments.length; i < ilen; ++i) {
-          const { start, end } = segments[i];
-          const p1 = points[start];
-          const p2 = points[end];
-          if (p1 === p2) {
-            result.push(p1);
-            continue;
-          }
-          const t = Math.abs((value - p1[property]) / (p2[property] - p1[property]));
-          const interpolated = _interpolate(p1, p2, t, options.stepped);
-          interpolated[property] = point[property];
-          result.push(interpolated);
-        }
-        return result.length === 1 ? result[0] : result;
-      }
-      pathSegment(ctx, segment, params) {
-        const segmentMethod = _getSegmentMethod(this);
-        return segmentMethod(ctx, this, segment, params);
-      }
-      path(ctx, start, count) {
-        const segments = this.segments;
-        const segmentMethod = _getSegmentMethod(this);
-        let loop = this._loop;
-        start = start || 0;
-        count = count || this.points.length - start;
-        for (const segment of segments) {
-          loop &= segmentMethod(ctx, this, segment, {
-            start,
-            end: start + count - 1
-          });
-        }
-        return !!loop;
-      }
-      draw(ctx, chartArea, start, count) {
-        const options = this.options || {};
-        const points = this.points || [];
-        if (points.length && options.borderWidth) {
-          ctx.save();
-          draw(ctx, this, start, count);
-          ctx.restore();
-        }
-        if (this.animated) {
-          this._pointsUpdated = false;
-          this._path = void 0;
-        }
-      }
-    };
-    PointElement = class extends Element {
-      static id = "point";
-      parsed;
-      skip;
-      stop;
-      /**
-      * @type {any}
-      */
-      static defaults = {
-        borderWidth: 1,
-        hitRadius: 1,
-        hoverBorderWidth: 1,
-        hoverRadius: 4,
-        pointStyle: "circle",
-        radius: 3,
-        rotation: 0
-      };
-      /**
-      * @type {any}
-      */
-      static defaultRoutes = {
-        backgroundColor: "backgroundColor",
-        borderColor: "borderColor"
-      };
-      constructor(cfg) {
-        super();
-        this.options = void 0;
-        this.parsed = void 0;
-        this.skip = void 0;
-        this.stop = void 0;
-        if (cfg) {
-          Object.assign(this, cfg);
-        }
-      }
-      inRange(mouseX, mouseY, useFinalPosition) {
-        const options = this.options;
-        const { x, y } = this.getProps([
-          "x",
-          "y"
-        ], useFinalPosition);
-        return Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2) < Math.pow(options.hitRadius + options.radius, 2);
-      }
-      inXRange(mouseX, useFinalPosition) {
-        return inRange$1(this, mouseX, "x", useFinalPosition);
-      }
-      inYRange(mouseY, useFinalPosition) {
-        return inRange$1(this, mouseY, "y", useFinalPosition);
-      }
-      getCenterPoint(useFinalPosition) {
-        const { x, y } = this.getProps([
-          "x",
-          "y"
-        ], useFinalPosition);
-        return {
-          x,
-          y
-        };
-      }
-      size(options) {
-        options = options || this.options || {};
-        let radius = options.radius || 0;
-        radius = Math.max(radius, radius && options.hoverRadius || 0);
-        const borderWidth = radius && options.borderWidth || 0;
-        return (radius + borderWidth) * 2;
-      }
-      draw(ctx, area) {
-        const options = this.options;
-        if (this.skip || options.radius < 0.1 || !_isPointInArea(this, area, this.size(options) / 2)) {
-          return;
-        }
-        ctx.strokeStyle = options.borderColor;
-        ctx.lineWidth = options.borderWidth;
-        ctx.fillStyle = options.backgroundColor;
-        drawPoint(ctx, options, this.x, this.y);
-      }
-      getRange() {
-        const options = this.options || {};
-        return options.radius + options.hitRadius;
-      }
-    };
-    BarElement = class extends Element {
-      static id = "bar";
-      static defaults = {
-        borderSkipped: "start",
-        borderWidth: 0,
-        borderRadius: 0,
-        inflateAmount: "auto",
-        pointStyle: void 0
-      };
-      static defaultRoutes = {
-        backgroundColor: "backgroundColor",
-        borderColor: "borderColor"
-      };
-      constructor(cfg) {
-        super();
-        this.options = void 0;
-        this.horizontal = void 0;
-        this.base = void 0;
-        this.width = void 0;
-        this.height = void 0;
-        this.inflateAmount = void 0;
-        if (cfg) {
-          Object.assign(this, cfg);
-        }
-      }
-      draw(ctx) {
-        const { inflateAmount, options: { borderColor, backgroundColor } } = this;
-        const { inner, outer } = boundingRects(this);
-        const addRectPath = hasRadius(outer.radius) ? addRoundedRectPath : addNormalRectPath;
-        ctx.save();
-        if (outer.w !== inner.w || outer.h !== inner.h) {
-          ctx.beginPath();
-          addRectPath(ctx, inflateRect(outer, inflateAmount, inner));
-          ctx.clip();
-          addRectPath(ctx, inflateRect(inner, -inflateAmount, outer));
-          ctx.fillStyle = borderColor;
-          ctx.fill("evenodd");
-        }
-        ctx.beginPath();
-        addRectPath(ctx, inflateRect(inner, inflateAmount));
-        ctx.fillStyle = backgroundColor;
-        ctx.fill();
-        ctx.restore();
-      }
-      inRange(mouseX, mouseY, useFinalPosition) {
-        return inRange(this, mouseX, mouseY, useFinalPosition);
-      }
-      inXRange(mouseX, useFinalPosition) {
-        return inRange(this, mouseX, null, useFinalPosition);
-      }
-      inYRange(mouseY, useFinalPosition) {
-        return inRange(this, null, mouseY, useFinalPosition);
-      }
-      getCenterPoint(useFinalPosition) {
-        const { x, y, base, horizontal } = this.getProps([
-          "x",
-          "y",
-          "base",
-          "horizontal"
-        ], useFinalPosition);
-        return {
-          x: horizontal ? (x + base) / 2 : x,
-          y: horizontal ? y : (y + base) / 2
-        };
-      }
-      getRange(axis) {
-        return axis === "x" ? this.width / 2 : this.height / 2;
-      }
-    };
-    elements = /* @__PURE__ */ Object.freeze({
-      __proto__: null,
-      ArcElement,
-      BarElement,
-      LineElement,
-      PointElement
-    });
-    BORDER_COLORS = [
-      "rgb(54, 162, 235)",
-      "rgb(255, 99, 132)",
-      "rgb(255, 159, 64)",
-      "rgb(255, 205, 86)",
-      "rgb(75, 192, 192)",
-      "rgb(153, 102, 255)",
-      "rgb(201, 203, 207)"
-      // grey
-    ];
-    BACKGROUND_COLORS = /* @__PURE__ */ BORDER_COLORS.map((color2) => color2.replace("rgb(", "rgba(").replace(")", ", 0.5)"));
-    plugin_colors = {
-      id: "colors",
-      defaults: {
-        enabled: true,
-        forceOverride: false
-      },
-      beforeLayout(chart, _args, options) {
-        if (!options.enabled) {
-          return;
-        }
-        const { data: { datasets }, options: chartOptions } = chart.config;
-        const { elements: elements2 } = chartOptions;
-        const containsColorDefenition = containsColorsDefinitions(datasets) || containsColorsDefinition(chartOptions) || elements2 && containsColorsDefinitions(elements2) || containsDefaultColorsDefenitions();
-        if (!options.forceOverride && containsColorDefenition) {
-          return;
-        }
-        const colorizer = getColorizer(chart);
-        datasets.forEach(colorizer);
-      }
-    };
-    plugin_decimation = {
-      id: "decimation",
-      defaults: {
-        algorithm: "min-max",
-        enabled: false
-      },
-      beforeElementsUpdate: (chart, args, options) => {
-        if (!options.enabled) {
-          cleanDecimatedData(chart);
-          return;
-        }
-        const availableWidth = chart.width;
-        chart.data.datasets.forEach((dataset, datasetIndex) => {
-          const { _data, indexAxis } = dataset;
-          const meta = chart.getDatasetMeta(datasetIndex);
-          const data = _data || dataset.data;
-          if (resolve([
-            indexAxis,
-            chart.options.indexAxis
-          ]) === "y") {
-            return;
-          }
-          if (!meta.controller.supportsDecimation) {
-            return;
-          }
-          const xAxis = chart.scales[meta.xAxisID];
-          if (xAxis.type !== "linear" && xAxis.type !== "time") {
-            return;
-          }
-          if (chart.options.parsing) {
-            return;
-          }
-          let { start, count } = getStartAndCountOfVisiblePointsSimplified(meta, data);
-          const threshold = options.threshold || 4 * availableWidth;
-          if (count <= threshold) {
-            cleanDecimatedDataset(dataset);
-            return;
-          }
-          if (isNullOrUndef(_data)) {
-            dataset._data = data;
-            delete dataset.data;
-            Object.defineProperty(dataset, "data", {
-              configurable: true,
-              enumerable: true,
-              get: function() {
-                return this._decimated;
-              },
-              set: function(d) {
-                this._data = d;
-              }
-            });
-          }
-          let decimated;
-          switch (options.algorithm) {
-            case "lttb":
-              decimated = lttbDecimation(data, start, count, availableWidth, options);
-              break;
-            case "min-max":
-              decimated = minMaxDecimation(data, start, count, availableWidth);
-              break;
-            default:
-              throw new Error(`Unsupported decimation algorithm '${options.algorithm}'`);
-          }
-          dataset._decimated = decimated;
-        });
-      },
-      destroy(chart) {
-        cleanDecimatedData(chart);
-      }
-    };
-    simpleArc = class {
-      constructor(opts) {
-        this.x = opts.x;
-        this.y = opts.y;
-        this.radius = opts.radius;
-      }
-      pathSegment(ctx, bounds, opts) {
-        const { x, y, radius } = this;
-        bounds = bounds || {
-          start: 0,
-          end: TAU
-        };
-        ctx.arc(x, y, radius, bounds.end, bounds.start, true);
-        return !opts.bounds;
-      }
-      interpolate(point) {
-        const { x, y, radius } = this;
-        const angle = point.angle;
-        return {
-          x: x + Math.cos(angle) * radius,
-          y: y + Math.sin(angle) * radius,
-          angle
-        };
-      }
-    };
-    index = {
-      id: "filler",
-      afterDatasetsUpdate(chart, _args, options) {
-        const count = (chart.data.datasets || []).length;
-        const sources = [];
-        let meta, i, line, source;
-        for (i = 0; i < count; ++i) {
-          meta = chart.getDatasetMeta(i);
-          line = meta.dataset;
-          source = null;
-          if (line && line.options && line instanceof LineElement) {
-            source = {
-              visible: chart.isDatasetVisible(i),
-              index: i,
-              fill: _decodeFill(line, i, count),
-              chart,
-              axis: meta.controller.options.indexAxis,
-              scale: meta.vScale,
-              line
-            };
-          }
-          meta.$filler = source;
-          sources.push(source);
-        }
-        for (i = 0; i < count; ++i) {
-          source = sources[i];
-          if (!source || source.fill === false) {
-            continue;
-          }
-          source.fill = _resolveTarget(sources, i, options.propagate);
-        }
-      },
-      beforeDraw(chart, _args, options) {
-        const draw2 = options.drawTime === "beforeDraw";
-        const metasets = chart.getSortedVisibleDatasetMetas();
-        const area = chart.chartArea;
-        for (let i = metasets.length - 1; i >= 0; --i) {
-          const source = metasets[i].$filler;
-          if (!source) {
-            continue;
-          }
-          source.line.updateControlPoints(area, source.axis);
-          if (draw2 && source.fill) {
-            _drawfill(chart.ctx, source, area);
-          }
-        }
-      },
-      beforeDatasetsDraw(chart, _args, options) {
-        if (options.drawTime !== "beforeDatasetsDraw") {
-          return;
-        }
-        const metasets = chart.getSortedVisibleDatasetMetas();
-        for (let i = metasets.length - 1; i >= 0; --i) {
-          const source = metasets[i].$filler;
-          if (_shouldApplyFill(source)) {
-            _drawfill(chart.ctx, source, chart.chartArea);
-          }
-        }
-      },
-      beforeDatasetDraw(chart, args, options) {
-        const source = args.meta.$filler;
-        if (!_shouldApplyFill(source) || options.drawTime !== "beforeDatasetDraw") {
-          return;
-        }
-        _drawfill(chart.ctx, source, chart.chartArea);
-      },
-      defaults: {
-        propagate: true,
-        drawTime: "beforeDatasetDraw"
-      }
-    };
-    getBoxSize = (labelOpts, fontSize) => {
-      let { boxHeight = fontSize, boxWidth = fontSize } = labelOpts;
-      if (labelOpts.usePointStyle) {
-        boxHeight = Math.min(boxHeight, fontSize);
-        boxWidth = labelOpts.pointStyleWidth || Math.min(boxWidth, fontSize);
-      }
-      return {
-        boxWidth,
-        boxHeight,
-        itemHeight: Math.max(fontSize, boxHeight)
-      };
-    };
-    itemsEqual = (a, b) => a !== null && b !== null && a.datasetIndex === b.datasetIndex && a.index === b.index;
-    Legend = class extends Element {
-      constructor(config) {
-        super();
-        this._added = false;
-        this.legendHitBoxes = [];
-        this._hoveredItem = null;
-        this.doughnutMode = false;
-        this.chart = config.chart;
-        this.options = config.options;
-        this.ctx = config.ctx;
-        this.legendItems = void 0;
-        this.columnSizes = void 0;
-        this.lineWidths = void 0;
-        this.maxHeight = void 0;
-        this.maxWidth = void 0;
-        this.top = void 0;
-        this.bottom = void 0;
-        this.left = void 0;
-        this.right = void 0;
-        this.height = void 0;
-        this.width = void 0;
-        this._margins = void 0;
-        this.position = void 0;
-        this.weight = void 0;
-        this.fullSize = void 0;
-      }
-      update(maxWidth, maxHeight, margins) {
-        this.maxWidth = maxWidth;
-        this.maxHeight = maxHeight;
-        this._margins = margins;
-        this.setDimensions();
-        this.buildLabels();
-        this.fit();
-      }
-      setDimensions() {
-        if (this.isHorizontal()) {
-          this.width = this.maxWidth;
-          this.left = this._margins.left;
-          this.right = this.width;
-        } else {
-          this.height = this.maxHeight;
-          this.top = this._margins.top;
-          this.bottom = this.height;
-        }
-      }
-      buildLabels() {
-        const labelOpts = this.options.labels || {};
-        let legendItems = callback(labelOpts.generateLabels, [
-          this.chart
-        ], this) || [];
-        if (labelOpts.filter) {
-          legendItems = legendItems.filter((item) => labelOpts.filter(item, this.chart.data));
-        }
-        if (labelOpts.sort) {
-          legendItems = legendItems.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
-        }
-        if (this.options.reverse) {
-          legendItems.reverse();
-        }
-        this.legendItems = legendItems;
-      }
-      fit() {
-        const { options, ctx } = this;
-        if (!options.display) {
-          this.width = this.height = 0;
-          return;
-        }
-        const labelOpts = options.labels;
-        const labelFont = toFont(labelOpts.font);
-        const fontSize = labelFont.size;
-        const titleHeight = this._computeTitleHeight();
-        const { boxWidth, itemHeight } = getBoxSize(labelOpts, fontSize);
-        let width, height;
-        ctx.font = labelFont.string;
-        if (this.isHorizontal()) {
-          width = this.maxWidth;
-          height = this._fitRows(titleHeight, fontSize, boxWidth, itemHeight) + 10;
-        } else {
-          height = this.maxHeight;
-          width = this._fitCols(titleHeight, labelFont, boxWidth, itemHeight) + 10;
-        }
-        this.width = Math.min(width, options.maxWidth || this.maxWidth);
-        this.height = Math.min(height, options.maxHeight || this.maxHeight);
-      }
-      _fitRows(titleHeight, fontSize, boxWidth, itemHeight) {
-        const { ctx, maxWidth, options: { labels: { padding } } } = this;
-        const hitboxes = this.legendHitBoxes = [];
-        const lineWidths = this.lineWidths = [
-          0
-        ];
-        const lineHeight = itemHeight + padding;
-        let totalHeight = titleHeight;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        let row = -1;
-        let top = -lineHeight;
-        this.legendItems.forEach((legendItem, i) => {
-          const itemWidth = boxWidth + fontSize / 2 + ctx.measureText(legendItem.text).width;
-          if (i === 0 || lineWidths[lineWidths.length - 1] + itemWidth + 2 * padding > maxWidth) {
-            totalHeight += lineHeight;
-            lineWidths[lineWidths.length - (i > 0 ? 0 : 1)] = 0;
-            top += lineHeight;
-            row++;
-          }
-          hitboxes[i] = {
-            left: 0,
-            top,
-            row,
-            width: itemWidth,
-            height: itemHeight
-          };
-          lineWidths[lineWidths.length - 1] += itemWidth + padding;
-        });
-        return totalHeight;
-      }
-      _fitCols(titleHeight, labelFont, boxWidth, _itemHeight) {
-        const { ctx, maxHeight, options: { labels: { padding } } } = this;
-        const hitboxes = this.legendHitBoxes = [];
-        const columnSizes = this.columnSizes = [];
-        const heightLimit = maxHeight - titleHeight;
-        let totalWidth = padding;
-        let currentColWidth = 0;
-        let currentColHeight = 0;
-        let left = 0;
-        let col = 0;
-        this.legendItems.forEach((legendItem, i) => {
-          const { itemWidth, itemHeight } = calculateItemSize(boxWidth, labelFont, ctx, legendItem, _itemHeight);
-          if (i > 0 && currentColHeight + itemHeight + 2 * padding > heightLimit) {
-            totalWidth += currentColWidth + padding;
-            columnSizes.push({
-              width: currentColWidth,
-              height: currentColHeight
-            });
-            left += currentColWidth + padding;
-            col++;
-            currentColWidth = currentColHeight = 0;
-          }
-          hitboxes[i] = {
-            left,
-            top: currentColHeight,
-            col,
-            width: itemWidth,
-            height: itemHeight
-          };
-          currentColWidth = Math.max(currentColWidth, itemWidth);
-          currentColHeight += itemHeight + padding;
-        });
-        totalWidth += currentColWidth;
-        columnSizes.push({
-          width: currentColWidth,
-          height: currentColHeight
-        });
-        return totalWidth;
-      }
-      adjustHitBoxes() {
-        if (!this.options.display) {
-          return;
-        }
-        const titleHeight = this._computeTitleHeight();
-        const { legendHitBoxes: hitboxes, options: { align, labels: { padding }, rtl } } = this;
-        const rtlHelper = getRtlAdapter(rtl, this.left, this.width);
-        if (this.isHorizontal()) {
-          let row = 0;
-          let left = _alignStartEnd(align, this.left + padding, this.right - this.lineWidths[row]);
-          for (const hitbox of hitboxes) {
-            if (row !== hitbox.row) {
-              row = hitbox.row;
-              left = _alignStartEnd(align, this.left + padding, this.right - this.lineWidths[row]);
-            }
-            hitbox.top += this.top + titleHeight + padding;
-            hitbox.left = rtlHelper.leftForLtr(rtlHelper.x(left), hitbox.width);
-            left += hitbox.width + padding;
-          }
-        } else {
-          let col = 0;
-          let top = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - this.columnSizes[col].height);
-          for (const hitbox of hitboxes) {
-            if (hitbox.col !== col) {
-              col = hitbox.col;
-              top = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - this.columnSizes[col].height);
-            }
-            hitbox.top = top;
-            hitbox.left += this.left + padding;
-            hitbox.left = rtlHelper.leftForLtr(rtlHelper.x(hitbox.left), hitbox.width);
-            top += hitbox.height + padding;
-          }
-        }
-      }
-      isHorizontal() {
-        return this.options.position === "top" || this.options.position === "bottom";
-      }
-      draw() {
-        if (this.options.display) {
-          const ctx = this.ctx;
-          clipArea(ctx, this);
-          this._draw();
-          unclipArea(ctx);
-        }
-      }
-      _draw() {
-        const { options: opts, columnSizes, lineWidths, ctx } = this;
-        const { align, labels: labelOpts } = opts;
-        const defaultColor = defaults.color;
-        const rtlHelper = getRtlAdapter(opts.rtl, this.left, this.width);
-        const labelFont = toFont(labelOpts.font);
-        const { padding } = labelOpts;
-        const fontSize = labelFont.size;
-        const halfFontSize = fontSize / 2;
-        let cursor;
-        this.drawTitle();
-        ctx.textAlign = rtlHelper.textAlign("left");
-        ctx.textBaseline = "middle";
-        ctx.lineWidth = 0.5;
-        ctx.font = labelFont.string;
-        const { boxWidth, boxHeight, itemHeight } = getBoxSize(labelOpts, fontSize);
-        const drawLegendBox = function(x, y, legendItem) {
-          if (isNaN(boxWidth) || boxWidth <= 0 || isNaN(boxHeight) || boxHeight < 0) {
-            return;
-          }
-          ctx.save();
-          const lineWidth = valueOrDefault(legendItem.lineWidth, 1);
-          ctx.fillStyle = valueOrDefault(legendItem.fillStyle, defaultColor);
-          ctx.lineCap = valueOrDefault(legendItem.lineCap, "butt");
-          ctx.lineDashOffset = valueOrDefault(legendItem.lineDashOffset, 0);
-          ctx.lineJoin = valueOrDefault(legendItem.lineJoin, "miter");
-          ctx.lineWidth = lineWidth;
-          ctx.strokeStyle = valueOrDefault(legendItem.strokeStyle, defaultColor);
-          ctx.setLineDash(valueOrDefault(legendItem.lineDash, []));
-          if (labelOpts.usePointStyle) {
-            const drawOptions = {
-              radius: boxHeight * Math.SQRT2 / 2,
-              pointStyle: legendItem.pointStyle,
-              rotation: legendItem.rotation,
-              borderWidth: lineWidth
-            };
-            const centerX = rtlHelper.xPlus(x, boxWidth / 2);
-            const centerY = y + halfFontSize;
-            drawPointLegend(ctx, drawOptions, centerX, centerY, labelOpts.pointStyleWidth && boxWidth);
-          } else {
-            const yBoxTop = y + Math.max((fontSize - boxHeight) / 2, 0);
-            const xBoxLeft = rtlHelper.leftForLtr(x, boxWidth);
-            const borderRadius = toTRBLCorners(legendItem.borderRadius);
-            ctx.beginPath();
-            if (Object.values(borderRadius).some((v) => v !== 0)) {
-              addRoundedRectPath(ctx, {
-                x: xBoxLeft,
-                y: yBoxTop,
-                w: boxWidth,
-                h: boxHeight,
-                radius: borderRadius
-              });
-            } else {
-              ctx.rect(xBoxLeft, yBoxTop, boxWidth, boxHeight);
-            }
-            ctx.fill();
-            if (lineWidth !== 0) {
-              ctx.stroke();
-            }
-          }
-          ctx.restore();
-        };
-        const fillText = function(x, y, legendItem) {
-          renderText(ctx, legendItem.text, x, y + itemHeight / 2, labelFont, {
-            strikethrough: legendItem.hidden,
-            textAlign: rtlHelper.textAlign(legendItem.textAlign)
-          });
-        };
-        const isHorizontal = this.isHorizontal();
-        const titleHeight = this._computeTitleHeight();
-        if (isHorizontal) {
-          cursor = {
-            x: _alignStartEnd(align, this.left + padding, this.right - lineWidths[0]),
-            y: this.top + padding + titleHeight,
-            line: 0
-          };
-        } else {
-          cursor = {
-            x: this.left + padding,
-            y: _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - columnSizes[0].height),
-            line: 0
-          };
-        }
-        overrideTextDirection(this.ctx, opts.textDirection);
-        const lineHeight = itemHeight + padding;
-        this.legendItems.forEach((legendItem, i) => {
-          ctx.strokeStyle = legendItem.fontColor;
-          ctx.fillStyle = legendItem.fontColor;
-          const textWidth = ctx.measureText(legendItem.text).width;
-          const textAlign = rtlHelper.textAlign(legendItem.textAlign || (legendItem.textAlign = labelOpts.textAlign));
-          const width = boxWidth + halfFontSize + textWidth;
-          let x = cursor.x;
-          let y = cursor.y;
-          rtlHelper.setWidth(this.width);
-          if (isHorizontal) {
-            if (i > 0 && x + width + padding > this.right) {
-              y = cursor.y += lineHeight;
-              cursor.line++;
-              x = cursor.x = _alignStartEnd(align, this.left + padding, this.right - lineWidths[cursor.line]);
-            }
-          } else if (i > 0 && y + lineHeight > this.bottom) {
-            x = cursor.x = x + columnSizes[cursor.line].width + padding;
-            cursor.line++;
-            y = cursor.y = _alignStartEnd(align, this.top + titleHeight + padding, this.bottom - columnSizes[cursor.line].height);
-          }
-          const realX = rtlHelper.x(x);
-          drawLegendBox(realX, y, legendItem);
-          x = _textX(textAlign, x + boxWidth + halfFontSize, isHorizontal ? x + width : this.right, opts.rtl);
-          fillText(rtlHelper.x(x), y, legendItem);
-          if (isHorizontal) {
-            cursor.x += width + padding;
-          } else if (typeof legendItem.text !== "string") {
-            const fontLineHeight = labelFont.lineHeight;
-            cursor.y += calculateLegendItemHeight(legendItem, fontLineHeight) + padding;
-          } else {
-            cursor.y += lineHeight;
-          }
-        });
-        restoreTextDirection(this.ctx, opts.textDirection);
-      }
-      drawTitle() {
-        const opts = this.options;
-        const titleOpts = opts.title;
-        const titleFont = toFont(titleOpts.font);
-        const titlePadding = toPadding(titleOpts.padding);
-        if (!titleOpts.display) {
-          return;
-        }
-        const rtlHelper = getRtlAdapter(opts.rtl, this.left, this.width);
-        const ctx = this.ctx;
-        const position = titleOpts.position;
-        const halfFontSize = titleFont.size / 2;
-        const topPaddingPlusHalfFontSize = titlePadding.top + halfFontSize;
-        let y;
-        let left = this.left;
-        let maxWidth = this.width;
-        if (this.isHorizontal()) {
-          maxWidth = Math.max(...this.lineWidths);
-          y = this.top + topPaddingPlusHalfFontSize;
-          left = _alignStartEnd(opts.align, left, this.right - maxWidth);
-        } else {
-          const maxHeight = this.columnSizes.reduce((acc, size) => Math.max(acc, size.height), 0);
-          y = topPaddingPlusHalfFontSize + _alignStartEnd(opts.align, this.top, this.bottom - maxHeight - opts.labels.padding - this._computeTitleHeight());
-        }
-        const x = _alignStartEnd(position, left, left + maxWidth);
-        ctx.textAlign = rtlHelper.textAlign(_toLeftRightCenter(position));
-        ctx.textBaseline = "middle";
-        ctx.strokeStyle = titleOpts.color;
-        ctx.fillStyle = titleOpts.color;
-        ctx.font = titleFont.string;
-        renderText(ctx, titleOpts.text, x, y, titleFont);
-      }
-      _computeTitleHeight() {
-        const titleOpts = this.options.title;
-        const titleFont = toFont(titleOpts.font);
-        const titlePadding = toPadding(titleOpts.padding);
-        return titleOpts.display ? titleFont.lineHeight + titlePadding.height : 0;
-      }
-      _getLegendItemAt(x, y) {
-        let i, hitBox, lh;
-        if (_isBetween(x, this.left, this.right) && _isBetween(y, this.top, this.bottom)) {
-          lh = this.legendHitBoxes;
-          for (i = 0; i < lh.length; ++i) {
-            hitBox = lh[i];
-            if (_isBetween(x, hitBox.left, hitBox.left + hitBox.width) && _isBetween(y, hitBox.top, hitBox.top + hitBox.height)) {
-              return this.legendItems[i];
-            }
-          }
-        }
-        return null;
-      }
-      handleEvent(e) {
-        const opts = this.options;
-        if (!isListened(e.type, opts)) {
-          return;
-        }
-        const hoveredItem = this._getLegendItemAt(e.x, e.y);
-        if (e.type === "mousemove" || e.type === "mouseout") {
-          const previous = this._hoveredItem;
-          const sameItem = itemsEqual(previous, hoveredItem);
-          if (previous && !sameItem) {
-            callback(opts.onLeave, [
-              e,
-              previous,
-              this
-            ], this);
-          }
-          this._hoveredItem = hoveredItem;
-          if (hoveredItem && !sameItem) {
-            callback(opts.onHover, [
-              e,
-              hoveredItem,
-              this
-            ], this);
-          }
-        } else if (hoveredItem) {
-          callback(opts.onClick, [
-            e,
-            hoveredItem,
-            this
-          ], this);
-        }
-      }
-    };
-    plugin_legend = {
-      id: "legend",
-      _element: Legend,
-      start(chart, _args, options) {
-        const legend = chart.legend = new Legend({
-          ctx: chart.ctx,
-          options,
-          chart
-        });
-        layouts.configure(chart, legend, options);
-        layouts.addBox(chart, legend);
-      },
-      stop(chart) {
-        layouts.removeBox(chart, chart.legend);
-        delete chart.legend;
-      },
-      beforeUpdate(chart, _args, options) {
-        const legend = chart.legend;
-        layouts.configure(chart, legend, options);
-        legend.options = options;
-      },
-      afterUpdate(chart) {
-        const legend = chart.legend;
-        legend.buildLabels();
-        legend.adjustHitBoxes();
-      },
-      afterEvent(chart, args) {
-        if (!args.replay) {
-          chart.legend.handleEvent(args.event);
-        }
-      },
-      defaults: {
-        display: true,
-        position: "top",
-        align: "center",
-        fullSize: true,
-        reverse: false,
-        weight: 1e3,
-        onClick(e, legendItem, legend) {
-          const index2 = legendItem.datasetIndex;
-          const ci = legend.chart;
-          if (ci.isDatasetVisible(index2)) {
-            ci.hide(index2);
-            legendItem.hidden = true;
-          } else {
-            ci.show(index2);
-            legendItem.hidden = false;
-          }
-        },
-        onHover: null,
-        onLeave: null,
-        labels: {
-          color: (ctx) => ctx.chart.options.color,
-          boxWidth: 40,
-          padding: 10,
-          generateLabels(chart) {
-            const datasets = chart.data.datasets;
-            const { labels: { usePointStyle, pointStyle, textAlign, color: color2, useBorderRadius, borderRadius } } = chart.legend.options;
-            return chart._getSortedDatasetMetas().map((meta) => {
-              const style2 = meta.controller.getStyle(usePointStyle ? 0 : void 0);
-              const borderWidth = toPadding(style2.borderWidth);
-              return {
-                text: datasets[meta.index].label,
-                fillStyle: style2.backgroundColor,
-                fontColor: color2,
-                hidden: !meta.visible,
-                lineCap: style2.borderCapStyle,
-                lineDash: style2.borderDash,
-                lineDashOffset: style2.borderDashOffset,
-                lineJoin: style2.borderJoinStyle,
-                lineWidth: (borderWidth.width + borderWidth.height) / 4,
-                strokeStyle: style2.borderColor,
-                pointStyle: pointStyle || style2.pointStyle,
-                rotation: style2.rotation,
-                textAlign: textAlign || style2.textAlign,
-                borderRadius: useBorderRadius && (borderRadius || style2.borderRadius),
-                datasetIndex: meta.index
-              };
-            }, this);
-          }
-        },
-        title: {
-          color: (ctx) => ctx.chart.options.color,
-          display: false,
-          position: "center",
-          text: ""
-        }
-      },
-      descriptors: {
-        _scriptable: (name) => !name.startsWith("on"),
-        labels: {
-          _scriptable: (name) => ![
-            "generateLabels",
-            "filter",
-            "sort"
-          ].includes(name)
-        }
-      }
-    };
-    Title = class extends Element {
-      constructor(config) {
-        super();
-        this.chart = config.chart;
-        this.options = config.options;
-        this.ctx = config.ctx;
-        this._padding = void 0;
-        this.top = void 0;
-        this.bottom = void 0;
-        this.left = void 0;
-        this.right = void 0;
-        this.width = void 0;
-        this.height = void 0;
-        this.position = void 0;
-        this.weight = void 0;
-        this.fullSize = void 0;
-      }
-      update(maxWidth, maxHeight) {
-        const opts = this.options;
-        this.left = 0;
-        this.top = 0;
-        if (!opts.display) {
-          this.width = this.height = this.right = this.bottom = 0;
-          return;
-        }
-        this.width = this.right = maxWidth;
-        this.height = this.bottom = maxHeight;
-        const lineCount = isArray(opts.text) ? opts.text.length : 1;
-        this._padding = toPadding(opts.padding);
-        const textSize = lineCount * toFont(opts.font).lineHeight + this._padding.height;
-        if (this.isHorizontal()) {
-          this.height = textSize;
-        } else {
-          this.width = textSize;
-        }
-      }
-      isHorizontal() {
-        const pos = this.options.position;
-        return pos === "top" || pos === "bottom";
-      }
-      _drawArgs(offset) {
-        const { top, left, bottom, right, options } = this;
-        const align = options.align;
-        let rotation = 0;
-        let maxWidth, titleX, titleY;
-        if (this.isHorizontal()) {
-          titleX = _alignStartEnd(align, left, right);
-          titleY = top + offset;
-          maxWidth = right - left;
-        } else {
-          if (options.position === "left") {
-            titleX = left + offset;
-            titleY = _alignStartEnd(align, bottom, top);
-            rotation = PI * -0.5;
-          } else {
-            titleX = right - offset;
-            titleY = _alignStartEnd(align, top, bottom);
-            rotation = PI * 0.5;
-          }
-          maxWidth = bottom - top;
-        }
-        return {
-          titleX,
-          titleY,
-          maxWidth,
-          rotation
-        };
-      }
-      draw() {
-        const ctx = this.ctx;
-        const opts = this.options;
-        if (!opts.display) {
-          return;
-        }
-        const fontOpts = toFont(opts.font);
-        const lineHeight = fontOpts.lineHeight;
-        const offset = lineHeight / 2 + this._padding.top;
-        const { titleX, titleY, maxWidth, rotation } = this._drawArgs(offset);
-        renderText(ctx, opts.text, 0, 0, fontOpts, {
-          color: opts.color,
-          maxWidth,
-          rotation,
-          textAlign: _toLeftRightCenter(opts.align),
-          textBaseline: "middle",
-          translation: [
-            titleX,
-            titleY
-          ]
-        });
-      }
-    };
-    plugin_title = {
-      id: "title",
-      _element: Title,
-      start(chart, _args, options) {
-        createTitle(chart, options);
-      },
-      stop(chart) {
-        const titleBlock = chart.titleBlock;
-        layouts.removeBox(chart, titleBlock);
-        delete chart.titleBlock;
-      },
-      beforeUpdate(chart, _args, options) {
-        const title = chart.titleBlock;
-        layouts.configure(chart, title, options);
-        title.options = options;
-      },
-      defaults: {
-        align: "center",
-        display: false,
-        font: {
-          weight: "bold"
-        },
-        fullSize: true,
-        padding: 10,
-        position: "top",
-        text: "",
-        weight: 2e3
-      },
-      defaultRoutes: {
-        color: "color"
-      },
-      descriptors: {
-        _scriptable: true,
-        _indexable: false
-      }
-    };
-    map2 = /* @__PURE__ */ new WeakMap();
-    plugin_subtitle = {
-      id: "subtitle",
-      start(chart, _args, options) {
-        const title = new Title({
-          ctx: chart.ctx,
-          options,
-          chart
-        });
-        layouts.configure(chart, title, options);
-        layouts.addBox(chart, title);
-        map2.set(chart, title);
-      },
-      stop(chart) {
-        layouts.removeBox(chart, map2.get(chart));
-        map2.delete(chart);
-      },
-      beforeUpdate(chart, _args, options) {
-        const title = map2.get(chart);
-        layouts.configure(chart, title, options);
-        title.options = options;
-      },
-      defaults: {
-        align: "center",
-        display: false,
-        font: {
-          weight: "normal"
-        },
-        fullSize: true,
-        padding: 0,
-        position: "top",
-        text: "",
-        weight: 1500
-      },
-      defaultRoutes: {
-        color: "color"
-      },
-      descriptors: {
-        _scriptable: true,
-        _indexable: false
-      }
-    };
-    positioners = {
-      average(items) {
-        if (!items.length) {
-          return false;
-        }
-        let i, len;
-        let xSet = /* @__PURE__ */ new Set();
-        let y = 0;
-        let count = 0;
-        for (i = 0, len = items.length; i < len; ++i) {
-          const el = items[i].element;
-          if (el && el.hasValue()) {
-            const pos = el.tooltipPosition();
-            xSet.add(pos.x);
-            y += pos.y;
-            ++count;
-          }
-        }
-        if (count === 0 || xSet.size === 0) {
-          return false;
-        }
-        const xAverage = [
-          ...xSet
-        ].reduce((a, b) => a + b) / xSet.size;
-        return {
-          x: xAverage,
-          y: y / count
-        };
-      },
-      nearest(items, eventPosition) {
-        if (!items.length) {
-          return false;
-        }
-        let x = eventPosition.x;
-        let y = eventPosition.y;
-        let minDistance = Number.POSITIVE_INFINITY;
-        let i, len, nearestElement;
-        for (i = 0, len = items.length; i < len; ++i) {
-          const el = items[i].element;
-          if (el && el.hasValue()) {
-            const center = el.getCenterPoint();
-            const d = distanceBetweenPoints(eventPosition, center);
-            if (d < minDistance) {
-              minDistance = d;
-              nearestElement = el;
-            }
-          }
-        }
-        if (nearestElement) {
-          const tp = nearestElement.tooltipPosition();
-          x = tp.x;
-          y = tp.y;
-        }
-        return {
-          x,
-          y
-        };
-      }
-    };
-    defaultCallbacks = {
-      beforeTitle: noop,
-      title(tooltipItems) {
-        if (tooltipItems.length > 0) {
-          const item = tooltipItems[0];
-          const labels = item.chart.data.labels;
-          const labelCount = labels ? labels.length : 0;
-          if (this && this.options && this.options.mode === "dataset") {
-            return item.dataset.label || "";
-          } else if (item.label) {
-            return item.label;
-          } else if (labelCount > 0 && item.dataIndex < labelCount) {
-            return labels[item.dataIndex];
-          }
-        }
-        return "";
-      },
-      afterTitle: noop,
-      beforeBody: noop,
-      beforeLabel: noop,
-      label(tooltipItem) {
-        if (this && this.options && this.options.mode === "dataset") {
-          return tooltipItem.label + ": " + tooltipItem.formattedValue || tooltipItem.formattedValue;
-        }
-        let label = tooltipItem.dataset.label || "";
-        if (label) {
-          label += ": ";
-        }
-        const value = tooltipItem.formattedValue;
-        if (!isNullOrUndef(value)) {
-          label += value;
-        }
-        return label;
-      },
-      labelColor(tooltipItem) {
-        const meta = tooltipItem.chart.getDatasetMeta(tooltipItem.datasetIndex);
-        const options = meta.controller.getStyle(tooltipItem.dataIndex);
-        return {
-          borderColor: options.borderColor,
-          backgroundColor: options.backgroundColor,
-          borderWidth: options.borderWidth,
-          borderDash: options.borderDash,
-          borderDashOffset: options.borderDashOffset,
-          borderRadius: 0
-        };
-      },
-      labelTextColor() {
-        return this.options.bodyColor;
-      },
-      labelPointStyle(tooltipItem) {
-        const meta = tooltipItem.chart.getDatasetMeta(tooltipItem.datasetIndex);
-        const options = meta.controller.getStyle(tooltipItem.dataIndex);
-        return {
-          pointStyle: options.pointStyle,
-          rotation: options.rotation
-        };
-      },
-      afterLabel: noop,
-      afterBody: noop,
-      beforeFooter: noop,
-      footer: noop,
-      afterFooter: noop
-    };
-    Tooltip = class extends Element {
-      static positioners = positioners;
-      constructor(config) {
-        super();
-        this.opacity = 0;
-        this._active = [];
-        this._eventPosition = void 0;
-        this._size = void 0;
-        this._cachedAnimations = void 0;
-        this._tooltipItems = [];
-        this.$animations = void 0;
-        this.$context = void 0;
-        this.chart = config.chart;
-        this.options = config.options;
-        this.dataPoints = void 0;
-        this.title = void 0;
-        this.beforeBody = void 0;
-        this.body = void 0;
-        this.afterBody = void 0;
-        this.footer = void 0;
-        this.xAlign = void 0;
-        this.yAlign = void 0;
-        this.x = void 0;
-        this.y = void 0;
-        this.height = void 0;
-        this.width = void 0;
-        this.caretX = void 0;
-        this.caretY = void 0;
-        this.labelColors = void 0;
-        this.labelPointStyles = void 0;
-        this.labelTextColors = void 0;
-      }
-      initialize(options) {
-        this.options = options;
-        this._cachedAnimations = void 0;
-        this.$context = void 0;
-      }
-      _resolveAnimations() {
-        const cached = this._cachedAnimations;
-        if (cached) {
-          return cached;
-        }
-        const chart = this.chart;
-        const options = this.options.setContext(this.getContext());
-        const opts = options.enabled && chart.options.animation && options.animations;
-        const animations = new Animations(this.chart, opts);
-        if (opts._cacheable) {
-          this._cachedAnimations = Object.freeze(animations);
-        }
-        return animations;
-      }
-      getContext() {
-        return this.$context || (this.$context = createTooltipContext(this.chart.getContext(), this, this._tooltipItems));
-      }
-      getTitle(context, options) {
-        const { callbacks } = options;
-        const beforeTitle = invokeCallbackWithFallback(callbacks, "beforeTitle", this, context);
-        const title = invokeCallbackWithFallback(callbacks, "title", this, context);
-        const afterTitle = invokeCallbackWithFallback(callbacks, "afterTitle", this, context);
-        let lines = [];
-        lines = pushOrConcat(lines, splitNewlines(beforeTitle));
-        lines = pushOrConcat(lines, splitNewlines(title));
-        lines = pushOrConcat(lines, splitNewlines(afterTitle));
-        return lines;
-      }
-      getBeforeBody(tooltipItems, options) {
-        return getBeforeAfterBodyLines(invokeCallbackWithFallback(options.callbacks, "beforeBody", this, tooltipItems));
-      }
-      getBody(tooltipItems, options) {
-        const { callbacks } = options;
-        const bodyItems = [];
-        each(tooltipItems, (context) => {
-          const bodyItem = {
-            before: [],
-            lines: [],
-            after: []
-          };
-          const scoped = overrideCallbacks(callbacks, context);
-          pushOrConcat(bodyItem.before, splitNewlines(invokeCallbackWithFallback(scoped, "beforeLabel", this, context)));
-          pushOrConcat(bodyItem.lines, invokeCallbackWithFallback(scoped, "label", this, context));
-          pushOrConcat(bodyItem.after, splitNewlines(invokeCallbackWithFallback(scoped, "afterLabel", this, context)));
-          bodyItems.push(bodyItem);
-        });
-        return bodyItems;
-      }
-      getAfterBody(tooltipItems, options) {
-        return getBeforeAfterBodyLines(invokeCallbackWithFallback(options.callbacks, "afterBody", this, tooltipItems));
-      }
-      getFooter(tooltipItems, options) {
-        const { callbacks } = options;
-        const beforeFooter = invokeCallbackWithFallback(callbacks, "beforeFooter", this, tooltipItems);
-        const footer = invokeCallbackWithFallback(callbacks, "footer", this, tooltipItems);
-        const afterFooter = invokeCallbackWithFallback(callbacks, "afterFooter", this, tooltipItems);
-        let lines = [];
-        lines = pushOrConcat(lines, splitNewlines(beforeFooter));
-        lines = pushOrConcat(lines, splitNewlines(footer));
-        lines = pushOrConcat(lines, splitNewlines(afterFooter));
-        return lines;
-      }
-      _createItems(options) {
-        const active = this._active;
-        const data = this.chart.data;
-        const labelColors = [];
-        const labelPointStyles = [];
-        const labelTextColors = [];
-        let tooltipItems = [];
-        let i, len;
-        for (i = 0, len = active.length; i < len; ++i) {
-          tooltipItems.push(createTooltipItem(this.chart, active[i]));
-        }
-        if (options.filter) {
-          tooltipItems = tooltipItems.filter((element, index2, array) => options.filter(element, index2, array, data));
-        }
-        if (options.itemSort) {
-          tooltipItems = tooltipItems.sort((a, b) => options.itemSort(a, b, data));
-        }
-        each(tooltipItems, (context) => {
-          const scoped = overrideCallbacks(options.callbacks, context);
-          labelColors.push(invokeCallbackWithFallback(scoped, "labelColor", this, context));
-          labelPointStyles.push(invokeCallbackWithFallback(scoped, "labelPointStyle", this, context));
-          labelTextColors.push(invokeCallbackWithFallback(scoped, "labelTextColor", this, context));
-        });
-        this.labelColors = labelColors;
-        this.labelPointStyles = labelPointStyles;
-        this.labelTextColors = labelTextColors;
-        this.dataPoints = tooltipItems;
-        return tooltipItems;
-      }
-      update(changed, replay) {
-        const options = this.options.setContext(this.getContext());
-        const active = this._active;
-        let properties;
-        let tooltipItems = [];
-        if (!active.length) {
-          if (this.opacity !== 0) {
-            properties = {
-              opacity: 0
-            };
-          }
-        } else {
-          const position = positioners[options.position].call(this, active, this._eventPosition);
-          tooltipItems = this._createItems(options);
-          this.title = this.getTitle(tooltipItems, options);
-          this.beforeBody = this.getBeforeBody(tooltipItems, options);
-          this.body = this.getBody(tooltipItems, options);
-          this.afterBody = this.getAfterBody(tooltipItems, options);
-          this.footer = this.getFooter(tooltipItems, options);
-          const size = this._size = getTooltipSize(this, options);
-          const positionAndSize = Object.assign({}, position, size);
-          const alignment = determineAlignment(this.chart, options, positionAndSize);
-          const backgroundPoint = getBackgroundPoint(options, positionAndSize, alignment, this.chart);
-          this.xAlign = alignment.xAlign;
-          this.yAlign = alignment.yAlign;
-          properties = {
-            opacity: 1,
-            x: backgroundPoint.x,
-            y: backgroundPoint.y,
-            width: size.width,
-            height: size.height,
-            caretX: position.x,
-            caretY: position.y
-          };
-        }
-        this._tooltipItems = tooltipItems;
-        this.$context = void 0;
-        if (properties) {
-          this._resolveAnimations().update(this, properties);
-        }
-        if (changed && options.external) {
-          options.external.call(this, {
-            chart: this.chart,
-            tooltip: this,
-            replay
-          });
-        }
-      }
-      drawCaret(tooltipPoint, ctx, size, options) {
-        const caretPosition = this.getCaretPosition(tooltipPoint, size, options);
-        ctx.lineTo(caretPosition.x1, caretPosition.y1);
-        ctx.lineTo(caretPosition.x2, caretPosition.y2);
-        ctx.lineTo(caretPosition.x3, caretPosition.y3);
-      }
-      getCaretPosition(tooltipPoint, size, options) {
-        const { xAlign, yAlign } = this;
-        const { caretSize, cornerRadius } = options;
-        const { topLeft, topRight, bottomLeft, bottomRight } = toTRBLCorners(cornerRadius);
-        const { x: ptX, y: ptY } = tooltipPoint;
-        const { width, height } = size;
-        let x1, x2, x3, y1, y2, y3;
-        if (yAlign === "center") {
-          y2 = ptY + height / 2;
-          if (xAlign === "left") {
-            x1 = ptX;
-            x2 = x1 - caretSize;
-            y1 = y2 + caretSize;
-            y3 = y2 - caretSize;
-          } else {
-            x1 = ptX + width;
-            x2 = x1 + caretSize;
-            y1 = y2 - caretSize;
-            y3 = y2 + caretSize;
-          }
-          x3 = x1;
-        } else {
-          if (xAlign === "left") {
-            x2 = ptX + Math.max(topLeft, bottomLeft) + caretSize;
-          } else if (xAlign === "right") {
-            x2 = ptX + width - Math.max(topRight, bottomRight) - caretSize;
-          } else {
-            x2 = this.caretX;
-          }
-          if (yAlign === "top") {
-            y1 = ptY;
-            y2 = y1 - caretSize;
-            x1 = x2 - caretSize;
-            x3 = x2 + caretSize;
-          } else {
-            y1 = ptY + height;
-            y2 = y1 + caretSize;
-            x1 = x2 + caretSize;
-            x3 = x2 - caretSize;
-          }
-          y3 = y1;
-        }
-        return {
-          x1,
-          x2,
-          x3,
-          y1,
-          y2,
-          y3
-        };
-      }
-      drawTitle(pt, ctx, options) {
-        const title = this.title;
-        const length = title.length;
-        let titleFont, titleSpacing, i;
-        if (length) {
-          const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
-          pt.x = getAlignedX(this, options.titleAlign, options);
-          ctx.textAlign = rtlHelper.textAlign(options.titleAlign);
-          ctx.textBaseline = "middle";
-          titleFont = toFont(options.titleFont);
-          titleSpacing = options.titleSpacing;
-          ctx.fillStyle = options.titleColor;
-          ctx.font = titleFont.string;
-          for (i = 0; i < length; ++i) {
-            ctx.fillText(title[i], rtlHelper.x(pt.x), pt.y + titleFont.lineHeight / 2);
-            pt.y += titleFont.lineHeight + titleSpacing;
-            if (i + 1 === length) {
-              pt.y += options.titleMarginBottom - titleSpacing;
-            }
-          }
-        }
-      }
-      _drawColorBox(ctx, pt, i, rtlHelper, options) {
-        const labelColor = this.labelColors[i];
-        const labelPointStyle = this.labelPointStyles[i];
-        const { boxHeight, boxWidth } = options;
-        const bodyFont = toFont(options.bodyFont);
-        const colorX = getAlignedX(this, "left", options);
-        const rtlColorX = rtlHelper.x(colorX);
-        const yOffSet = boxHeight < bodyFont.lineHeight ? (bodyFont.lineHeight - boxHeight) / 2 : 0;
-        const colorY = pt.y + yOffSet;
-        if (options.usePointStyle) {
-          const drawOptions = {
-            radius: Math.min(boxWidth, boxHeight) / 2,
-            pointStyle: labelPointStyle.pointStyle,
-            rotation: labelPointStyle.rotation,
-            borderWidth: 1
-          };
-          const centerX = rtlHelper.leftForLtr(rtlColorX, boxWidth) + boxWidth / 2;
-          const centerY = colorY + boxHeight / 2;
-          ctx.strokeStyle = options.multiKeyBackground;
-          ctx.fillStyle = options.multiKeyBackground;
-          drawPoint(ctx, drawOptions, centerX, centerY);
-          ctx.strokeStyle = labelColor.borderColor;
-          ctx.fillStyle = labelColor.backgroundColor;
-          drawPoint(ctx, drawOptions, centerX, centerY);
-        } else {
-          ctx.lineWidth = isObject(labelColor.borderWidth) ? Math.max(...Object.values(labelColor.borderWidth)) : labelColor.borderWidth || 1;
-          ctx.strokeStyle = labelColor.borderColor;
-          ctx.setLineDash(labelColor.borderDash || []);
-          ctx.lineDashOffset = labelColor.borderDashOffset || 0;
-          const outerX = rtlHelper.leftForLtr(rtlColorX, boxWidth);
-          const innerX = rtlHelper.leftForLtr(rtlHelper.xPlus(rtlColorX, 1), boxWidth - 2);
-          const borderRadius = toTRBLCorners(labelColor.borderRadius);
-          if (Object.values(borderRadius).some((v) => v !== 0)) {
-            ctx.beginPath();
-            ctx.fillStyle = options.multiKeyBackground;
-            addRoundedRectPath(ctx, {
-              x: outerX,
-              y: colorY,
-              w: boxWidth,
-              h: boxHeight,
-              radius: borderRadius
-            });
-            ctx.fill();
-            ctx.stroke();
-            ctx.fillStyle = labelColor.backgroundColor;
-            ctx.beginPath();
-            addRoundedRectPath(ctx, {
-              x: innerX,
-              y: colorY + 1,
-              w: boxWidth - 2,
-              h: boxHeight - 2,
-              radius: borderRadius
-            });
-            ctx.fill();
-          } else {
-            ctx.fillStyle = options.multiKeyBackground;
-            ctx.fillRect(outerX, colorY, boxWidth, boxHeight);
-            ctx.strokeRect(outerX, colorY, boxWidth, boxHeight);
-            ctx.fillStyle = labelColor.backgroundColor;
-            ctx.fillRect(innerX, colorY + 1, boxWidth - 2, boxHeight - 2);
-          }
-        }
-        ctx.fillStyle = this.labelTextColors[i];
-      }
-      drawBody(pt, ctx, options) {
-        const { body } = this;
-        const { bodySpacing, bodyAlign, displayColors, boxHeight, boxWidth, boxPadding } = options;
-        const bodyFont = toFont(options.bodyFont);
-        let bodyLineHeight = bodyFont.lineHeight;
-        let xLinePadding = 0;
-        const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
-        const fillLineOfText = function(line) {
-          ctx.fillText(line, rtlHelper.x(pt.x + xLinePadding), pt.y + bodyLineHeight / 2);
-          pt.y += bodyLineHeight + bodySpacing;
-        };
-        const bodyAlignForCalculation = rtlHelper.textAlign(bodyAlign);
-        let bodyItem, textColor, lines, i, j, ilen, jlen;
-        ctx.textAlign = bodyAlign;
-        ctx.textBaseline = "middle";
-        ctx.font = bodyFont.string;
-        pt.x = getAlignedX(this, bodyAlignForCalculation, options);
-        ctx.fillStyle = options.bodyColor;
-        each(this.beforeBody, fillLineOfText);
-        xLinePadding = displayColors && bodyAlignForCalculation !== "right" ? bodyAlign === "center" ? boxWidth / 2 + boxPadding : boxWidth + 2 + boxPadding : 0;
-        for (i = 0, ilen = body.length; i < ilen; ++i) {
-          bodyItem = body[i];
-          textColor = this.labelTextColors[i];
-          ctx.fillStyle = textColor;
-          each(bodyItem.before, fillLineOfText);
-          lines = bodyItem.lines;
-          if (displayColors && lines.length) {
-            this._drawColorBox(ctx, pt, i, rtlHelper, options);
-            bodyLineHeight = Math.max(bodyFont.lineHeight, boxHeight);
-          }
-          for (j = 0, jlen = lines.length; j < jlen; ++j) {
-            fillLineOfText(lines[j]);
-            bodyLineHeight = bodyFont.lineHeight;
-          }
-          each(bodyItem.after, fillLineOfText);
-        }
-        xLinePadding = 0;
-        bodyLineHeight = bodyFont.lineHeight;
-        each(this.afterBody, fillLineOfText);
-        pt.y -= bodySpacing;
-      }
-      drawFooter(pt, ctx, options) {
-        const footer = this.footer;
-        const length = footer.length;
-        let footerFont, i;
-        if (length) {
-          const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
-          pt.x = getAlignedX(this, options.footerAlign, options);
-          pt.y += options.footerMarginTop;
-          ctx.textAlign = rtlHelper.textAlign(options.footerAlign);
-          ctx.textBaseline = "middle";
-          footerFont = toFont(options.footerFont);
-          ctx.fillStyle = options.footerColor;
-          ctx.font = footerFont.string;
-          for (i = 0; i < length; ++i) {
-            ctx.fillText(footer[i], rtlHelper.x(pt.x), pt.y + footerFont.lineHeight / 2);
-            pt.y += footerFont.lineHeight + options.footerSpacing;
-          }
-        }
-      }
-      drawBackground(pt, ctx, tooltipSize, options) {
-        const { xAlign, yAlign } = this;
-        const { x, y } = pt;
-        const { width, height } = tooltipSize;
-        const { topLeft, topRight, bottomLeft, bottomRight } = toTRBLCorners(options.cornerRadius);
-        ctx.fillStyle = options.backgroundColor;
-        ctx.strokeStyle = options.borderColor;
-        ctx.lineWidth = options.borderWidth;
-        ctx.beginPath();
-        ctx.moveTo(x + topLeft, y);
-        if (yAlign === "top") {
-          this.drawCaret(pt, ctx, tooltipSize, options);
-        }
-        ctx.lineTo(x + width - topRight, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + topRight);
-        if (yAlign === "center" && xAlign === "right") {
-          this.drawCaret(pt, ctx, tooltipSize, options);
-        }
-        ctx.lineTo(x + width, y + height - bottomRight);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - bottomRight, y + height);
-        if (yAlign === "bottom") {
-          this.drawCaret(pt, ctx, tooltipSize, options);
-        }
-        ctx.lineTo(x + bottomLeft, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - bottomLeft);
-        if (yAlign === "center" && xAlign === "left") {
-          this.drawCaret(pt, ctx, tooltipSize, options);
-        }
-        ctx.lineTo(x, y + topLeft);
-        ctx.quadraticCurveTo(x, y, x + topLeft, y);
-        ctx.closePath();
-        ctx.fill();
-        if (options.borderWidth > 0) {
-          ctx.stroke();
-        }
-      }
-      _updateAnimationTarget(options) {
-        const chart = this.chart;
-        const anims = this.$animations;
-        const animX = anims && anims.x;
-        const animY = anims && anims.y;
-        if (animX || animY) {
-          const position = positioners[options.position].call(this, this._active, this._eventPosition);
-          if (!position) {
-            return;
-          }
-          const size = this._size = getTooltipSize(this, options);
-          const positionAndSize = Object.assign({}, position, this._size);
-          const alignment = determineAlignment(chart, options, positionAndSize);
-          const point = getBackgroundPoint(options, positionAndSize, alignment, chart);
-          if (animX._to !== point.x || animY._to !== point.y) {
-            this.xAlign = alignment.xAlign;
-            this.yAlign = alignment.yAlign;
-            this.width = size.width;
-            this.height = size.height;
-            this.caretX = position.x;
-            this.caretY = position.y;
-            this._resolveAnimations().update(this, point);
-          }
-        }
-      }
-      _willRender() {
-        return !!this.opacity;
-      }
-      draw(ctx) {
-        const options = this.options.setContext(this.getContext());
-        let opacity = this.opacity;
-        if (!opacity) {
-          return;
-        }
-        this._updateAnimationTarget(options);
-        const tooltipSize = {
-          width: this.width,
-          height: this.height
-        };
-        const pt = {
-          x: this.x,
-          y: this.y
-        };
-        opacity = Math.abs(opacity) < 1e-3 ? 0 : opacity;
-        const padding = toPadding(options.padding);
-        const hasTooltipContent = this.title.length || this.beforeBody.length || this.body.length || this.afterBody.length || this.footer.length;
-        if (options.enabled && hasTooltipContent) {
-          ctx.save();
-          ctx.globalAlpha = opacity;
-          this.drawBackground(pt, ctx, tooltipSize, options);
-          overrideTextDirection(ctx, options.textDirection);
-          pt.y += padding.top;
-          this.drawTitle(pt, ctx, options);
-          this.drawBody(pt, ctx, options);
-          this.drawFooter(pt, ctx, options);
-          restoreTextDirection(ctx, options.textDirection);
-          ctx.restore();
-        }
-      }
-      getActiveElements() {
-        return this._active || [];
-      }
-      setActiveElements(activeElements, eventPosition) {
-        const lastActive = this._active;
-        const active = activeElements.map(({ datasetIndex, index: index2 }) => {
-          const meta = this.chart.getDatasetMeta(datasetIndex);
-          if (!meta) {
-            throw new Error("Cannot find a dataset at index " + datasetIndex);
-          }
-          return {
-            datasetIndex,
-            element: meta.data[index2],
-            index: index2
-          };
-        });
-        const changed = !_elementsEqual(lastActive, active);
-        const positionChanged = this._positionChanged(active, eventPosition);
-        if (changed || positionChanged) {
-          this._active = active;
-          this._eventPosition = eventPosition;
-          this._ignoreReplayEvents = true;
-          this.update(true);
-        }
-      }
-      handleEvent(e, replay, inChartArea = true) {
-        if (replay && this._ignoreReplayEvents) {
-          return false;
-        }
-        this._ignoreReplayEvents = false;
-        const options = this.options;
-        const lastActive = this._active || [];
-        const active = this._getActiveElements(e, lastActive, replay, inChartArea);
-        const positionChanged = this._positionChanged(active, e);
-        const changed = replay || !_elementsEqual(active, lastActive) || positionChanged;
-        if (changed) {
-          this._active = active;
-          if (options.enabled || options.external) {
-            this._eventPosition = {
-              x: e.x,
-              y: e.y
-            };
-            this.update(true, replay);
-          }
-        }
-        return changed;
-      }
-      _getActiveElements(e, lastActive, replay, inChartArea) {
-        const options = this.options;
-        if (e.type === "mouseout") {
-          return [];
-        }
-        if (!inChartArea) {
-          return lastActive.filter((i) => this.chart.data.datasets[i.datasetIndex] && this.chart.getDatasetMeta(i.datasetIndex).controller.getParsed(i.index) !== void 0);
-        }
-        const active = this.chart.getElementsAtEventForMode(e, options.mode, options, replay);
-        if (options.reverse) {
-          active.reverse();
-        }
-        return active;
-      }
-      _positionChanged(active, e) {
-        const { caretX, caretY, options } = this;
-        const position = positioners[options.position].call(this, active, e);
-        return position !== false && (caretX !== position.x || caretY !== position.y);
-      }
-    };
-    plugin_tooltip = {
-      id: "tooltip",
-      _element: Tooltip,
-      positioners,
-      afterInit(chart, _args, options) {
-        if (options) {
-          chart.tooltip = new Tooltip({
-            chart,
-            options
-          });
-        }
-      },
-      beforeUpdate(chart, _args, options) {
-        if (chart.tooltip) {
-          chart.tooltip.initialize(options);
-        }
-      },
-      reset(chart, _args, options) {
-        if (chart.tooltip) {
-          chart.tooltip.initialize(options);
-        }
-      },
-      afterDraw(chart) {
-        const tooltip = chart.tooltip;
-        if (tooltip && tooltip._willRender()) {
-          const args = {
-            tooltip
-          };
-          if (chart.notifyPlugins("beforeTooltipDraw", {
-            ...args,
-            cancelable: true
-          }) === false) {
-            return;
-          }
-          tooltip.draw(chart.ctx);
-          chart.notifyPlugins("afterTooltipDraw", args);
-        }
-      },
-      afterEvent(chart, args) {
-        if (chart.tooltip) {
-          const useFinalPosition = args.replay;
-          if (chart.tooltip.handleEvent(args.event, useFinalPosition, args.inChartArea)) {
-            args.changed = true;
-          }
-        }
-      },
-      defaults: {
-        enabled: true,
-        external: null,
-        position: "average",
-        backgroundColor: "rgba(0,0,0,0.8)",
-        titleColor: "#fff",
-        titleFont: {
-          weight: "bold"
-        },
-        titleSpacing: 2,
-        titleMarginBottom: 6,
-        titleAlign: "left",
-        bodyColor: "#fff",
-        bodySpacing: 2,
-        bodyFont: {},
-        bodyAlign: "left",
-        footerColor: "#fff",
-        footerSpacing: 2,
-        footerMarginTop: 6,
-        footerFont: {
-          weight: "bold"
-        },
-        footerAlign: "left",
-        padding: 6,
-        caretPadding: 2,
-        caretSize: 5,
-        cornerRadius: 6,
-        boxHeight: (ctx, opts) => opts.bodyFont.size,
-        boxWidth: (ctx, opts) => opts.bodyFont.size,
-        multiKeyBackground: "#fff",
-        displayColors: true,
-        boxPadding: 0,
-        borderColor: "rgba(0,0,0,0)",
-        borderWidth: 0,
-        animation: {
-          duration: 400,
-          easing: "easeOutQuart"
-        },
-        animations: {
-          numbers: {
-            type: "number",
-            properties: [
-              "x",
-              "y",
-              "width",
-              "height",
-              "caretX",
-              "caretY"
-            ]
-          },
-          opacity: {
-            easing: "linear",
-            duration: 200
-          }
-        },
-        callbacks: defaultCallbacks
-      },
-      defaultRoutes: {
-        bodyFont: "font",
-        footerFont: "font",
-        titleFont: "font"
-      },
-      descriptors: {
-        _scriptable: (name) => name !== "filter" && name !== "itemSort" && name !== "external",
-        _indexable: false,
-        callbacks: {
-          _scriptable: false,
-          _indexable: false
-        },
-        animation: {
-          _fallback: false
-        },
-        animations: {
-          _fallback: "animation"
-        }
-      },
-      additionalOptionScopes: [
-        "interaction"
-      ]
-    };
-    plugins = /* @__PURE__ */ Object.freeze({
-      __proto__: null,
-      Colors: plugin_colors,
-      Decimation: plugin_decimation,
-      Filler: index,
-      Legend: plugin_legend,
-      SubTitle: plugin_subtitle,
-      Title: plugin_title,
-      Tooltip: plugin_tooltip
-    });
-    addIfString = (labels, raw, index2, addedLabels) => {
-      if (typeof raw === "string") {
-        index2 = labels.push(raw) - 1;
-        addedLabels.unshift({
-          index: index2,
-          label: raw
-        });
-      } else if (isNaN(raw)) {
-        index2 = null;
-      }
-      return index2;
-    };
-    validIndex = (index2, max) => index2 === null ? null : _limitValue(Math.round(index2), 0, max);
-    CategoryScale = class extends Scale {
-      static id = "category";
-      static defaults = {
-        ticks: {
-          callback: _getLabelForValue
-        }
-      };
-      constructor(cfg) {
-        super(cfg);
-        this._startValue = void 0;
-        this._valueRange = 0;
-        this._addedLabels = [];
-      }
-      init(scaleOptions) {
-        const added = this._addedLabels;
-        if (added.length) {
-          const labels = this.getLabels();
-          for (const { index: index2, label } of added) {
-            if (labels[index2] === label) {
-              labels.splice(index2, 1);
-            }
-          }
-          this._addedLabels = [];
-        }
-        super.init(scaleOptions);
-      }
-      parse(raw, index2) {
-        if (isNullOrUndef(raw)) {
-          return null;
-        }
-        const labels = this.getLabels();
-        index2 = isFinite(index2) && labels[index2] === raw ? index2 : findOrAddLabel(labels, raw, valueOrDefault(index2, raw), this._addedLabels);
-        return validIndex(index2, labels.length - 1);
-      }
-      determineDataLimits() {
-        const { minDefined, maxDefined } = this.getUserBounds();
-        let { min, max } = this.getMinMax(true);
-        if (this.options.bounds === "ticks") {
-          if (!minDefined) {
-            min = 0;
-          }
-          if (!maxDefined) {
-            max = this.getLabels().length - 1;
-          }
-        }
-        this.min = min;
-        this.max = max;
-      }
-      buildTicks() {
-        const min = this.min;
-        const max = this.max;
-        const offset = this.options.offset;
-        const ticks = [];
-        let labels = this.getLabels();
-        labels = min === 0 && max === labels.length - 1 ? labels : labels.slice(min, max + 1);
-        this._valueRange = Math.max(labels.length - (offset ? 0 : 1), 1);
-        this._startValue = this.min - (offset ? 0.5 : 0);
-        for (let value = min; value <= max; value++) {
-          ticks.push({
-            value
-          });
-        }
-        return ticks;
-      }
-      getLabelForValue(value) {
-        return _getLabelForValue.call(this, value);
-      }
-      configure() {
-        super.configure();
-        if (!this.isHorizontal()) {
-          this._reversePixels = !this._reversePixels;
-        }
-      }
-      getPixelForValue(value) {
-        if (typeof value !== "number") {
-          value = this.parse(value);
-        }
-        return value === null ? NaN : this.getPixelForDecimal((value - this._startValue) / this._valueRange);
-      }
-      getPixelForTick(index2) {
-        const ticks = this.ticks;
-        if (index2 < 0 || index2 > ticks.length - 1) {
-          return null;
-        }
-        return this.getPixelForValue(ticks[index2].value);
-      }
-      getValueForPixel(pixel) {
-        return Math.round(this._startValue + this.getDecimalForPixel(pixel) * this._valueRange);
-      }
-      getBasePixel() {
-        return this.bottom;
-      }
-    };
-    LinearScaleBase = class extends Scale {
-      constructor(cfg) {
-        super(cfg);
-        this.start = void 0;
-        this.end = void 0;
-        this._startValue = void 0;
-        this._endValue = void 0;
-        this._valueRange = 0;
-      }
-      parse(raw, index2) {
-        if (isNullOrUndef(raw)) {
-          return null;
-        }
-        if ((typeof raw === "number" || raw instanceof Number) && !isFinite(+raw)) {
-          return null;
-        }
-        return +raw;
-      }
-      handleTickRangeOptions() {
-        const { beginAtZero } = this.options;
-        const { minDefined, maxDefined } = this.getUserBounds();
-        let { min, max } = this;
-        const setMin = (v) => min = minDefined ? min : v;
-        const setMax = (v) => max = maxDefined ? max : v;
-        if (beginAtZero) {
-          const minSign = sign(min);
-          const maxSign = sign(max);
-          if (minSign < 0 && maxSign < 0) {
-            setMax(0);
-          } else if (minSign > 0 && maxSign > 0) {
-            setMin(0);
-          }
-        }
-        if (min === max) {
-          let offset = max === 0 ? 1 : Math.abs(max * 0.05);
-          setMax(max + offset);
-          if (!beginAtZero) {
-            setMin(min - offset);
-          }
-        }
-        this.min = min;
-        this.max = max;
-      }
-      getTickLimit() {
-        const tickOpts = this.options.ticks;
-        let { maxTicksLimit, stepSize } = tickOpts;
-        let maxTicks;
-        if (stepSize) {
-          maxTicks = Math.ceil(this.max / stepSize) - Math.floor(this.min / stepSize) + 1;
-          if (maxTicks > 1e3) {
-            console.warn(`scales.${this.id}.ticks.stepSize: ${stepSize} would result generating up to ${maxTicks} ticks. Limiting to 1000.`);
-            maxTicks = 1e3;
-          }
-        } else {
-          maxTicks = this.computeTickLimit();
-          maxTicksLimit = maxTicksLimit || 11;
-        }
-        if (maxTicksLimit) {
-          maxTicks = Math.min(maxTicksLimit, maxTicks);
-        }
-        return maxTicks;
-      }
-      computeTickLimit() {
-        return Number.POSITIVE_INFINITY;
-      }
-      buildTicks() {
-        const opts = this.options;
-        const tickOpts = opts.ticks;
-        let maxTicks = this.getTickLimit();
-        maxTicks = Math.max(2, maxTicks);
-        const numericGeneratorOptions = {
-          maxTicks,
-          bounds: opts.bounds,
-          min: opts.min,
-          max: opts.max,
-          precision: tickOpts.precision,
-          step: tickOpts.stepSize,
-          count: tickOpts.count,
-          maxDigits: this._maxDigits(),
-          horizontal: this.isHorizontal(),
-          minRotation: tickOpts.minRotation || 0,
-          includeBounds: tickOpts.includeBounds !== false
-        };
-        const dataRange = this._range || this;
-        const ticks = generateTicks$1(numericGeneratorOptions, dataRange);
-        if (opts.bounds === "ticks") {
-          _setMinAndMaxByKey(ticks, this, "value");
-        }
-        if (opts.reverse) {
-          ticks.reverse();
-          this.start = this.max;
-          this.end = this.min;
-        } else {
-          this.start = this.min;
-          this.end = this.max;
-        }
-        return ticks;
-      }
-      configure() {
-        const ticks = this.ticks;
-        let start = this.min;
-        let end = this.max;
-        super.configure();
-        if (this.options.offset && ticks.length) {
-          const offset = (end - start) / Math.max(ticks.length - 1, 1) / 2;
-          start -= offset;
-          end += offset;
-        }
-        this._startValue = start;
-        this._endValue = end;
-        this._valueRange = end - start;
-      }
-      getLabelForValue(value) {
-        return formatNumber(value, this.chart.options.locale, this.options.ticks.format);
-      }
-    };
-    LinearScale = class extends LinearScaleBase {
-      static id = "linear";
-      static defaults = {
-        ticks: {
-          callback: Ticks.formatters.numeric
-        }
-      };
-      determineDataLimits() {
-        const { min, max } = this.getMinMax(true);
-        this.min = isNumberFinite(min) ? min : 0;
-        this.max = isNumberFinite(max) ? max : 1;
-        this.handleTickRangeOptions();
-      }
-      computeTickLimit() {
-        const horizontal = this.isHorizontal();
-        const length = horizontal ? this.width : this.height;
-        const minRotation = toRadians(this.options.ticks.minRotation);
-        const ratio = (horizontal ? Math.sin(minRotation) : Math.cos(minRotation)) || 1e-3;
-        const tickFont = this._resolveTickFontOptions(0);
-        return Math.ceil(length / Math.min(40, tickFont.lineHeight / ratio));
-      }
-      getPixelForValue(value) {
-        return value === null ? NaN : this.getPixelForDecimal((value - this._startValue) / this._valueRange);
-      }
-      getValueForPixel(pixel) {
-        return this._startValue + this.getDecimalForPixel(pixel) * this._valueRange;
-      }
-    };
-    log10Floor = (v) => Math.floor(log10(v));
-    changeExponent = (v, m) => Math.pow(10, log10Floor(v) + m);
-    LogarithmicScale = class extends Scale {
-      static id = "logarithmic";
-      static defaults = {
-        ticks: {
-          callback: Ticks.formatters.logarithmic,
-          major: {
-            enabled: true
-          }
-        }
-      };
-      constructor(cfg) {
-        super(cfg);
-        this.start = void 0;
-        this.end = void 0;
-        this._startValue = void 0;
-        this._valueRange = 0;
-      }
-      parse(raw, index2) {
-        const value = LinearScaleBase.prototype.parse.apply(this, [
-          raw,
-          index2
-        ]);
-        if (value === 0) {
-          this._zero = true;
-          return void 0;
-        }
-        return isNumberFinite(value) && value > 0 ? value : null;
-      }
-      determineDataLimits() {
-        const { min, max } = this.getMinMax(true);
-        this.min = isNumberFinite(min) ? Math.max(0, min) : null;
-        this.max = isNumberFinite(max) ? Math.max(0, max) : null;
-        if (this.options.beginAtZero) {
-          this._zero = true;
-        }
-        if (this._zero && this.min !== this._suggestedMin && !isNumberFinite(this._userMin)) {
-          this.min = min === changeExponent(this.min, 0) ? changeExponent(this.min, -1) : changeExponent(this.min, 0);
-        }
-        this.handleTickRangeOptions();
-      }
-      handleTickRangeOptions() {
-        const { minDefined, maxDefined } = this.getUserBounds();
-        let min = this.min;
-        let max = this.max;
-        const setMin = (v) => min = minDefined ? min : v;
-        const setMax = (v) => max = maxDefined ? max : v;
-        if (min === max) {
-          if (min <= 0) {
-            setMin(1);
-            setMax(10);
-          } else {
-            setMin(changeExponent(min, -1));
-            setMax(changeExponent(max, 1));
-          }
-        }
-        if (min <= 0) {
-          setMin(changeExponent(max, -1));
-        }
-        if (max <= 0) {
-          setMax(changeExponent(min, 1));
-        }
-        this.min = min;
-        this.max = max;
-      }
-      buildTicks() {
-        const opts = this.options;
-        const generationOptions = {
-          min: this._userMin,
-          max: this._userMax
-        };
-        const ticks = generateTicks(generationOptions, this);
-        if (opts.bounds === "ticks") {
-          _setMinAndMaxByKey(ticks, this, "value");
-        }
-        if (opts.reverse) {
-          ticks.reverse();
-          this.start = this.max;
-          this.end = this.min;
-        } else {
-          this.start = this.min;
-          this.end = this.max;
-        }
-        return ticks;
-      }
-      getLabelForValue(value) {
-        return value === void 0 ? "0" : formatNumber(value, this.chart.options.locale, this.options.ticks.format);
-      }
-      configure() {
-        const start = this.min;
-        super.configure();
-        this._startValue = log10(start);
-        this._valueRange = log10(this.max) - log10(start);
-      }
-      getPixelForValue(value) {
-        if (value === void 0 || value === 0) {
-          value = this.min;
-        }
-        if (value === null || isNaN(value)) {
-          return NaN;
-        }
-        return this.getPixelForDecimal(value === this.min ? 0 : (log10(value) - this._startValue) / this._valueRange);
-      }
-      getValueForPixel(pixel) {
-        const decimal = this.getDecimalForPixel(pixel);
-        return Math.pow(10, this._startValue + decimal * this._valueRange);
-      }
-    };
-    RadialLinearScale = class extends LinearScaleBase {
-      static id = "radialLinear";
-      static defaults = {
-        display: true,
-        animate: true,
-        position: "chartArea",
-        angleLines: {
-          display: true,
-          lineWidth: 1,
-          borderDash: [],
-          borderDashOffset: 0
-        },
-        grid: {
-          circular: false
-        },
-        startAngle: 0,
-        ticks: {
-          showLabelBackdrop: true,
-          callback: Ticks.formatters.numeric
-        },
-        pointLabels: {
-          backdropColor: void 0,
-          backdropPadding: 2,
-          display: true,
-          font: {
-            size: 10
-          },
-          callback(label) {
-            return label;
-          },
-          padding: 5,
-          centerPointLabels: false
-        }
-      };
-      static defaultRoutes = {
-        "angleLines.color": "borderColor",
-        "pointLabels.color": "color",
-        "ticks.color": "color"
-      };
-      static descriptors = {
-        angleLines: {
-          _fallback: "grid"
-        }
-      };
-      constructor(cfg) {
-        super(cfg);
-        this.xCenter = void 0;
-        this.yCenter = void 0;
-        this.drawingArea = void 0;
-        this._pointLabels = [];
-        this._pointLabelItems = [];
-      }
-      setDimensions() {
-        const padding = this._padding = toPadding(getTickBackdropHeight(this.options) / 2);
-        const w = this.width = this.maxWidth - padding.width;
-        const h = this.height = this.maxHeight - padding.height;
-        this.xCenter = Math.floor(this.left + w / 2 + padding.left);
-        this.yCenter = Math.floor(this.top + h / 2 + padding.top);
-        this.drawingArea = Math.floor(Math.min(w, h) / 2);
-      }
-      determineDataLimits() {
-        const { min, max } = this.getMinMax(false);
-        this.min = isNumberFinite(min) && !isNaN(min) ? min : 0;
-        this.max = isNumberFinite(max) && !isNaN(max) ? max : 0;
-        this.handleTickRangeOptions();
-      }
-      computeTickLimit() {
-        return Math.ceil(this.drawingArea / getTickBackdropHeight(this.options));
-      }
-      generateTickLabels(ticks) {
-        LinearScaleBase.prototype.generateTickLabels.call(this, ticks);
-        this._pointLabels = this.getLabels().map((value, index2) => {
-          const label = callback(this.options.pointLabels.callback, [
-            value,
-            index2
-          ], this);
-          return label || label === 0 ? label : "";
-        }).filter((v, i) => this.chart.getDataVisibility(i));
-      }
-      fit() {
-        const opts = this.options;
-        if (opts.display && opts.pointLabels.display) {
-          fitWithPointLabels(this);
-        } else {
-          this.setCenterPoint(0, 0, 0, 0);
-        }
-      }
-      setCenterPoint(leftMovement, rightMovement, topMovement, bottomMovement) {
-        this.xCenter += Math.floor((leftMovement - rightMovement) / 2);
-        this.yCenter += Math.floor((topMovement - bottomMovement) / 2);
-        this.drawingArea -= Math.min(this.drawingArea / 2, Math.max(leftMovement, rightMovement, topMovement, bottomMovement));
-      }
-      getIndexAngle(index2) {
-        const angleMultiplier = TAU / (this._pointLabels.length || 1);
-        const startAngle = this.options.startAngle || 0;
-        return _normalizeAngle(index2 * angleMultiplier + toRadians(startAngle));
-      }
-      getDistanceFromCenterForValue(value) {
-        if (isNullOrUndef(value)) {
-          return NaN;
-        }
-        const scalingFactor = this.drawingArea / (this.max - this.min);
-        if (this.options.reverse) {
-          return (this.max - value) * scalingFactor;
-        }
-        return (value - this.min) * scalingFactor;
-      }
-      getValueForDistanceFromCenter(distance) {
-        if (isNullOrUndef(distance)) {
-          return NaN;
-        }
-        const scaledDistance = distance / (this.drawingArea / (this.max - this.min));
-        return this.options.reverse ? this.max - scaledDistance : this.min + scaledDistance;
-      }
-      getPointLabelContext(index2) {
-        const pointLabels = this._pointLabels || [];
-        if (index2 >= 0 && index2 < pointLabels.length) {
-          const pointLabel = pointLabels[index2];
-          return createPointLabelContext(this.getContext(), index2, pointLabel);
-        }
-      }
-      getPointPosition(index2, distanceFromCenter, additionalAngle = 0) {
-        const angle = this.getIndexAngle(index2) - HALF_PI + additionalAngle;
-        return {
-          x: Math.cos(angle) * distanceFromCenter + this.xCenter,
-          y: Math.sin(angle) * distanceFromCenter + this.yCenter,
-          angle
-        };
-      }
-      getPointPositionForValue(index2, value) {
-        return this.getPointPosition(index2, this.getDistanceFromCenterForValue(value));
-      }
-      getBasePosition(index2) {
-        return this.getPointPositionForValue(index2 || 0, this.getBaseValue());
-      }
-      getPointLabelPosition(index2) {
-        const { left, top, right, bottom } = this._pointLabelItems[index2];
-        return {
-          left,
-          top,
-          right,
-          bottom
-        };
-      }
-      drawBackground() {
-        const { backgroundColor, grid: { circular } } = this.options;
-        if (backgroundColor) {
-          const ctx = this.ctx;
-          ctx.save();
-          ctx.beginPath();
-          pathRadiusLine(this, this.getDistanceFromCenterForValue(this._endValue), circular, this._pointLabels.length);
-          ctx.closePath();
-          ctx.fillStyle = backgroundColor;
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-      drawGrid() {
-        const ctx = this.ctx;
-        const opts = this.options;
-        const { angleLines, grid, border } = opts;
-        const labelCount = this._pointLabels.length;
-        let i, offset, position;
-        if (opts.pointLabels.display) {
-          drawPointLabels(this, labelCount);
-        }
-        if (grid.display) {
-          this.ticks.forEach((tick, index2) => {
-            if (index2 !== 0 || index2 === 0 && this.min < 0) {
-              offset = this.getDistanceFromCenterForValue(tick.value);
-              const context = this.getContext(index2);
-              const optsAtIndex = grid.setContext(context);
-              const optsAtIndexBorder = border.setContext(context);
-              drawRadiusLine(this, optsAtIndex, offset, labelCount, optsAtIndexBorder);
-            }
-          });
-        }
-        if (angleLines.display) {
-          ctx.save();
-          for (i = labelCount - 1; i >= 0; i--) {
-            const optsAtIndex = angleLines.setContext(this.getPointLabelContext(i));
-            const { color: color2, lineWidth } = optsAtIndex;
-            if (!lineWidth || !color2) {
-              continue;
-            }
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = color2;
-            ctx.setLineDash(optsAtIndex.borderDash);
-            ctx.lineDashOffset = optsAtIndex.borderDashOffset;
-            offset = this.getDistanceFromCenterForValue(opts.reverse ? this.min : this.max);
-            position = this.getPointPosition(i, offset);
-            ctx.beginPath();
-            ctx.moveTo(this.xCenter, this.yCenter);
-            ctx.lineTo(position.x, position.y);
-            ctx.stroke();
-          }
-          ctx.restore();
-        }
-      }
-      drawBorder() {
-      }
-      drawLabels() {
-        const ctx = this.ctx;
-        const opts = this.options;
-        const tickOpts = opts.ticks;
-        if (!tickOpts.display) {
-          return;
-        }
-        const startAngle = this.getIndexAngle(0);
-        let offset, width;
-        ctx.save();
-        ctx.translate(this.xCenter, this.yCenter);
-        ctx.rotate(startAngle);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        this.ticks.forEach((tick, index2) => {
-          if (index2 === 0 && this.min >= 0 && !opts.reverse) {
-            return;
-          }
-          const optsAtIndex = tickOpts.setContext(this.getContext(index2));
-          const tickFont = toFont(optsAtIndex.font);
-          offset = this.getDistanceFromCenterForValue(this.ticks[index2].value);
-          if (optsAtIndex.showLabelBackdrop) {
-            ctx.font = tickFont.string;
-            width = ctx.measureText(tick.label).width;
-            ctx.fillStyle = optsAtIndex.backdropColor;
-            const padding = toPadding(optsAtIndex.backdropPadding);
-            ctx.fillRect(-width / 2 - padding.left, -offset - tickFont.size / 2 - padding.top, width + padding.width, tickFont.size + padding.height);
-          }
-          renderText(ctx, tick.label, 0, -offset, tickFont, {
-            color: optsAtIndex.color,
-            strokeColor: optsAtIndex.textStrokeColor,
-            strokeWidth: optsAtIndex.textStrokeWidth
-          });
-        });
-        ctx.restore();
-      }
-      drawTitle() {
-      }
-    };
-    INTERVALS = {
-      millisecond: {
-        common: true,
-        size: 1,
-        steps: 1e3
-      },
-      second: {
-        common: true,
-        size: 1e3,
-        steps: 60
-      },
-      minute: {
-        common: true,
-        size: 6e4,
-        steps: 60
-      },
-      hour: {
-        common: true,
-        size: 36e5,
-        steps: 24
-      },
-      day: {
-        common: true,
-        size: 864e5,
-        steps: 30
-      },
-      week: {
-        common: false,
-        size: 6048e5,
-        steps: 4
-      },
-      month: {
-        common: true,
-        size: 2628e6,
-        steps: 12
-      },
-      quarter: {
-        common: false,
-        size: 7884e6,
-        steps: 4
-      },
-      year: {
-        common: true,
-        size: 3154e7
-      }
-    };
-    UNITS = /* @__PURE__ */ Object.keys(INTERVALS);
-    TimeScale = class extends Scale {
-      static id = "time";
-      static defaults = {
-        bounds: "data",
-        adapters: {},
-        time: {
-          parser: false,
-          unit: false,
-          round: false,
-          isoWeekday: false,
-          minUnit: "millisecond",
-          displayFormats: {}
-        },
-        ticks: {
-          source: "auto",
-          callback: false,
-          major: {
-            enabled: false
-          }
-        }
-      };
-      constructor(props) {
-        super(props);
-        this._cache = {
-          data: [],
-          labels: [],
-          all: []
-        };
-        this._unit = "day";
-        this._majorUnit = void 0;
-        this._offsets = {};
-        this._normalized = false;
-        this._parseOpts = void 0;
-      }
-      init(scaleOpts, opts = {}) {
-        const time = scaleOpts.time || (scaleOpts.time = {});
-        const adapter = this._adapter = new adapters._date(scaleOpts.adapters.date);
-        adapter.init(opts);
-        mergeIf(time.displayFormats, adapter.formats());
-        this._parseOpts = {
-          parser: time.parser,
-          round: time.round,
-          isoWeekday: time.isoWeekday
-        };
-        super.init(scaleOpts);
-        this._normalized = opts.normalized;
-      }
-      parse(raw, index2) {
-        if (raw === void 0) {
-          return null;
-        }
-        return parse(this, raw);
-      }
-      beforeLayout() {
-        super.beforeLayout();
-        this._cache = {
-          data: [],
-          labels: [],
-          all: []
-        };
-      }
-      determineDataLimits() {
-        const options = this.options;
-        const adapter = this._adapter;
-        const unit = options.time.unit || "day";
-        let { min, max, minDefined, maxDefined } = this.getUserBounds();
-        function _applyBounds(bounds) {
-          if (!minDefined && !isNaN(bounds.min)) {
-            min = Math.min(min, bounds.min);
-          }
-          if (!maxDefined && !isNaN(bounds.max)) {
-            max = Math.max(max, bounds.max);
-          }
-        }
-        if (!minDefined || !maxDefined) {
-          _applyBounds(this._getLabelBounds());
-          if (options.bounds !== "ticks" || options.ticks.source !== "labels") {
-            _applyBounds(this.getMinMax(false));
-          }
-        }
-        min = isNumberFinite(min) && !isNaN(min) ? min : +adapter.startOf(Date.now(), unit);
-        max = isNumberFinite(max) && !isNaN(max) ? max : +adapter.endOf(Date.now(), unit) + 1;
-        this.min = Math.min(min, max - 1);
-        this.max = Math.max(min + 1, max);
-      }
-      _getLabelBounds() {
-        const arr = this.getLabelTimestamps();
-        let min = Number.POSITIVE_INFINITY;
-        let max = Number.NEGATIVE_INFINITY;
-        if (arr.length) {
-          min = arr[0];
-          max = arr[arr.length - 1];
-        }
-        return {
-          min,
-          max
-        };
-      }
-      buildTicks() {
-        const options = this.options;
-        const timeOpts = options.time;
-        const tickOpts = options.ticks;
-        const timestamps = tickOpts.source === "labels" ? this.getLabelTimestamps() : this._generate();
-        if (options.bounds === "ticks" && timestamps.length) {
-          this.min = this._userMin || timestamps[0];
-          this.max = this._userMax || timestamps[timestamps.length - 1];
-        }
-        const min = this.min;
-        const max = this.max;
-        const ticks = _filterBetween(timestamps, min, max);
-        this._unit = timeOpts.unit || (tickOpts.autoSkip ? determineUnitForAutoTicks(timeOpts.minUnit, this.min, this.max, this._getLabelCapacity(min)) : determineUnitForFormatting(this, ticks.length, timeOpts.minUnit, this.min, this.max));
-        this._majorUnit = !tickOpts.major.enabled || this._unit === "year" ? void 0 : determineMajorUnit(this._unit);
-        this.initOffsets(timestamps);
-        if (options.reverse) {
-          ticks.reverse();
-        }
-        return ticksFromTimestamps(this, ticks, this._majorUnit);
-      }
-      afterAutoSkip() {
-        if (this.options.offsetAfterAutoskip) {
-          this.initOffsets(this.ticks.map((tick) => +tick.value));
-        }
-      }
-      initOffsets(timestamps = []) {
-        let start = 0;
-        let end = 0;
-        let first, last;
-        if (this.options.offset && timestamps.length) {
-          first = this.getDecimalForValue(timestamps[0]);
-          if (timestamps.length === 1) {
-            start = 1 - first;
-          } else {
-            start = (this.getDecimalForValue(timestamps[1]) - first) / 2;
-          }
-          last = this.getDecimalForValue(timestamps[timestamps.length - 1]);
-          if (timestamps.length === 1) {
-            end = last;
-          } else {
-            end = (last - this.getDecimalForValue(timestamps[timestamps.length - 2])) / 2;
-          }
-        }
-        const limit = timestamps.length < 3 ? 0.5 : 0.25;
-        start = _limitValue(start, 0, limit);
-        end = _limitValue(end, 0, limit);
-        this._offsets = {
-          start,
-          end,
-          factor: 1 / (start + 1 + end)
-        };
-      }
-      _generate() {
-        const adapter = this._adapter;
-        const min = this.min;
-        const max = this.max;
-        const options = this.options;
-        const timeOpts = options.time;
-        const minor = timeOpts.unit || determineUnitForAutoTicks(timeOpts.minUnit, min, max, this._getLabelCapacity(min));
-        const stepSize = valueOrDefault(options.ticks.stepSize, 1);
-        const weekday = minor === "week" ? timeOpts.isoWeekday : false;
-        const hasWeekday = isNumber(weekday) || weekday === true;
-        const ticks = {};
-        let first = min;
-        let time, count;
-        if (hasWeekday) {
-          first = +adapter.startOf(first, "isoWeek", weekday);
-        }
-        first = +adapter.startOf(first, hasWeekday ? "day" : minor);
-        if (adapter.diff(max, min, minor) > 1e5 * stepSize) {
-          throw new Error(min + " and " + max + " are too far apart with stepSize of " + stepSize + " " + minor);
-        }
-        const timestamps = options.ticks.source === "data" && this.getDataTimestamps();
-        for (time = first, count = 0; time < max; time = +adapter.add(time, stepSize, minor), count++) {
-          addTick(ticks, time, timestamps);
-        }
-        if (time === max || options.bounds === "ticks" || count === 1) {
-          addTick(ticks, time, timestamps);
-        }
-        return Object.keys(ticks).sort(sorter).map((x) => +x);
-      }
-      getLabelForValue(value) {
-        const adapter = this._adapter;
-        const timeOpts = this.options.time;
-        if (timeOpts.tooltipFormat) {
-          return adapter.format(value, timeOpts.tooltipFormat);
-        }
-        return adapter.format(value, timeOpts.displayFormats.datetime);
-      }
-      format(value, format) {
-        const options = this.options;
-        const formats = options.time.displayFormats;
-        const unit = this._unit;
-        const fmt = format || formats[unit];
-        return this._adapter.format(value, fmt);
-      }
-      _tickFormatFunction(time, index2, ticks, format) {
-        const options = this.options;
-        const formatter = options.ticks.callback;
-        if (formatter) {
-          return callback(formatter, [
-            time,
-            index2,
-            ticks
-          ], this);
-        }
-        const formats = options.time.displayFormats;
-        const unit = this._unit;
-        const majorUnit = this._majorUnit;
-        const minorFormat = unit && formats[unit];
-        const majorFormat = majorUnit && formats[majorUnit];
-        const tick = ticks[index2];
-        const major = majorUnit && majorFormat && tick && tick.major;
-        return this._adapter.format(time, format || (major ? majorFormat : minorFormat));
-      }
-      generateTickLabels(ticks) {
-        let i, ilen, tick;
-        for (i = 0, ilen = ticks.length; i < ilen; ++i) {
-          tick = ticks[i];
-          tick.label = this._tickFormatFunction(tick.value, i, ticks);
-        }
-      }
-      getDecimalForValue(value) {
-        return value === null ? NaN : (value - this.min) / (this.max - this.min);
-      }
-      getPixelForValue(value) {
-        const offsets = this._offsets;
-        const pos = this.getDecimalForValue(value);
-        return this.getPixelForDecimal((offsets.start + pos) * offsets.factor);
-      }
-      getValueForPixel(pixel) {
-        const offsets = this._offsets;
-        const pos = this.getDecimalForPixel(pixel) / offsets.factor - offsets.end;
-        return this.min + pos * (this.max - this.min);
-      }
-      _getLabelSize(label) {
-        const ticksOpts = this.options.ticks;
-        const tickLabelWidth = this.ctx.measureText(label).width;
-        const angle = toRadians(this.isHorizontal() ? ticksOpts.maxRotation : ticksOpts.minRotation);
-        const cosRotation = Math.cos(angle);
-        const sinRotation = Math.sin(angle);
-        const tickFontSize = this._resolveTickFontOptions(0).size;
-        return {
-          w: tickLabelWidth * cosRotation + tickFontSize * sinRotation,
-          h: tickLabelWidth * sinRotation + tickFontSize * cosRotation
-        };
-      }
-      _getLabelCapacity(exampleTime) {
-        const timeOpts = this.options.time;
-        const displayFormats = timeOpts.displayFormats;
-        const format = displayFormats[timeOpts.unit] || displayFormats.millisecond;
-        const exampleLabel = this._tickFormatFunction(exampleTime, 0, ticksFromTimestamps(this, [
-          exampleTime
-        ], this._majorUnit), format);
-        const size = this._getLabelSize(exampleLabel);
-        const capacity = Math.floor(this.isHorizontal() ? this.width / size.w : this.height / size.h) - 1;
-        return capacity > 0 ? capacity : 1;
-      }
-      getDataTimestamps() {
-        let timestamps = this._cache.data || [];
-        let i, ilen;
-        if (timestamps.length) {
-          return timestamps;
-        }
-        const metas = this.getMatchingVisibleMetas();
-        if (this._normalized && metas.length) {
-          return this._cache.data = metas[0].controller.getAllParsedValues(this);
-        }
-        for (i = 0, ilen = metas.length; i < ilen; ++i) {
-          timestamps = timestamps.concat(metas[i].controller.getAllParsedValues(this));
-        }
-        return this._cache.data = this.normalize(timestamps);
-      }
-      getLabelTimestamps() {
-        const timestamps = this._cache.labels || [];
-        let i, ilen;
-        if (timestamps.length) {
-          return timestamps;
-        }
-        const labels = this.getLabels();
-        for (i = 0, ilen = labels.length; i < ilen; ++i) {
-          timestamps.push(parse(this, labels[i]));
-        }
-        return this._cache.labels = this._normalized ? timestamps : this.normalize(timestamps);
-      }
-      normalize(values) {
-        return _arrayUnique(values.sort(sorter));
-      }
-    };
-    TimeSeriesScale = class extends TimeScale {
-      static id = "timeseries";
-      static defaults = TimeScale.defaults;
-      constructor(props) {
-        super(props);
-        this._table = [];
-        this._minPos = void 0;
-        this._tableRange = void 0;
-      }
-      initOffsets() {
-        const timestamps = this._getTimestampsForTable();
-        const table = this._table = this.buildLookupTable(timestamps);
-        this._minPos = interpolate2(table, this.min);
-        this._tableRange = interpolate2(table, this.max) - this._minPos;
-        super.initOffsets(timestamps);
-      }
-      buildLookupTable(timestamps) {
-        const { min, max } = this;
-        const items = [];
-        const table = [];
-        let i, ilen, prev, curr, next;
-        for (i = 0, ilen = timestamps.length; i < ilen; ++i) {
-          curr = timestamps[i];
-          if (curr >= min && curr <= max) {
-            items.push(curr);
-          }
-        }
-        if (items.length < 2) {
-          return [
-            {
-              time: min,
-              pos: 0
-            },
-            {
-              time: max,
-              pos: 1
-            }
-          ];
-        }
-        for (i = 0, ilen = items.length; i < ilen; ++i) {
-          next = items[i + 1];
-          prev = items[i - 1];
-          curr = items[i];
-          if (Math.round((next + prev) / 2) !== curr) {
-            table.push({
-              time: curr,
-              pos: i / (ilen - 1)
-            });
-          }
-        }
-        return table;
-      }
-      _generate() {
-        const min = this.min;
-        const max = this.max;
-        let timestamps = super.getDataTimestamps();
-        if (!timestamps.includes(min) || !timestamps.length) {
-          timestamps.splice(0, 0, min);
-        }
-        if (!timestamps.includes(max) || timestamps.length === 1) {
-          timestamps.push(max);
-        }
-        return timestamps.sort((a, b) => a - b);
-      }
-      _getTimestampsForTable() {
-        let timestamps = this._cache.all || [];
-        if (timestamps.length) {
-          return timestamps;
-        }
-        const data = this.getDataTimestamps();
-        const label = this.getLabelTimestamps();
-        if (data.length && label.length) {
-          timestamps = this.normalize(data.concat(label));
-        } else {
-          timestamps = data.length ? data : label;
-        }
-        timestamps = this._cache.all = timestamps;
-        return timestamps;
-      }
-      getDecimalForValue(value) {
-        return (interpolate2(this._table, value) - this._minPos) / this._tableRange;
-      }
-      getValueForPixel(pixel) {
-        const offsets = this._offsets;
-        const decimal = this.getDecimalForPixel(pixel) / offsets.factor - offsets.end;
-        return interpolate2(this._table, decimal * this._tableRange + this._minPos, true);
-      }
-    };
-    scales = /* @__PURE__ */ Object.freeze({
-      __proto__: null,
-      CategoryScale,
-      LinearScale,
-      LogarithmicScale,
-      RadialLinearScale,
-      TimeScale,
-      TimeSeriesScale
-    });
-    registerables = [
-      controllers,
-      elements,
-      plugins,
-      scales
-    ];
+var TimeSeriesScale = class extends TimeScale {
+  static id = "timeseries";
+  static defaults = TimeScale.defaults;
+  constructor(props) {
+    super(props);
+    this._table = [];
+    this._minPos = void 0;
+    this._tableRange = void 0;
   }
+  initOffsets() {
+    const timestamps = this._getTimestampsForTable();
+    const table = this._table = this.buildLookupTable(timestamps);
+    this._minPos = interpolate2(table, this.min);
+    this._tableRange = interpolate2(table, this.max) - this._minPos;
+    super.initOffsets(timestamps);
+  }
+  buildLookupTable(timestamps) {
+    const { min, max } = this;
+    const items = [];
+    const table = [];
+    let i, ilen, prev, curr, next;
+    for (i = 0, ilen = timestamps.length; i < ilen; ++i) {
+      curr = timestamps[i];
+      if (curr >= min && curr <= max) {
+        items.push(curr);
+      }
+    }
+    if (items.length < 2) {
+      return [
+        {
+          time: min,
+          pos: 0
+        },
+        {
+          time: max,
+          pos: 1
+        }
+      ];
+    }
+    for (i = 0, ilen = items.length; i < ilen; ++i) {
+      next = items[i + 1];
+      prev = items[i - 1];
+      curr = items[i];
+      if (Math.round((next + prev) / 2) !== curr) {
+        table.push({
+          time: curr,
+          pos: i / (ilen - 1)
+        });
+      }
+    }
+    return table;
+  }
+  _generate() {
+    const min = this.min;
+    const max = this.max;
+    let timestamps = super.getDataTimestamps();
+    if (!timestamps.includes(min) || !timestamps.length) {
+      timestamps.splice(0, 0, min);
+    }
+    if (!timestamps.includes(max) || timestamps.length === 1) {
+      timestamps.push(max);
+    }
+    return timestamps.sort((a, b) => a - b);
+  }
+  _getTimestampsForTable() {
+    let timestamps = this._cache.all || [];
+    if (timestamps.length) {
+      return timestamps;
+    }
+    const data = this.getDataTimestamps();
+    const label = this.getLabelTimestamps();
+    if (data.length && label.length) {
+      timestamps = this.normalize(data.concat(label));
+    } else {
+      timestamps = data.length ? data : label;
+    }
+    timestamps = this._cache.all = timestamps;
+    return timestamps;
+  }
+  getDecimalForValue(value) {
+    return (interpolate2(this._table, value) - this._minPos) / this._tableRange;
+  }
+  getValueForPixel(pixel) {
+    const offsets = this._offsets;
+    const decimal = this.getDecimalForPixel(pixel) / offsets.factor - offsets.end;
+    return interpolate2(this._table, decimal * this._tableRange + this._minPos, true);
+  }
+};
+var scales = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  CategoryScale,
+  LinearScale,
+  LogarithmicScale,
+  RadialLinearScale,
+  TimeScale,
+  TimeSeriesScale
 });
+var registerables = [
+  controllers,
+  elements,
+  plugins,
+  scales
+];
 
 // src/home.js
-var home_exports = {};
-__export(home_exports, {
-  apiFetch: () => apiFetch,
-  initHomePage: () => initHomePage,
-  loadRealDashboard: () => loadRealDashboard
-});
+Chart.register(...registerables);
+window.API_DATA = {
+  dashboard: null,
+  hospitals: [],
+  statistics: {},
+  reports: []
+};
+var cancerTypesChart = null;
+var yearlyCasesChart = null;
+var genderChart = null;
+var ageChart = null;
+var regionalChart = null;
+var stagingChart = null;
 async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("authToken");
   const headers = options.headers || {};
@@ -16746,7 +14911,7 @@ async function loadRealDashboard(forceReload = false) {
         renderDashboardMetrics();
         renderStatisticsTable();
         updateAllCharts();
-        showNotification("Using cached data", "info");
+        showNotification2("Using cached data", "info");
         return;
       } catch (e) {
         console.error("Cache parse error:", e);
@@ -16763,7 +14928,7 @@ async function loadRealDashboard(forceReload = false) {
     renderDashboardMetrics();
     renderStatisticsTable();
     updateAllCharts();
-    showNotification("Data loaded successfully", "success");
+    showNotification2("Data loaded successfully", "success");
   } catch (err) {
     console.error("Dashboard load error:", err);
     showErrorState(`Could not load live data: ${err.message}`);
@@ -16774,7 +14939,7 @@ async function loadRealDashboard(forceReload = false) {
         renderDashboardMetrics();
         renderStatisticsTable();
         updateAllCharts();
-        showNotification("Using cached data", "warning");
+        showNotification2("Using cached data", "warning");
       } catch (e) {
         showErrorState("No data available. Please check your connection.");
       }
@@ -16831,7 +14996,7 @@ function showErrorState(message) {
     metrics.innerHTML = `<div class="error-message"><span class="material-icons">error</span><p>${message}</p></div>`;
   }
 }
-function showNotification(message, type = "info") {
+function showNotification2(message, type = "info") {
   const bgColor = type === "warning" ? "#ffa500" : type === "success" ? "#4ec9b0" : "#007acc";
   const notification = document.createElement("div");
   notification.style.cssText = `
@@ -16965,449 +15130,8 @@ function renderStagingChart() {
     options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, ticks: { color: "#cccccc" }, grid: { color: "#3e3e42" } }, y: { ticks: { color: "#cccccc" }, grid: { color: "#3e3e42" } } }, plugins: { legend: { display: false } } }
   });
 }
-function initHomePage() {
-  setTimeout(() => loadRealDashboard(false), 0);
-}
-var cancerTypesChart, yearlyCasesChart, genderChart, ageChart, regionalChart, stagingChart;
-var init_home = __esm({
-  "src/home.js"() {
-    init_chart();
-    Chart.register(...registerables);
-    window.API_DATA = {
-      dashboard: null,
-      hospitals: [],
-      statistics: {},
-      reports: []
-    };
-    cancerTypesChart = null;
-    yearlyCasesChart = null;
-    genderChart = null;
-    ageChart = null;
-    regionalChart = null;
-    stagingChart = null;
-  }
-});
-
-// src/titlebar.js
-var TitlebarManager = class {
-  constructor() {
-    this.isMaximized = false;
-    this.appWindow = null;
-    this.init();
-  }
-  async init() {
-    await this.initializeTauri();
-    if (this.appWindow && typeof this.appWindow.isMaximized === "function") {
-      this.isMaximized = await this.appWindow.isMaximized();
-    }
-    this.updateMaximizeButton();
-    this.setupEventListeners();
-    this.setupMenus();
-    this.updateLoginStatus();
-  }
-  async initializeTauri() {
-    try {
-      const { appWindow } = await Promise.resolve().then(() => (init_window(), window_exports));
-      this.appWindow = appWindow;
-      console.log("Tauri API loaded successfully");
-    } catch (error) {
-      console.warn("Tauri API not available, running in fallback mode:", error);
-      this.appWindow = {
-        minimize: () => {
-          console.log("Minimize window");
-          return Promise.resolve();
-        },
-        maximize: () => {
-          console.log("Maximize window");
-          return Promise.resolve();
-        },
-        unmaximize: () => {
-          console.log("Unmaximize window");
-          return Promise.resolve();
-        },
-        close: () => {
-          console.log("Close window");
-          return Promise.resolve();
-        },
-        isMaximized: () => {
-          console.log("Check if maximized");
-          return Promise.resolve(false);
-        },
-        startDragging: () => {
-          console.log("Start dragging");
-          return Promise.resolve();
-        }
-      };
-    }
-  }
-  // ... rest of your methods remain the same as the previous fix
-  setupModalListeners() {
-    console.log("TitlebarManager: Setting up modal listeners...");
-    const modalCloseBtn = document.getElementById("modal-close-button");
-    if (modalCloseBtn) {
-      modalCloseBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.closeLoginModal();
-      });
-    }
-    const cancelBtn = document.getElementById("cancel-button");
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.closeLoginModal();
-      });
-    }
-    const modalOverlay = document.getElementById("login-modal");
-    if (modalOverlay) {
-      modalOverlay.addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) {
-          this.closeLoginModal();
-        }
-      });
-    }
-    document.addEventListener("keydown", (e) => {
-      const modal = document.getElementById("login-modal");
-      if (e.key === "Escape" && modal && !modal.classList.contains("hidden")) {
-        this.closeLoginModal();
-      }
-    });
-  }
-  setupEventListeners() {
-    const minimizeBtn = document.getElementById("minimize-button");
-    const maximizeBtn = document.getElementById("maximize-button");
-    const closeBtn = document.getElementById("close-button");
-    if (minimizeBtn) {
-      minimizeBtn.addEventListener("click", () => this.minimizeWindow());
-    }
-    if (maximizeBtn) {
-      maximizeBtn.addEventListener("click", () => this.toggleMaximize());
-    }
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => this.closeWindow());
-    }
-  }
-  setupMenus() {
-    document.querySelectorAll(".menu-item").forEach((item) => {
-      item.addEventListener("mouseenter", (e) => {
-        this.closeAllMenus();
-        const menuId = e.currentTarget.getAttribute("data-menu") + "-menu";
-        const menu = document.getElementById(menuId);
-        if (menu) menu.style.display = "block";
-      });
-      item.addEventListener("click", (e) => {
-        const menuId = e.currentTarget.getAttribute("data-menu") + "-menu";
-        const menu = document.getElementById(menuId);
-        if (menu) {
-          const isVisible = menu.style.display === "block";
-          this.closeAllMenus();
-          if (!isVisible) menu.style.display = "block";
-        }
-      });
-    });
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest(".menu-item") && !e.target.closest(".menu-dropdown")) {
-        this.closeAllMenus();
-      }
-    });
-    document.querySelectorAll(".menu-option").forEach((option) => {
-      option.addEventListener("click", (e) => {
-        const action = e.currentTarget.getAttribute("data-action");
-        this.handleMenuAction(action);
-        this.closeAllMenus();
-      });
-    });
-    document.querySelectorAll(".menu-dropdown").forEach((menu) => {
-      menu.addEventListener("click", (e) => e.stopPropagation());
-    });
-  }
-  async handleMenuAction(action) {
-    console.log("Menu action:", action);
-    switch (action) {
-      case "login":
-        if (typeof openLoginModal === "function") {
-          openLoginModal();
-        }
-        break;
-      case "logout":
-        this.logout();
-        break;
-      case "exit":
-        this.closeWindow();
-        break;
-      case "refresh-dashboard":
-        if (window.tabManager) {
-          window.tabManager.switchToPage("home.html");
-          Promise.resolve().then(() => (init_home(), home_exports)).then((mod) => mod.loadRealDashboard(true));
-        }
-        break;
-      // ... other cases
-      default:
-        console.log("Unknown action:", action);
-    }
-  }
-  logout() {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("username");
-    localStorage.removeItem("authToken");
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith("dashboardData") || key.startsWith("patientsData")) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
-    this.showNotification("Logged out successfully");
-    this.updateLoginStatus();
-  }
-  updateLoginStatus() {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const username = localStorage.getItem("username");
-    this.updateMenuForLoginStatus(isLoggedIn);
-    const appTitle = document.querySelector(".app-title");
-    if (appTitle) {
-      appTitle.textContent = isLoggedIn ? `My Tauri App (${username})` : "My Tauri App";
-    }
-  }
-  updateMenuForLoginStatus(isLoggedIn) {
-    const loginItem = document.getElementById("login-menu-item");
-    const logoutItem = document.getElementById("logout-menu-item");
-    if (loginItem && logoutItem) {
-      if (isLoggedIn) {
-        loginItem.style.display = "none";
-        logoutItem.style.display = "flex";
-      } else {
-        loginItem.style.display = "flex";
-        logoutItem.style.display = "none";
-      }
-    }
-  }
-  closeAllMenus() {
-    document.querySelectorAll(".menu-dropdown").forEach((menu) => {
-      menu.style.display = "none";
-    });
-  }
-  showNotification(message) {
-    const notification = document.createElement("div");
-    notification.style.cssText = `
-            position: fixed;
-            top: 50px;
-            right: 20px;
-            background: #007acc;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 4px;
-            font-size: 13px;
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
-        `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 2e3);
-  }
-  async minimizeWindow() {
-    if (this.appWindow && typeof this.appWindow.minimize === "function") {
-      await this.appWindow.minimize();
-    }
-    console.log("Minimize window");
-  }
-  async toggleMaximize() {
-    if (this.appWindow && typeof this.appWindow.maximize === "function" && typeof this.appWindow.unmaximize === "function") {
-      if (this.isMaximized) {
-        await this.appWindow.unmaximize();
-        this.isMaximized = false;
-      } else {
-        await this.appWindow.maximize();
-        this.isMaximized = true;
-      }
-      this.updateMaximizeButton();
-    }
-    console.log("Toggle maximize:", this.isMaximized);
-  }
-  async closeWindow() {
-    if (this.appWindow && typeof this.appWindow.close === "function") {
-      await this.appWindow.close();
-    }
-    console.log("Close window");
-  }
-  updateMaximizeButton() {
-    const button = document.getElementById("maximize-button");
-    if (button) {
-      const icon = button.querySelector("span");
-      if (icon) {
-        icon.textContent = this.isMaximized ? "\u2750" : "\u25A1";
-      }
-    }
-  }
-  closeLoginModal() {
-    const modal = document.getElementById("login-modal");
-    if (modal) {
-      modal.classList.add("hidden");
-    }
-  }
-};
-document.addEventListener("DOMContentLoaded", () => {
-  window.titlebarManager = new TitlebarManager();
-});
-var style = document.createElement("style");
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// src/auth.js
-document.addEventListener("click", (e) => {
-  if (e.target === document.getElementById("login-modal")) {
-    closeLoginModal();
-  }
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !document.getElementById("login-modal").classList.contains("hidden")) {
-    closeLoginModal();
-  }
-});
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("login-form");
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = document.getElementById("login-username").value;
-      const password = document.getElementById("login-password").value;
-      const errorEl = document.getElementById("login-error");
-      const submitBtn = form.querySelector('button[type="submit"]');
-      errorEl.classList.add("hidden");
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="material-icons">hourglass_empty</span> Logging in...';
-      try {
-        const res = await fetch("https://api.cancerreg.org/v1/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok && data.token) {
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("username", username);
-          localStorage.setItem("authToken", data.token);
-          updateLoginStatus();
-          showNotification2(`Welcome ${username}!`);
-          closeLoginModal();
-          if (window.tabManager && window.tabManager.currentTab) {
-            const currentTab = window.tabManager.currentTab;
-            if (currentTab.includes("home.html") || currentTab.includes("patients.html")) {
-              const activeButton = document.querySelector(".tab-button.active");
-              if (activeButton) {
-                window.tabManager.switchTab(activeButton);
-              }
-            }
-          }
-        } else {
-          errorEl.textContent = data.message || "Invalid credentials";
-          errorEl.classList.remove("hidden");
-        }
-      } catch (err) {
-        errorEl.textContent = "Network error: Unable to connect to server";
-        errorEl.classList.remove("hidden");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span class="material-icons">login</span> Login';
-      }
-    });
-  }
-});
-function updateLoginStatus() {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const username = localStorage.getItem("username");
-  const loginItem = document.getElementById("login-menu-item");
-  const logoutItem = document.getElementById("logout-menu-item");
-  if (loginItem && logoutItem) {
-    if (isLoggedIn) {
-      loginItem.style.display = "none";
-      logoutItem.style.display = "flex";
-      const appTitle = document.querySelector(".app-title");
-      if (appTitle) {
-        appTitle.textContent = `My Tauri App (${username})`;
-      }
-    } else {
-      loginItem.style.display = "flex";
-      logoutItem.style.display = "none";
-      const appTitle = document.querySelector(".app-title");
-      if (appTitle) {
-        appTitle.textContent = "My Tauri App";
-      }
-    }
-  }
-}
-function showNotification2(message, type = "info") {
-  const notification = document.createElement("div");
-  notification.className = `notification notification-${type}`;
-  notification.innerHTML = `
-        <span class="notification-message">${message}</span>
-        <button class="notification-close" onclick="this.parentElement.remove()">
-            <span class="material-icons">close</span>
-        </button>
-    `;
-  if (!document.querySelector("#notification-styles")) {
-    const styles = document.createElement("style");
-    styles.id = "notification-styles";
-    styles.textContent = `
-            .notification {
-                position: fixed;
-                top: 60px;
-                right: 20px;
-                background: #333;
-                color: white;
-                padding: 12px 16px;
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            }
-            .notification-success { background: #4CAF50; }
-            .notification-error { background: #f44336; }
-            .notification-warning { background: #ff9800; }
-            .notification-close {
-                background: none;
-                border: none;
-                color: white;
-                cursor: pointer;
-                padding: 0;
-                display: flex;
-                align-items: center;
-            }
-        `;
-    document.head.appendChild(styles);
-  }
-  document.body.appendChild(notification);
-  setTimeout(() => {
-    if (notification.parentElement) {
-      notification.remove();
-    }
-  }, 5e3);
-}
-document.addEventListener("DOMContentLoaded", () => {
-  updateLoginStatus();
-});
 
 // src/tabs.js
-init_home();
 var TabManager = class {
   constructor() {
     this.currentTab = null;
@@ -17512,9 +15236,6 @@ var TabManager = class {
 document.addEventListener("DOMContentLoaded", () => {
   window.tabManager = new TabManager();
 });
-
-// src/main.js
-init_home();
 /*! Bundled license information:
 
 @kurkle/color/dist/color.esm.js:

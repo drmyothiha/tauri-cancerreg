@@ -525,3 +525,64 @@ body {
     margin-top: 10px;
     font-size: 14px;
   }
+  
+  /* Status Bar Styles */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    background: var(--status-bar-bg, #1e1e1e);
+    color: var(--status-bar-text, #ffffff);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12px;
+    border-top: 1px solid #3e3e42;
+    z-index: 1000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.status-bar-left,
+.status-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+}
+
+.status-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-icon {
+    font-size: 11px;
+}
+
+.status-text {
+    font-weight: 500;
+}
+
+/* Online/Offline status colors */
+.status-online {
+    background: var(--online-color, #1e1e1e);
+}
+
+.status-offline {
+    background: var(--offline-color, #1e1e1e);
+}
+
+/* Adjust main container to accommodate status bar */
+.main-container {
+    margin-bottom: 22px; /* Same as status bar height */
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tauri App</title>
+    <title>CancerReg</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
         <!-- App Icon and Title -->
         <div class="titlebar-left">
             <div class="app-icon">💻</div>
-            <span class="network-status app-title">My Tauri App</span>
+            <span class="app-title">CancerReg</span>
         </div>
 
         <!-- Menu Bar (VS Code Style) -->
@@ -149,6 +149,7 @@
                 <span>×</span>
             </button>
         </div>
+
     </div>
 
     <!-- Main Content Area -->
@@ -185,14 +186,28 @@
             </div>
         </main>
     </div>
-	
+<!-- Status Bar (VS Code Style) -->
+<div class="status-bar">
+    <div class="status-bar-left">
+        <div class="status-item" id="online-status">
+            <span class="status-icon">🌐</span>
+            <span class="status-text">Online</span>
+        </div>
+        <div class="status-item" id="user-status" style="display: none;">
+            <span class="status-icon">👤</span>
+            <span class="status-text" id="username-display">Guest</span>
+        </div>
+    </div>
+    <div class="status-bar-right">
+        <div class="status-item">
+            <span class="status-icon">⚡</span>
+            <span class="status-text">Ready</span>
+        </div>
+    </div>
+</div>	
 <!-- Remove individual script imports and use just one -->
 <script type="module" src="main.js"></script>
 
-<style>
-
-
-</style>
 
 <!-- Modal -->
 <div id="login-modal" class="modal-overlay">
