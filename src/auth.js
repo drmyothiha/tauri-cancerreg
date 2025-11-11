@@ -1,8 +1,6 @@
-// =====================
+// ===================== 
 // Authentication Functions
 // =====================
-
-
 
 // Close modal when clicking outside
 document.addEventListener('click', e => {
@@ -28,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('login-password').value;
             const errorEl = document.getElementById('login-error');
             const submitBtn = form.querySelector('button[type="submit"]');
-            
+
             errorEl.classList.add('hidden');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="material-icons">hourglass_empty</span> Logging in...';
@@ -39,32 +37,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok && data.token) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('username', username);
                     localStorage.setItem('authToken', data.token);
 
-                    // Update UI
                     updateLoginStatus();
                     showNotification(`Welcome ${username}!`);
-                    
                     closeLoginModal();
-                    
-                    // Refresh data if needed
+
+                    // Reload active tab if needed
                     if (window.tabManager && window.tabManager.currentTab) {
                         const currentTab = window.tabManager.currentTab;
                         if (currentTab.includes('home.html') || currentTab.includes('patients.html')) {
-                            // Reload the current tab data
                             const activeButton = document.querySelector('.tab-button.active');
-                            if (activeButton) {
-                                window.tabManager.switchTab(activeButton);
-                            }
+                            if (activeButton) window.tabManager.switchTab(activeButton);
                         }
                     }
-
                 } else {
                     errorEl.textContent = data.message || 'Invalid credentials';
                     errorEl.classList.remove('hidden');
@@ -86,27 +78,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateLoginStatus() {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const username = localStorage.getItem('username');
-    
     const loginItem = document.getElementById('login-menu-item');
     const logoutItem = document.getElementById('logout-menu-item');
-    
+
     if (loginItem && logoutItem) {
         if (isLoggedIn) {
             loginItem.style.display = 'none';
             logoutItem.style.display = 'flex';
-            // Update app title to show logged in status
             const appTitle = document.querySelector('.app-title');
-            if (appTitle) {
-                appTitle.textContent = `My Tauri App (${username})`;
-            }
+            if (appTitle) appTitle.textContent = `My Tauri App (${username})`;
         } else {
             loginItem.style.display = 'flex';
             logoutItem.style.display = 'none';
-            // Reset app title
             const appTitle = document.querySelector('.app-title');
-            if (appTitle) {
-                appTitle.textContent = 'My Tauri App';
-            }
+            if (appTitle) appTitle.textContent = 'My Tauri App';
         }
     }
 }
@@ -115,7 +100,6 @@ function updateLoginStatus() {
 // Show Notification
 // =====================
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -124,8 +108,7 @@ function showNotification(message, type = 'info') {
             <span class="material-icons">close</span>
         </button>
     `;
-    
-    // Add styles if not already added
+
     if (!document.querySelector('#notification-styles')) {
         const styles = document.createElement('style');
         styles.id = 'notification-styles';
@@ -159,102 +142,119 @@ function showNotification(message, type = 'info') {
         `;
         document.head.appendChild(styles);
     }
-    
+
     document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
+    setTimeout(() => notification.remove(), 5000);
 }
 
 // =====================
-// Unified API fetch with caching
+// Authorized API Fetch with Local Cache
 // =====================
-async function apiFetch(endpoint, options = {}, { cacheKey = null, forceReload = false } = {}) {
-    const token = localStorage.getItem("authToken");
-    const headers = options.headers || {};
+const API_BASE = "https://api.cancerreg.org/v1";
+const CACHE_PREFIX = "apiCache:";
 
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    headers['Content-Type'] = 'application/json';
+function getCached(endpoint, method = "GET") {
+  if (method !== "GET") return null;
+  const key = CACHE_PREFIX + `${method}:${endpoint}`;
+  const item = localStorage.getItem(key);
+  if (!item) return null;
 
-    // Handle caching
-    if (cacheKey && !forceReload) {
-        const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
-        if (cached) return { fromCache: true, data: cached };
+  try {
+    const { data, timestamp } = JSON.parse(item);
+    if (Date.now() - timestamp > 5 * 60 * 1000) {
+      localStorage.removeItem(key);
+      return null;
     }
+    return data;
+  } catch {
+    localStorage.removeItem(key);
+    return null;
+  }
+}
 
-    try {
-        const res = await fetch(endpoint, { ...options, headers });
+function setCached(endpoint, data, method = "GET") {
+  if (method !== "GET") return;
+  const key = CACHE_PREFIX + `${method}:${endpoint}`;
+  localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+}
 
-        if (res.status === 401) {
-            logout();
-            openLoginModal();
-            return { status: 401, data: null };
-        }
+export function clearApiCache(endpoint = null) {
+  if (endpoint) {
+    const keyPrefix = CACHE_PREFIX + `GET:${endpoint}`;
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(keyPrefix)) localStorage.removeItem(key);
+    });
+  } else {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(CACHE_PREFIX)) localStorage.removeItem(key);
+    });
+  }
+}
 
-        const data = await res.json();
+async function apiFetch(endpoint, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
 
-        // Cache if cacheKey is provided and response is successful
-        if (cacheKey && res.ok) {
-            localStorage.setItem(cacheKey, JSON.stringify(data));
-        }
+  const token = localStorage.getItem("authToken");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        return { status: res.status, data, fromCache: false };
+  const cached = getCached(endpoint, method);
+  if (cached) {
+    console.log("📦 Loaded from cache:", endpoint);
+    return cached;
+  }
 
-    } catch (err) {
-        console.error('API fetch error:', err);
-        return { status: 0, data: null, error: err.message };
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      openLoginModal();
     }
+    const errorText = await response.text();
+    throw new Error(`Request failed: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  setCached(endpoint, data, method);
+  return data;
 }
 
 // =====================
-// Logout helper
+// Logout Helper
 // =====================
 function logout() {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('username');
     localStorage.removeItem('authToken');
-    
-    // Clear all cached data
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('dashboardData') || key.startsWith('patientsData')) {
-            keysToRemove.push(key);
-        }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    
-    // Update UI
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('apiCache:')) localStorage.removeItem(key);
+    });
     updateLoginStatus();
     showNotification('Logged out successfully');
 }
 
 // =====================
-// Helper: fetch and render section data
+// Helper: Fetch and Render
 // =====================
-async function fetchAndRender(endpoint, cacheKey, renderFn, forceReload = false) {
-    const result = await apiFetch(endpoint, {}, { cacheKey, forceReload });
-
-    if (result.status === 401) return; // already handled in apiFetch
-    if (result.error) {
-        renderFn(null, `Network error: ${result.error}`);
-        return;
+async function fetchAndRender(endpoint, renderFn, forceReload = false) {
+    try {
+        const data = await apiFetch(endpoint, { cache: !forceReload });
+        renderFn(data, null);
+    } catch (err) {
+        renderFn(null, `Error: ${err.message}`);
     }
-
-    renderFn(result.data, null, result.fromCache);
 }
 
 // =====================
-// Check authentication status on page load
+// Check Auth Status on Load
 // =====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Update login status when app starts
     updateLoginStatus();
 });
 
-    export { apiFetch, logout, updateLoginStatus };
-
+export { apiFetch, logout, updateLoginStatus };

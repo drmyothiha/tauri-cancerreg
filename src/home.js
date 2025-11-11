@@ -1,4 +1,5 @@
 // src/home.js
+import { apiFetch } from './auth.js';
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -19,73 +20,47 @@ let ageChart = null;
 let regionalChart = null;
 let stagingChart = null;
 
-// =====================
-// Generic API fetch wrapper
-// =====================
-export async function apiFetch(url, options = {}) {
-    const token = localStorage.getItem("authToken");
-    const headers = options.headers || {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    headers["Content-Type"] = "application/json";
-    options.headers = headers;
-
-    const res = await fetch(url, options);
-    return res;
-}
 
 // =====================
 // Dashboard Data Loading
 // =====================
+
 export async function loadRealDashboard(forceReload = false) {
-    showLoadingState();
+  showLoadingState();
 
-    if (!forceReload) {
-        const cached = localStorage.getItem("dashboardData");
-        if (cached) {
-            try {
-                const parsedData = JSON.parse(cached);
-                API_DATA.dashboard = parsedData;
-                renderDashboardMetrics();
-                renderStatisticsTable();
-                updateAllCharts();
-                showNotification("Using cached data", "info");
-                return;
-            } catch (e) {
-                console.error('Cache parse error:', e);
-            }
-        }
-    }
+  try {
+    // ✅ Fetch dashboard data using apiFetch with built-in cache support
+    const result = await apiFetch("/dashboard", {}, true, "dashboardData", forceReload);
 
-    try {
-        const API_BASE = "https://api.cancerreg.org/v1"; // Replace with your API base URL
-        const res = await apiFetch(`${API_BASE}/dashboard`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-        const rawData = await res.json();
+    if (!result) throw new Error("No data returned from API");
 
-        API_DATA.dashboard = transformDashboardData(rawData);
-        localStorage.setItem("dashboardData", JSON.stringify(API_DATA.dashboard));
+    // ✅ Transform and update global dashboard data
+    API_DATA.dashboard = transformDashboardData(result);
 
+    // ✅ Render the updated dashboard
+    renderDashboardMetrics();
+    renderStatisticsTable();
+    updateAllCharts();
+    showNotification("Data loaded successfully", "success");
+  } 
+  catch (err) {
+    console.error("Dashboard load error:", err);
+    showErrorState(`Could not load live data: ${err.message}`);
+
+    // ✅ Fallback to cached data
+    const cached = localStorage.getItem("dashboardData");
+    if (cached) {
+      try {
+        API_DATA.dashboard = JSON.parse(cached);
         renderDashboardMetrics();
         renderStatisticsTable();
         updateAllCharts();
-        showNotification("Data loaded successfully", "success");
-
-    } catch (err) {
-        console.error('Dashboard load error:', err);
-        showErrorState(`Could not load live data: ${err.message}`);
-        const cached = localStorage.getItem("dashboardData");
-        if (cached) {
-            try {
-                API_DATA.dashboard = JSON.parse(cached);
-                renderDashboardMetrics();
-                renderStatisticsTable();
-                updateAllCharts();
-                showNotification("Using cached data", "warning");
-            } catch (e) {
-                showErrorState("No data available. Please check your connection.");
-            }
-        }
+        showNotification("Using cached data", "warning");
+      } catch (e) {
+        showErrorState("No data available. Please check your connection.");
+      }
     }
+  }
 }
 
 // =====================

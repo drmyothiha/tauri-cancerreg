@@ -586,3 +586,299 @@ body {
 .main-container {
     margin-bottom: 22px; /* Same as status bar height */
 }
+
+/* Patients Container */
+.patients-container {
+    margin-top: 20px;
+}
+
+/* Controls Section */
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #252526;
+    border-radius: 8px;
+    border: 1px solid #3e3e42;
+}
+
+.controls-left {
+    display: flex;
+    gap: 12px;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Control Buttons */
+.control-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-button {
+    background: #4ec9b0;
+    color: #000;
+}
+
+.export-button:hover {
+    background: #45b7a0;
+}
+
+.refresh-button {
+    background: #007acc;
+    color: white;
+}
+
+.refresh-button:hover {
+    background: #005a9e;
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: #888;
+    font-size: 20px;
+}
+
+.search-input {
+    background: #2d2d30;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+    padding: 10px 16px 10px 40px;
+    color: #ffffff;
+    font-size: 14px;
+    width: 300px;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.search-input::placeholder {
+    color: #666;
+}
+
+/* Tabulator Container */
+.tabulator-container {
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Tabulator Custom Styling for Dark Theme */
+.tabulator {
+    background: #252526 !important;
+    color: #cccccc !important;
+    border: none !important;
+}
+
+.tabulator .tabulator-header {
+    background: #2d2d30 !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #3e3e42 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+    background: #2d2d30 !important;
+    border-right: 1px solid #3e3e42 !important;
+    color: #ffffff !important;
+}
+
+.tabulator .tabulator-header .tabulator-col:hover {
+    background: #3e3e42 !important;
+}
+
+.tabulator .tabulator-tableHolder {
+    background: #252526 !important;
+}
+
+.tabulator .tabulator-table {
+    background: #252526 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-row {
+    background: #252526 !important;
+    border-bottom: 1px solid #3e3e42 !important;
+}
+
+.tabulator-row:hover {
+    background: #2d2d30 !important;
+}
+
+.tabulator-row.tabulator-row-even {
+    background: #2a2a2a !important;
+}
+
+.tabulator-row.tabulator-row-even:hover {
+    background: #323232 !important;
+}
+
+.tabulator-cell {
+    border-right: 1px solid #3e3e42 !important;
+    color: #cccccc !important;
+}
+
+/* Pagination Styling */
+.tabulator-footer {
+    background: #2d2d30 !important;
+    border-top: 1px solid #3e3e42 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-paginator {
+    background: #2d2d30 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-page {
+    background: #3e3e42 !important;
+    color: #cccccc !important;
+    border: 1px solid #3e3e42 !important;
+}
+
+.tabulator-page.active {
+    background: #007acc !important;
+    color: #ffffff !important;
+}
+
+.tabulator-page:hover:not(.disabled) {
+    background: #4ec9b0 !important;
+    color: #000000 !important;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-btn {
+    background: #007acc;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #005a9e;
+}
+
+.delete-btn {
+    background: #f48771;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #e57367;
+}
+
+.action-btn .material-icons {
+    font-size: 16px;
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #888;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top: 3px solid #007acc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.error-state .material-icons {
+    font-size: 48px;
+    color: #f48771;
+    margin-bottom: 16px;
+}
+
+.retry-button {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.retry-button:hover {
+    background: #005a9e;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .controls-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .controls-left, .controls-right {
+        justify-content: center;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .tabulator-container {
+        font-size: 12px;
+    }
+}

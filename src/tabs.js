@@ -1,5 +1,6 @@
 // src/tabs.js
-import { loadRealDashboard } from './home.js';
+import { loadRealDashboard, initHomePage } from './home.js';
+import { initPatients, initPatientsPage, exportToExcel, editPatient, deletePatient } from './patients.js';
 
 export class TabManager {
     constructor() {
@@ -43,11 +44,16 @@ export class TabManager {
             this.currentTab = page;
 
             if (page === 'home.html') {
-				// Use setTimeout to ensure DOM elements exist
-				setTimeout(() => {
-					loadRealDashboard(false);
-				}, 0);
-			}
+                // Use setTimeout to ensure DOM elements exist
+                setTimeout(() => {
+                    loadRealDashboard(false);
+                }, 0);
+            } else if (page === 'patients.html') {
+                // Initialize patients page
+                setTimeout(() => {
+                    initPatientsPage();
+                }, 0);
+            }
 
         } catch (error) {
             this.showError(`Failed to load ${page}`, error);
@@ -127,9 +133,34 @@ export class TabManager {
     clearCache() {
         this.cache.clear();
     }
+    
+    // Method to refresh the current page if it's home
+    refreshCurrentPage() {
+        if (this.currentTab === 'home.html') {
+            loadRealDashboard(true); // force reload
+        } else if (this.currentTab === 'patients.html') {
+            initPatients(true); // force reload
+        }
+    }
 }
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.tabManager = new TabManager();
+    
+    // Expose the loadRealDashboard function globally so titlebar can call it
+    window.loadRealDashboard = loadRealDashboard;
+    window.refreshCurrentPage = () => {
+        if (window.tabManager) {
+            window.tabManager.refreshCurrentPage();
+        }
+    };
+    
+    // Also expose patients functions globally for use in HTML onclick attributes
+    window.patientsModule = {
+        initPatients,
+        exportToExcel,
+        editPatient,
+        deletePatient
+    };
 });

@@ -195,8 +195,106 @@ class TitlebarManager {
    * @param {string} action - The action identifier from data-action attribute
    */
   handleMenuAction(action) {
-    // Implement specific actions based on the action parameter
-    // Example: if (action === 'preferences') { ... }
+    switch (action) {
+      case 'refresh-dashboard':
+        this.refreshDashboard();
+        break;
+      case 'preferences':
+        // Handle preferences action
+        break;
+      case 'about':
+        // Handle about action
+        break;
+      case 'logout':
+        this.logout();
+        break;
+      case 'login':
+        this.openLoginModal();
+        break;
+      default:
+        console.log(`Unknown menu action: ${action}`);
+    }
+  }
+
+  /**
+   * Refresh the dashboard data
+   */
+  /**
+ * Refresh the dashboard data
+ */
+refreshDashboard() {
+  // First, ensure we're on the home tab
+  if (window.tabManager) {
+    // Switch to home tab first
+    const homeButton = document.querySelector('[data-page="home.html"]');
+    if (homeButton) {
+      window.tabManager.switchTab(homeButton);
+      
+      // After switching tabs, wait a moment and then refresh
+      setTimeout(() => {
+        if (window.loadRealDashboard) {
+          window.loadRealDashboard(true); // forceReload = true
+        } else if (window.homePage && window.homePage.loadRealDashboard) {
+          window.homePage.loadRealDashboard(true);
+        } else if (window.tabManager && window.tabManager.currentTab) {
+          // If using TabManager, reload the current tab if it's the home tab
+          if (window.tabManager.currentTab === 'home' || window.tabManager.currentTab.includes('home.html')) {
+            // Trigger the loadRealDashboard function from the home module
+            import('./home.js').then(homeModule => {
+              if (homeModule.loadRealDashboard) {
+                homeModule.loadRealDashboard(true);
+              }
+            }).catch(err => {
+              console.error('Failed to import home module:', err);
+            });
+          }
+        }
+      }, 100); // Small delay to ensure tab switch completes
+    }
+  } else {
+    // Fallback: just refresh if no tab manager
+    if (window.loadRealDashboard) {
+      window.loadRealDashboard(true); // forceReload = true
+    } else if (window.homePage && window.homePage.loadRealDashboard) {
+      window.homePage.loadRealDashboard(true);
+    }
+  }
+}
+
+  /**
+   * Logout function
+   */
+  logout() {
+    // Call the logout function from auth.js
+    if (window.logout) {
+      window.logout();
+    } else if (typeof logout === 'function') {
+      logout();
+    } else {
+      // Fallback: clear auth data and update UI
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('username');
+      localStorage.removeItem('authToken');
+      if (window.updateLoginStatus) {
+        window.updateLoginStatus();
+      }
+    }
+  }
+
+  /**
+   * Open login modal
+   */
+  openLoginModal() {
+    // Call the openLoginModal function if it exists
+    if (window.openLoginModal) {
+      window.openLoginModal();
+    } else {
+      // Fallback: show login modal if it exists
+      const loginModal = document.getElementById('login-modal');
+      if (loginModal) {
+        loginModal.classList.remove('hidden');
+      }
+    }
   }
 
   /**
@@ -220,6 +318,9 @@ class TitlebarManager {
 window.addEventListener('DOMContentLoaded', () => {
   // Create and initialize the titlebar manager
   const manager = new TitlebarManager();
+  
+  // Set up menu system after DOM is loaded
+  manager.setupMenus();
   
   // Expose manager globally for debugging or external access
   window.titlebarManager = manager;
