@@ -1,31 +1,53 @@
-// ===================== 
-// Authentication Functions
 // =====================
-
-// Close modal when clicking outside
-document.addEventListener('click', e => {
-    if (e.target === document.getElementById('login-modal')) {
-        closeLoginModal();
+// Modal Control Functions
+// =====================
+function openLoginModal() {
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal) {
+        loginModal.classList.add('show');
+        document.getElementById('login-error')?.classList.add('hidden');
     }
-});
+}
 
-// Close modal with Escape key
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !document.getElementById('login-modal').classList.contains('hidden')) {
-        closeLoginModal();
+function closeLoginModal() {
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal) {
+        loginModal.classList.remove('show');
+        document.getElementById('login-error')?.classList.add('hidden');
     }
-});
+}
 
-// Login form handler
+// =====================
+// Login & UI Event Bindings
+// =====================
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('login-form');
-    if (form) {
-        form.addEventListener('submit', async e => {
+    const loginModal = document.getElementById('login-modal');
+    const cancelBtn = document.getElementById('cancel-login');
+    const loginForm = document.getElementById('login-form');
+    const loginMenuItem = document.getElementById('login-menu-item');
+
+    // Open and close modal
+    loginMenuItem?.addEventListener('click', openLoginModal);
+    cancelBtn?.addEventListener('click', closeLoginModal);
+
+    // Close modal when clicking outside or pressing Escape
+    document.addEventListener('click', e => {
+        if (e.target === loginModal) closeLoginModal();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && loginModal?.classList.contains('show')) {
+            closeLoginModal();
+        }
+    });
+
+    // Login form submission
+    if (loginForm) {
+        loginForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
             const errorEl = document.getElementById('login-error');
-            const submitBtn = form.querySelector('button[type="submit"]');
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
 
             errorEl.classList.add('hidden');
             submitBtn.disabled = true;
@@ -46,10 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('authToken', data.token);
 
                     updateLoginStatus();
-                    showNotification(`Welcome ${username}!`);
+                    showNotification(`Welcome ${username}!`, 'success');
                     closeLoginModal();
 
-                    // Reload active tab if needed
+                    // Optional: reload tab if needed
                     if (window.tabManager && window.tabManager.currentTab) {
                         const currentTab = window.tabManager.currentTab;
                         if (currentTab.includes('home.html') || currentTab.includes('patients.html')) {
@@ -61,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorEl.textContent = data.message || 'Invalid credentials';
                     errorEl.classList.remove('hidden');
                 }
-            } catch (err) {
+            } catch {
                 errorEl.textContent = 'Network error: Unable to connect to server';
                 errorEl.classList.remove('hidden');
             } finally {
@@ -70,10 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    updateLoginStatus();
 });
 
 // =====================
-// Update Login Status in UI
+// Update Login Status
 // =====================
 function updateLoginStatus() {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -97,7 +121,7 @@ function updateLoginStatus() {
 }
 
 // =====================
-// Show Notification
+// Notifications
 // =====================
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
@@ -148,80 +172,80 @@ function showNotification(message, type = 'info') {
 }
 
 // =====================
-// Authorized API Fetch with Local Cache
+// Authorized Fetch with Cache
 // =====================
 const API_BASE = "https://api.cancerreg.org/v1";
 const CACHE_PREFIX = "apiCache:";
 
 function getCached(endpoint, method = "GET") {
-  if (method !== "GET") return null;
-  const key = CACHE_PREFIX + `${method}:${endpoint}`;
-  const item = localStorage.getItem(key);
-  if (!item) return null;
+    if (method !== "GET") return null;
+    const key = CACHE_PREFIX + `${method}:${endpoint}`;
+    const item = localStorage.getItem(key);
+    if (!item) return null;
 
-  try {
-    const { data, timestamp } = JSON.parse(item);
-    if (Date.now() - timestamp > 5 * 60 * 1000) {
-      localStorage.removeItem(key);
-      return null;
+    try {
+        const { data, timestamp } = JSON.parse(item);
+        if (Date.now() - timestamp > 5 * 60 * 1000) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return data;
+    } catch {
+        localStorage.removeItem(key);
+        return null;
     }
-    return data;
-  } catch {
-    localStorage.removeItem(key);
-    return null;
-  }
 }
 
 function setCached(endpoint, data, method = "GET") {
-  if (method !== "GET") return;
-  const key = CACHE_PREFIX + `${method}:${endpoint}`;
-  localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    if (method !== "GET") return;
+    const key = CACHE_PREFIX + `${method}:${endpoint}`;
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
 }
 
 export function clearApiCache(endpoint = null) {
-  if (endpoint) {
-    const keyPrefix = CACHE_PREFIX + `GET:${endpoint}`;
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith(keyPrefix)) localStorage.removeItem(key);
-    });
-  } else {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith(CACHE_PREFIX)) localStorage.removeItem(key);
-    });
-  }
+    if (endpoint) {
+        const keyPrefix = CACHE_PREFIX + `GET:${endpoint}`;
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith(keyPrefix)) localStorage.removeItem(key);
+        });
+    } else {
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith(CACHE_PREFIX)) localStorage.removeItem(key);
+        });
+    }
 }
 
 async function apiFetch(endpoint, options = {}) {
-  const method = (options.method || "GET").toUpperCase();
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
+    const method = (options.method || "GET").toUpperCase();
+    const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
 
-  const token = localStorage.getItem("authToken");
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+    const token = localStorage.getItem("authToken");
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const cached = getCached(endpoint, method);
-  if (cached) {
-    console.log("📦 Loaded from cache:", endpoint);
-    return cached;
-  }
-
-  const response = await fetch(url, { ...options, headers });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      logout();
-      openLoginModal();
+    const cached = getCached(endpoint, method);
+    if (cached) {
+        console.log("📦 Loaded from cache:", endpoint);
+        return cached;
     }
-    const errorText = await response.text();
-    throw new Error(`Request failed: ${response.status} ${errorText}`);
-  }
 
-  const data = await response.json();
-  setCached(endpoint, data, method);
-  return data;
+    const response = await fetch(url, { ...options, headers });
+
+    if (!response.ok) {
+        if (response.status === 401) {
+            logout();
+            openLoginModal();
+        }
+        const errorText = await response.text();
+        throw new Error(`Request failed: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    setCached(endpoint, data, method);
+    return data;
 }
 
 // =====================
@@ -235,11 +259,11 @@ function logout() {
         if (key.startsWith('apiCache:')) localStorage.removeItem(key);
     });
     updateLoginStatus();
-    showNotification('Logged out successfully');
+    showNotification('Logged out successfully', 'success');
 }
 
 // =====================
-// Helper: Fetch and Render
+// Fetch & Render Helper
 // =====================
 async function fetchAndRender(endpoint, renderFn, forceReload = false) {
     try {
@@ -251,10 +275,6 @@ async function fetchAndRender(endpoint, renderFn, forceReload = false) {
 }
 
 // =====================
-// Check Auth Status on Load
+// Exports
 // =====================
-document.addEventListener('DOMContentLoaded', () => {
-    updateLoginStatus();
-});
-
 export { apiFetch, logout, updateLoginStatus };

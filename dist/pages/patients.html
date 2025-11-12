@@ -4,60 +4,16 @@
 
 <link href="../css/tabulator.min.css" rel="stylesheet">
 <style>
-/* Fix Tabulator table alignment */
-.tabulator .tabulator-header {
-  margin: 0 auto;              /* center horizontally */
-  display: block !important;   /* override inline-block */
-  width: fit-content;          /* only as wide as needed */
-}
-
-/* Ensure tableholder matches */
-.tabulator .tabulator-tableholder {
-  text-align: center;
+.page-content {
   display: flex;
-  justify-content: center;
-}
-
-/* Optional: fix overflow behavior */
-.tabulator .tabulator-table {
-  margin: 0 auto;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 </style>
         <!-- Tabulator Container -->
-        <div id="patients-table" class="tabulator-container" style="width:100%; height:auto;"></div>
+        <div id="patients-table" class="tabulator-container">
 
+		</div>
 
-        <!-- Loading State -->
-        <div id="patients-loading" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>Loading patients data...</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="patients-error" class="error-state hidden">
-            <span class="material-icons">error</span>
-            <p id="error-message"></p>
-            <button onclick="window.patientsModule?.initPatients(true)" class="retry-button">Try Again</button>
-        </div>
-   
 </div>
-<script>
-function resizeTable() {
-  const tableEl = document.getElementById("patients-table");
-  const pageHeight = window.innerHeight;
-
-  // Adjust offset to match your layout — this reserves space for headers/buttons
-  const offset = 130; // px (adjust as needed)
-  tableEl.style.height = Math.max(300, pageHeight - offset) + "px";
-
-  // Let Tabulator know size changed
-  if (window.patientsTable) {
-    window.patientsTable.redraw(true);
-  }
-}
-resizeTable();
-window.addEventListener("resize", resizeTable);
-window.addEventListener("load", resizeTable);
-
-</script>

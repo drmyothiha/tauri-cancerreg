@@ -9,7 +9,7 @@ let patientsTable = null;
 // =====================
 // Patients Data Loading
 // =====================
-export async function initPatients(forceReload = false) {
+export async function initPatients(forceReload = true) {
     const loadingEl = document.getElementById("patients-loading");
     const errorEl = document.getElementById("patients-error");
     const tableContainer = document.getElementById("patients-table");
@@ -48,76 +48,18 @@ function initializeTabulator(patientsData) {
         patientsTable.destroy();
     }
 
-    // Define columns for Tabulator
-    const columns = [
-
-        {
-            title: "No",
-            field: "cancer_registry_id",
-            width: 200,
-            headerFilter: "input",
-            headerFilterPlaceholder: "Search name..."
-        },{
-            title: "Name",
-            field: "Name",
-            width: 200,
-            headerFilter: "input",
-            headerFilterPlaceholder: "Search name..."
-        },
-        {
-            title: "Sex",
-            field: "Sex",
-            width: 100,
-            hozAlign: "center",
-            headerFilter: "input",
-            headerFilterPlaceholder: "Filter sex...",
-            formatter: function(cell) {
-                const value = cell.getValue();
-                return value ? value.toUpperCase() : '-';
-            }
-        },
-        {
-            title: "Date of Birth",
-            field: "dob",
-            width: 150,
-            headerFilter: "input",
-            headerFilterPlaceholder: "Filter DOB..."
-        },
-        {
-            title: "Disease",
-            field: "Disease",
-            width: 200,
-            headerFilter: "input",
-            headerFilterPlaceholder: "Search disease..."
-        },
-        {
-            title: "Hospital",
-            field: "Hospital",
-            width: 180,
-            headerFilter: "input",
-            headerFilterPlaceholder: "Search hospital..."
-        },
-        {
-            title: "Actions",
-            field: "cancer_registry_id",
-            width: 150,
-            hozAlign: "center",
-            headerSort: false,
-            formatter: function(cell) {
-                const id = cell.getValue();
-                return `
-                    <div class="action-buttons">
-                        <button onclick="editPatient(${id})" class="action-btn edit-btn" title="Edit Patient">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button onclick="deletePatient(${id})" class="action-btn delete-btn" title="Delete Patient">
-                            <span class="material-icons">delete</span>
-                        </button>
-                    </div>
-                `;
-            }
-        }
-    ];
+const columns = [
+    { title: "No", field: "cancer_registry_id", widthGrow: 1, headerFilter: "input", headerFilterPlaceholder: "Search Reg ID..." },
+    { title: "Name", field: "Name", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search name..." },
+    { 
+        title: "Sex", field: "Sex", widthGrow: 1, hozAlign: "center",
+        headerFilter: "input", headerFilterPlaceholder: "Filter sex...",
+        formatter: cell => (cell.getValue() ? cell.getValue().toUpperCase() : '-')
+    },
+    { title: "Date of Birth", field: "dob", widthGrow: 1.5, headerFilter: "input", headerFilterPlaceholder: "Filter DOB..." },
+    { title: "Disease", field: "Disease", widthGrow: 3, headerFilter: "input", headerFilterPlaceholder: "Search disease..." },
+    { title: "Hospital", field: "Hospital", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search hospital..." }
+];
 
     // Initialize Tabulator
     patientsTable = new Tabulator(tableContainer, {
@@ -125,8 +67,8 @@ function initializeTabulator(patientsData) {
         columns: columns,
         layout: "fitColumns",
         pagination: true,
-        paginationSize: 25,
-        paginationSizeSelector: [10, 25, 50, 100],
+        paginationSize: 12,
+        paginationSizeSelector: [12, 24, 36, 48],
         paginationCounter: "rows",
         movableColumns: true,
         responsiveLayout: "collapse",
@@ -241,6 +183,83 @@ export function initPatientsPage() {
     setTimeout(() => {
         setupEventListeners();
     }, 100);
+}
+
+// Custom right-click menu for table rows
+document.addEventListener("contextmenu", (e) => {
+  const rowEl = e.target.closest(".tabulator-row");
+  if (rowEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    showRowContextMenu(e, rowEl);
+  } else {
+    e.preventDefault(); // block default right-click everywhere else
+  }
+});
+
+
+function showRowContextMenu(event, rowEl) {
+  // Remove any existing menu
+  const oldMenu = document.getElementById("custom-context-menu");
+  if (oldMenu) oldMenu.remove();
+
+  // Build a new menu
+  const menu = document.createElement("div");
+  menu.id = "custom-context-menu";
+  menu.style.position = "fixed";
+  menu.style.top = `${event.clientY}px`;
+  menu.style.left = `${event.clientX}px`;
+  menu.style.background = "#222";
+  menu.style.color = "white";
+  menu.style.borderRadius = "6px";
+  menu.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+  menu.style.padding = "6px 0";
+  menu.style.zIndex = 9999;
+  menu.style.minWidth = "160px";
+  menu.style.fontFamily = "Segoe UI, sans-serif";
+
+  // Get row data
+  const rowComponent = patientsTable.getRow(rowEl);
+  const rowData = rowComponent ? rowComponent.getData() : null;
+
+  // Define menu items
+  const items = [];
+
+  if (rowData) {
+    items.push(
+      { label: "Edit Patient", action: () => editPatient(rowData.cancer_registry_id) },
+      { label: "Delete", action: () => deletePatient(rowData.cancer_registry_id) }
+    );
+  }
+
+  // Always add Refresh
+  items.push({ label: "Refresh Data", action: () => patientsModule.initPatients(true) });
+
+  // Add items to menu
+  items.forEach((item) => {
+    const btn = document.createElement("div");
+    btn.textContent = item.label;
+    btn.style.padding = "6px 12px";
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", () => {
+      item.action();
+      menu.remove();
+    });
+    btn.addEventListener("mouseenter", () => (btn.style.background = "#444"));
+    btn.addEventListener("mouseleave", () => (btn.style.background = "transparent"));
+    menu.appendChild(btn);
+  });
+
+  document.body.appendChild(menu);
+
+  // Remove menu on click outside
+  document.addEventListener(
+    "click",
+    () => {
+      if (menu) menu.remove();
+    },
+    { once: true }
+  );
 }
 
 // =====================

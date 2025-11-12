@@ -882,3 +882,28 @@ body {
         font-size: 12px;
     }
 }
+
+/* ================= Patients Page Full-Height Layout ================= */
+.patients-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.controls-section {
+    flex: 0 0 auto; /* fixed height controls */
+    margin-bottom: 10px;
+}
+
+.tabulator-container {
+    flex: 1 1 auto; /* fill remaining space */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #3e3e42;
+    border-radius: 8px;
+    background: #252526;
+}
+
