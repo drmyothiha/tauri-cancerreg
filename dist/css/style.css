@@ -242,6 +242,7 @@ body {
 .content-area {
     flex: 1;
     background: #1e1e1e;
+	min-height: 0;
     overflow: auto;
 }
 

@@ -7,10 +7,21 @@
 .page-content {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  height: 100%;
+}
+
+.tabulator-container {
+  flex: 1;
+  height: 100%;
+  min-height: 0; /* VERY IMPORTANT */
+}
+
+.page-content {
+    padding-bottom: 15px !important; /* equals status bar height + 5px */
 }
 
 </style>
+
         <!-- Tabulator Container -->
         <div id="patients-table" class="tabulator-container">
 
