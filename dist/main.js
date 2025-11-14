@@ -10,84 +10,6 @@
   };
 
   // src/auth.js
-  function openLoginModal() {
-    const loginModal = document.getElementById("login-modal");
-    if (loginModal) {
-      loginModal.classList.add("show");
-      document.getElementById("login-error")?.classList.add("hidden");
-    }
-  }
-  function closeLoginModal() {
-    const loginModal = document.getElementById("login-modal");
-    if (loginModal) {
-      loginModal.classList.remove("show");
-      document.getElementById("login-error")?.classList.add("hidden");
-    }
-  }
-  function updateLoginStatus() {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const username = localStorage.getItem("username");
-    const loginItem = document.getElementById("login-menu-item");
-    const logoutItem = document.getElementById("logout-menu-item");
-    if (loginItem && logoutItem) {
-      if (isLoggedIn) {
-        loginItem.style.display = "none";
-        logoutItem.style.display = "flex";
-        const appTitle = document.querySelector(".app-title");
-        if (appTitle) appTitle.textContent = `My Tauri App (${username})`;
-      } else {
-        loginItem.style.display = "flex";
-        logoutItem.style.display = "none";
-        const appTitle = document.querySelector(".app-title");
-        if (appTitle) appTitle.textContent = "My Tauri App";
-      }
-    }
-  }
-  function showNotification(message, type = "info") {
-    const notification = document.createElement("div");
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <span class="notification-message">${message}</span>
-        <button class="notification-close" onclick="this.parentElement.remove()">
-            <span class="material-icons">close</span>
-        </button>
-    `;
-    if (!document.querySelector("#notification-styles")) {
-      const styles = document.createElement("style");
-      styles.id = "notification-styles";
-      styles.textContent = `
-            .notification {
-                position: fixed;
-                top: 60px;
-                right: 20px;
-                background: #333;
-                color: white;
-                padding: 12px 16px;
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            }
-            .notification-success { background: #4CAF50; }
-            .notification-error { background: #f44336; }
-            .notification-warning { background: #ff9800; }
-            .notification-close {
-                background: none;
-                border: none;
-                color: white;
-                cursor: pointer;
-                padding: 0;
-                display: flex;
-                align-items: center;
-            }
-        `;
-      document.head.appendChild(styles);
-    }
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 5e3);
-  }
   function getCached(endpoint, method = "GET") {
     if (method !== "GET") return null;
     const key = CACHE_PREFIX + `${method}:${endpoint}`;
@@ -110,32 +32,90 @@
     const key = CACHE_PREFIX + `${method}:${endpoint}`;
     localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
   }
-  async function apiFetch(endpoint, options = {}) {
+  async function apiFetch(endpoint, options = {}, useCache = true, cacheKey = null) {
     const method = (options.method || "GET").toUpperCase();
     const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
-    const token = localStorage.getItem("authToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...options.headers || {}
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const cached = getCached(endpoint, method);
-    if (cached) {
-      console.log("\u{1F4E6} Loaded from cache:", endpoint);
-      return cached;
-    }
-    const response = await fetch(url, { ...options, headers });
-    if (!response.ok) {
-      if (response.status === 401) {
-        logout2();
-        openLoginModal();
+    const effectiveCacheKey = cacheKey || endpoint;
+    console.log("\u{1F50D} apiFetch: Starting request for", endpoint);
+    if (method === "GET" && useCache) {
+      console.log("\u{1F50D} apiFetch: Checking for cached data for", effectiveCacheKey);
+      const cached = getCached(effectiveCacheKey, method);
+      if (cached) {
+        console.log("\u2705 apiFetch: Cache HIT - Found cached data for", effectiveCacheKey);
+        if (navigator.onLine) {
+          console.log("\u{1F310} apiFetch: Device is online - updating cache in background for", effectiveCacheKey);
+          (async () => {
+            try {
+              console.log("\u{1F504} apiFetch: Starting background network request for", effectiveCacheKey);
+              const token = localStorage.getItem("authToken");
+              const headers = {
+                "Content-Type": "application/json",
+                ...options.headers || {}
+              };
+              if (token) headers["Authorization"] = `Bearer ${token}`;
+              const response = await fetch(url, { ...options, headers });
+              if (response.ok) {
+                const freshData = await response.json();
+                setCached(effectiveCacheKey, freshData, method);
+                console.log("\u{1F504} apiFetch: Background cache update successful for", effectiveCacheKey);
+              } else {
+                console.log("\u26A0\uFE0F apiFetch: Background request failed with status", response.status, "for", effectiveCacheKey);
+              }
+            } catch (e) {
+              console.log("\u26A0\uFE0F apiFetch: Background request failed with error:", e.message, "for", effectiveCacheKey);
+            }
+          })();
+        } else {
+          console.log("\u{1F4F1} apiFetch: Device is offline - skipping background update for", effectiveCacheKey);
+        }
+        console.log("\u2705 apiFetch: Returning cached data immediately for", effectiveCacheKey);
+        return cached;
+      } else {
+        console.log("\u274C apiFetch: Cache MISS - No cached data found for", effectiveCacheKey);
       }
-      const errorText = await response.text();
-      throw new Error(`Request failed: ${response.status} ${errorText}`);
     }
-    const data = await response.json();
-    setCached(endpoint, data, method);
-    return data;
+    console.log("\u{1F310} apiFetch: Making network request to", url);
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers = {
+        "Content-Type": "application/json",
+        ...options.headers || {}
+      };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const response = await fetch(url, { ...options, headers });
+      if (!response.ok) {
+        console.log("\u274C apiFetch: Network request failed with status", response.status, "for", endpoint);
+        if (response.status === 401) {
+          console.log("\u{1F510} apiFetch: Unauthorized - logging out user for", endpoint);
+          logout2();
+          openLoginModal();
+        }
+        const errorText = await response.text();
+        throw new Error(`Request failed: ${response.status} ${errorText}`);
+      }
+      console.log("\u2705 apiFetch: Network request successful for", endpoint);
+      const data = await response.json();
+      if (method === "GET" && useCache) {
+        setCached(effectiveCacheKey, data, method);
+        console.log("\u{1F4BE} apiFetch: Saved response to cache for", effectiveCacheKey);
+      }
+      return data;
+    } catch (error) {
+      console.log("\u274C apiFetch: Network request threw error:", error.message, "for", endpoint);
+      if (method === "GET" && useCache) {
+        console.log("\u{1F50D} apiFetch: Checking for fallback cached data after network failure for", effectiveCacheKey);
+        const fallback = getCached(effectiveCacheKey, method);
+        if (fallback) {
+          console.log("\u2705 apiFetch: Network failed but fallback cache found - returning cached data for", effectiveCacheKey);
+          console.log("\u{1F4F1} apiFetch: Running in OFFLINE mode for", effectiveCacheKey);
+          return fallback;
+        } else {
+          console.log("\u274C apiFetch: Network failed and no fallback cache available for", effectiveCacheKey);
+        }
+      }
+      console.log("\u{1F4A5} apiFetch: No cache available and network failed - throwing error for", endpoint);
+      throw error;
+    }
   }
   function logout2() {
     localStorage.removeItem("isLoggedIn");
@@ -147,70 +127,28 @@
     updateLoginStatus();
     showNotification("Logged out successfully", "success");
   }
+  function updateLoginStatus() {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const username = localStorage.getItem("username");
+    const loginItem = document.getElementById("login-menu-item");
+    const logoutItem = document.getElementById("logout-menu-item");
+    if (loginItem && logoutItem) {
+      if (isLoggedIn) {
+        loginItem.style.display = "none";
+        logoutItem.style.display = "flex";
+        const appTitle = document.querySelector(".app-title");
+        if (appTitle) appTitle.textContent = `My Tauri App (${username})`;
+      } else {
+        loginItem.style.display = "flex";
+        logoutItem.style.display = "none";
+        const appTitle = document.querySelector(".app-title");
+        if (appTitle) appTitle.textContent = "My Tauri App";
+      }
+    }
+  }
   var API_BASE, CACHE_PREFIX;
   var init_auth = __esm({
     "src/auth.js"() {
-      document.addEventListener("DOMContentLoaded", () => {
-        const loginModal = document.getElementById("login-modal");
-        const cancelBtn = document.getElementById("cancel-login");
-        const loginForm = document.getElementById("login-form");
-        const loginMenuItem = document.getElementById("login-menu-item");
-        loginMenuItem?.addEventListener("click", openLoginModal);
-        cancelBtn?.addEventListener("click", closeLoginModal);
-        document.addEventListener("click", (e) => {
-          if (e.target === loginModal) closeLoginModal();
-        });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && loginModal?.classList.contains("show")) {
-            closeLoginModal();
-          }
-        });
-        if (loginForm) {
-          loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const username = document.getElementById("login-username").value.trim();
-            const password = document.getElementById("login-password").value.trim();
-            const errorEl = document.getElementById("login-error");
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
-            errorEl.classList.add("hidden");
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="material-icons">hourglass_empty</span> Logging in...';
-            try {
-              const res = await fetch("https://api.cancerreg.org/v1/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-              });
-              const data = await res.json();
-              if (res.ok && data.token) {
-                localStorage.setItem("isLoggedIn", "true");
-                localStorage.setItem("username", username);
-                localStorage.setItem("authToken", data.token);
-                updateLoginStatus();
-                showNotification(`Welcome ${username}!`, "success");
-                closeLoginModal();
-                if (window.tabManager && window.tabManager.currentTab) {
-                  const currentTab = window.tabManager.currentTab;
-                  if (currentTab.includes("home.html") || currentTab.includes("patients.html")) {
-                    const activeButton = document.querySelector(".tab-button.active");
-                    if (activeButton) window.tabManager.switchTab(activeButton);
-                  }
-                }
-              } else {
-                errorEl.textContent = data.message || "Invalid credentials";
-                errorEl.classList.remove("hidden");
-              }
-            } catch {
-              errorEl.textContent = "Network error: Unable to connect to server";
-              errorEl.classList.remove("hidden");
-            } finally {
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = '<span class="material-icons">login</span> Login';
-            }
-          });
-        }
-        updateLoginStatus();
-      });
       API_BASE = "https://api.cancerreg.org/v1";
       CACHE_PREFIX = "apiCache:";
     }
@@ -37042,8 +36980,7 @@
     if (errorEl) errorEl.classList.add("hidden");
     if (tableContainer) tableContainer.style.opacity = "0.5";
     try {
-      const patientsData = await apiFetch("/pts", {}, true, "patientsListData", forceReload);
-      console.log("Loaded patients:", patientsData?.length || 0, "records");
+      const patientsData = await apiFetch("/pts", {}, true, "patientsListData");
       initializeTabulator(patientsData || []);
       showNotification3("Patients loaded successfully!", "success");
     } catch (err) {
@@ -37062,6 +36999,19 @@
     if (patientsTable) {
       patientsTable.destroy();
     }
+    const calculateOptimalPageSize = () => {
+      const containerRect = tableContainer.getBoundingClientRect();
+      const availableHeight = containerRect.height || (document.querySelector(".content-area")?.clientHeight || window.innerHeight * 0.7);
+      const estimatedRowHeight = 32;
+      let calculatedSize = Math.max(1, Math.floor(availableHeight / estimatedRowHeight) - 1);
+      const validSizes = [6, 12, 18, 24, 30, 36, 42, 48];
+      let optimalSize = validSizes.reduce(
+        (prev, curr) => Math.abs(curr - calculatedSize) < Math.abs(prev - calculatedSize) ? curr : prev
+      );
+      optimalSize = Math.max(6, Math.min(48, optimalSize));
+      return optimalSize;
+    };
+    const initialPageSize = calculateOptimalPageSize();
     const columns = [
       { title: "No", field: "cancer_registry_id", widthGrow: 1, headerFilter: "input", headerFilterPlaceholder: "Search Reg ID..." },
       { title: "Name", field: "Name", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search name..." },
@@ -37083,14 +37033,25 @@
       columns,
       layout: "fitColumns",
       pagination: true,
-      paginationSize: 18,
-      paginationSizeSelector: [10, 15, 20, 25],
+      paginationSize: initialPageSize,
+      paginationSizeSelector: [6, 12, 18, 24, 30, 36, 42, 48],
+      // Expanded options for better fit
       paginationCounter: "rows",
       movableColumns: true,
       responsiveLayout: "collapse",
       initialSort: [
-        { column: "tx_id", dir: "asc" }
-      ]
+        { column: "cancer_registry_id", dir: "asc" }
+      ],
+      // Update pagination size when table is rendered or data is loaded
+      renderComplete: () => {
+        setTimeout(() => {
+          const currentPageSize = patientsTable.getPageSize();
+          const recalculatedSize = calculateOptimalPageSize();
+          if (Math.abs(recalculatedSize - currentPageSize) > 4) {
+            patientsTable.setPageSize(recalculatedSize);
+          }
+        }, 100);
+      }
     });
     const searchInput = document.getElementById("searchInput");
     if (searchInput) {

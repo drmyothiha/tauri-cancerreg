@@ -19,8 +19,7 @@ export async function initPatients(forceReload = true) {
     if (tableContainer) tableContainer.style.opacity = "0.5";
 
     try {
-        const patientsData = await apiFetch('/pts', {}, true, 'patientsListData', forceReload);
-        console.log("Loaded patients:", patientsData?.length || 0, "records");
+        const patientsData = await apiFetch('/pts', {}, true, 'patientsListData');
 
         initializeTabulator(patientsData || []);
         showNotification("Patients loaded successfully!", "success");
@@ -48,18 +47,46 @@ function initializeTabulator(patientsData) {
         patientsTable.destroy();
     }
 
-const columns = [
-    { title: "No", field: "cancer_registry_id", widthGrow: 1, headerFilter: "input", headerFilterPlaceholder: "Search Reg ID..." },
-    { title: "Name", field: "Name", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search name..." },
-    { 
-        title: "Sex", field: "Sex", widthGrow: 1, hozAlign: "center",
-        headerFilter: "input", headerFilterPlaceholder: "Filter sex...",
-        formatter: cell => (cell.getValue() ? cell.getValue().toUpperCase() : '-')
-    },
-    { title: "Date of Birth", field: "dob", widthGrow: 1.5, headerFilter: "input", headerFilterPlaceholder: "Filter DOB..." },
-    { title: "Disease", field: "Disease", widthGrow: 3, headerFilter: "input", headerFilterPlaceholder: "Search disease..." },
-    { title: "Hospital", field: "Hospital", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search hospital..." }
-];
+    // Calculate optimal pagination size
+    const calculateOptimalPageSize = () => {
+        // Get the available height in the content area
+        const containerRect = tableContainer.getBoundingClientRect();
+        const availableHeight = containerRect.height || 
+                               (document.querySelector('.content-area')?.clientHeight || window.innerHeight * 0.7);
+        
+        // Estimate row height (adjust this value based on your actual row height)
+        const estimatedRowHeight = 32; // Approximate height of a Tabulator row
+        
+        // Calculate how many rows fit in the available space (with some margin)
+        let calculatedSize = Math.max(1, Math.floor(availableHeight / estimatedRowHeight) - 1); // -1 for safety margin
+        
+        // Ensure it's within your selector options [12, 24, 36, 48]
+        const validSizes = [6, 12, 18, 24, 30, 36, 42, 48];
+        // Find the closest valid size
+        let optimalSize = validSizes.reduce((prev, curr) => 
+            Math.abs(curr - calculatedSize) < Math.abs(prev - calculatedSize) ? curr : prev
+        );
+        
+        // Ensure minimum and maximum bounds
+        optimalSize = Math.max(6, Math.min(48, optimalSize));
+        
+        return optimalSize;
+    };
+
+    const initialPageSize = calculateOptimalPageSize();
+
+    const columns = [
+        { title: "No", field: "cancer_registry_id", widthGrow: 1, headerFilter: "input", headerFilterPlaceholder: "Search Reg ID..." },
+        { title: "Name", field: "Name", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search name..." },
+        { 
+            title: "Sex", field: "Sex", widthGrow: 1, hozAlign: "center",
+            headerFilter: "input", headerFilterPlaceholder: "Filter sex...",
+            formatter: cell => (cell.getValue() ? cell.getValue().toUpperCase() : '-')
+        },
+        { title: "Date of Birth", field: "dob", widthGrow: 1.5, headerFilter: "input", headerFilterPlaceholder: "Filter DOB..." },
+        { title: "Disease", field: "Disease", widthGrow: 3, headerFilter: "input", headerFilterPlaceholder: "Search disease..." },
+        { title: "Hospital", field: "Hospital", widthGrow: 2, headerFilter: "input", headerFilterPlaceholder: "Search hospital..." }
+    ];
 
     // Initialize Tabulator
     patientsTable = new Tabulator(tableContainer, {
@@ -67,14 +94,25 @@ const columns = [
         columns: columns,
         layout: "fitColumns",
         pagination: true,
-        paginationSize: 18,
-        paginationSizeSelector: [10, 15, 20, 25],
+        paginationSize: initialPageSize,
+        paginationSizeSelector: [6, 12, 18, 24, 30, 36, 42, 48], // Expanded options for better fit
         paginationCounter: "rows",
         movableColumns: true,
         responsiveLayout: "collapse",
         initialSort: [
-            {column: "tx_id", dir: "asc"}
-        ]
+            {column: "cancer_registry_id", dir: "asc"}
+        ],
+        // Update pagination size when table is rendered or data is loaded
+        renderComplete: () => {
+            // Optionally recalculate if needed after rendering
+            setTimeout(() => {
+                const currentPageSize = patientsTable.getPageSize();
+                const recalculatedSize = calculateOptimalPageSize();
+                if (Math.abs(recalculatedSize - currentPageSize) > 4) { // Only change if significantly different
+                    patientsTable.setPageSize(recalculatedSize);
+                }
+            }, 100);
+        }
     });
 
     // Add search functionality
