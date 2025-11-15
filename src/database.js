@@ -4,7 +4,7 @@ console.log('Database script loaded');  // Test log
 
 const dbPath = await invoke('get_db_path');
 const db = await Database.load(`sqlite:${dbPath}`);
-
+console.log(db);
 async function testDatabase() {
     try {
         const db = await Database.load('sqlite:all.db');
@@ -31,8 +31,8 @@ async function testDatabase() {
         console.error('Database error:', error);
     }
 }
-   
+ testDatabase();  
 // Run the test
 document.addEventListener('DOMContentLoaded', () => {
- //testDatabase();
+ 
 });
