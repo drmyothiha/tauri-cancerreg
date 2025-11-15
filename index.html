@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tauri App</title>
+    <title>CancerReg</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Material Icons for VS Code-like icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <!-- Custom Title Bar -->
@@ -17,7 +15,7 @@
         <!-- App Icon and Title -->
         <div class="titlebar-left">
             <div class="app-icon">💻</div>
-            <span class="network-status app-title">My Tauri App</span>
+            <span class="app-title">CancerReg</span>
         </div>
 
         <!-- Menu Bar (VS Code Style) -->
@@ -95,15 +93,15 @@
             <div class="menu-item" data-menu="view">
                 View
                 <div class="menu-dropdown" id="view-menu">
-                    <div class="menu-option" data-action="command-palette">
+                    <div class="menu-option" data-action="refresh-dashboard">
                         <span class="menu-icon">⌘</span>
-                        Command Palette...
+                        Refresh Dashboard
                         <span class="menu-shortcut">Ctrl+Shift+P</span>
                     </div>
                     <div class="menu-divider"></div>
-                    <div class="menu-option" data-action="zoom-in">
+                    <div class="menu-option" id="refreshPatients" >
                         <span class="menu-icon">🔍</span>
-                        Zoom In
+                        Refresh Patients
                         <span class="menu-shortcut">Ctrl+=</span>
                     </div>
                     <div class="menu-option" data-action="zoom-out">
@@ -151,6 +149,7 @@
                 <span>×</span>
             </button>
         </div>
+
     </div>
 
     <!-- Main Content Area -->
@@ -170,9 +169,9 @@
             <span class="material-icons">groups</span>
             Patients
         </button>
-        <button class="tab-button" data-page="report.html">
+        <button class="tab-button" data-page="settings.html">
             <span class="material-icons">assessment</span>
-            Report
+            Settings
         </button>
     </div>
 </nav>
@@ -187,22 +186,27 @@
             </div>
         </main>
     </div>
-<!-- Bottom Toolbar -->
-<div class="bottom-toolbar">
-  <div class="status-left">
-    <span class="material-icons">wifi</span>
-    <span id="network-status-text">Checking network...</span>
-  </div>
-  <div class="status-right">
-    <span class="material-icons">info</span>
-    <span>v1.0.0</span>
-  </div>
-</div>
-	
-    <script type="module" src="/src/titlebar.js"></script>
-	
-	<script type="module" src="src/auth.js"></script> 
-    <script type="module" src="src/tabs.js"></script>
+<!-- Status Bar (VS Code Style) -->
+<div class="status-bar">
+    <div class="status-bar-left">
+        <div class="status-item" id="online-status">
+            <span class="status-icon">🌐</span>
+            <span class="status-text">Online</span>
+        </div>
+        <div class="status-item" id="user-status" style="display: none;">
+            <span class="status-icon">👤</span>
+            <span class="status-text" id="username-display">Guest</span>
+        </div>
+    </div>
+    <div class="status-bar-right">
+        <div class="status-item">
+            <span class="status-icon">⚡</span>
+            <span class="status-text">Ready</span>
+        </div>
+    </div>
+</div>	
+<!-- Remove individual script imports and use just one -->
+<script type="module" src="src/main.js"></script>
 
 
 <!-- Modal -->
@@ -210,7 +214,6 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3 class="modal-title">Login</h3>
-      <button type="button" class="modal-close" id="close-login">&times;</button>
     </div>
 
     <form id="login-form">
@@ -233,52 +236,6 @@
     </form>
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const loginModal = document.getElementById('login-modal');
-  const cancelBtn = document.getElementById('cancel-login');
-  const loginForm = document.getElementById('login-form');
-
-  function openLoginModal() {
-    loginModal.classList.add('show');
-  }
-
-  function closeLoginModal() {
-    loginModal.classList.remove('show');
-    document.getElementById('login-error').style.display = 'none';
-  }
-
-  // Open modal from menu
-  const loginMenuItem = document.getElementById('login-menu-item');
-  loginMenuItem?.addEventListener('click', openLoginModal);
-
-  // Cancel button closes modal
-  cancelBtn?.addEventListener('click', closeLoginModal);
-
-  // Close by clicking on overlay
-  loginModal.addEventListener('click', e => {
-    if (e.target === loginModal) closeLoginModal();
-  });
-
-  // Login form submission
-  loginForm?.addEventListener('submit', e => {
-    e.preventDefault();
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
-
-    // TODO: replace this with your fetch to API
-    if (username === 'admin' && password === '1234') {
-      alert('Login success');
-      closeLoginModal();
-    } else {
-      const errorEl = document.getElementById('login-error');
-      errorEl.style.display = 'block';
-    }
-  });
-});
-</script>
-
 
 
 

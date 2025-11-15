@@ -1,4 +1,8 @@
-class TabManager {
+// src/tabs.js
+import { loadRealDashboard, initHomePage } from './home.js';
+import { initPatients, initPatientsPage, exportToExcel, editPatient, deletePatient } from './patients.js';
+
+export class TabManager {
     constructor() {
         this.currentTab = null;
         this.cache = new Map();
@@ -22,42 +26,48 @@ class TabManager {
 
     async switchTab(button) {
         if (!button) return;
-        
         const page = button.getAttribute('data-page');
-        
+
         // Don't reload if already active
         if (this.currentTab === page) return;
 
         // Update UI
         this.updateActiveButton(button);
-        
+
         // Show loading state
         this.showLoading();
 
         try {
-            // Load and display the page
+            // Load page content
             const content = await this.loadPage(page);
             this.displayContent(content);
             this.currentTab = page;
+
+            if (page === 'home.html') {
+                // Use setTimeout to ensure DOM elements exist
+                setTimeout(() => {
+                    loadRealDashboard(false);
+                }, 0);
+            } else if (page === 'patients.html') {
+                // Initialize patients page
+                setTimeout(() => {
+                    initPatientsPage();
+                }, 0);
+            }
+
         } catch (error) {
             this.showError(`Failed to load ${page}`, error);
         }
     }
 
     updateActiveButton(activeButton) {
-        // Remove active class from all buttons
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Add active class to clicked button
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         activeButton.classList.add('active');
     }
 
     showLoading() {
         const container = document.getElementById('content-container');
         if (!container) return;
-        
         container.innerHTML = `
             <div class="loading">
                 <div class="spinner"></div>
@@ -70,7 +80,6 @@ class TabManager {
         console.error('Tab loading error:', error);
         const container = document.getElementById('content-container');
         if (!container) return;
-        
         container.innerHTML = `
             <div class="error-message">
                 <h3>⚠️ Oops!</h3>
@@ -78,56 +87,30 @@ class TabManager {
                 <button class="retry-button">Try Again</button>
             </div>
         `;
-
-        // Add event listener to retry button
         const retryButton = container.querySelector('.retry-button');
         if (retryButton) {
             retryButton.addEventListener('click', () => {
                 const activeButton = document.querySelector('.tab-button.active');
-                if (activeButton) {
-                    this.switchTab(activeButton);
-                }
+                if (activeButton) this.switchTab(activeButton);
             });
         }
     }
 
     async loadPage(page) {
-        // Check cache first
-        if (this.cache.has(page)) {
-            return this.cache.get(page);
-        }
+        if (this.cache.has(page)) return this.cache.get(page);
 
-        // Fetch the page
-fetch("app://localhost/pages/home.html")
-  .then(r => r.text())
-  .then(html => {
-    document.querySelector(".welcome-message").innerHTML = html;
-  })
-  .catch(err => {
-  document.body.innerHTML += `<pre style="color:red">${err}</pre>`;
-});
-
-
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`pages/${page}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const content = await response.text();
-        
-        // Cache the content
         this.cache.set(page, content);
-        
         return content;
     }
 
     displayContent(content) {
         const container = document.getElementById('content-container');
         if (!container) return;
-        
         container.innerHTML = content;
-        
-        // Execute any scripts in the loaded content
         this.executeScripts(container);
     }
 
@@ -135,31 +118,49 @@ fetch("app://localhost/pages/home.html")
         const scripts = container.querySelectorAll('script');
         scripts.forEach(script => {
             const newScript = document.createElement('script');
-            if (script.src) {
-                newScript.src = script.src;
-            } else {
-                newScript.textContent = script.textContent;
-            }
+            if (script.src) newScript.src = script.src;
+            else newScript.textContent = script.textContent;
             document.body.appendChild(newScript);
             document.body.removeChild(newScript);
         });
     }
 
-    // Utility method to switch tabs by page name
     switchToPage(pageName) {
         const button = document.querySelector(`[data-page="${pageName}"]`);
-        if (button) {
-            this.switchTab(button);
-        }
+        if (button) this.switchTab(button);
     }
 
-    // Clear cache if needed
     clearCache() {
         this.cache.clear();
     }
+    
+    // Method to refresh the current page if it's home
+    refreshCurrentPage() {
+        if (this.currentTab === 'home.html') {
+            loadRealDashboard(true); // force reload
+        } else if (this.currentTab === 'patients.html') {
+            initPatients(true); // force reload
+        }
+    }
 }
 
-// Initialize tab manager when page loads
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.tabManager = new TabManager();
+    
+    // Expose the loadRealDashboard function globally so titlebar can call it
+    window.loadRealDashboard = loadRealDashboard;
+    window.refreshCurrentPage = () => {
+        if (window.tabManager) {
+            window.tabManager.refreshCurrentPage();
+        }
+    };
+    
+    // Also expose patients functions globally for use in HTML onclick attributes
+    window.patientsModule = {
+        initPatients,
+        exportToExcel,
+        editPatient,
+        deletePatient
+    };
 });

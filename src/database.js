@@ -1,10 +1,15 @@
 import { invoke } from '@tauri-apps/api/core';
-import Database from '@tauri-apps/plugin-sql';  // <-- Change to this
+import Database from '@tauri-apps/plugin-sql';  
+
 console.log('Database script loaded');  // Test log
 
 const dbPath = await invoke('get_db_path');
-const db = await Database.load(`sqlite:${dbPath}`);
-console.log(db);
+//const db = await Database.load(`sqlite:${dbPath}`);
+//window.__TAURI__.plugin.sql.load("sqlite:all.db")
+//OR
+// import Database from "@tauri-apps/plugin-sql";
+// const db = await Database.load("sqlite:all.db");
+console.log(dbPath);
 async function testDatabase() {
     try {
         const db = await Database.load('sqlite:all.db');

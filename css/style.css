@@ -13,6 +13,30 @@ body {
     overflow: hidden;
 }
 
+/* fallback */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(g.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 /* Custom Title Bar */
 .titlebar {
     height: 30px;
@@ -218,6 +242,7 @@ body {
 .content-area {
     flex: 1;
     background: #1e1e1e;
+	min-height: 0;
     overflow: auto;
 }
 
@@ -384,6 +409,13 @@ body {
     margin-top: 15px;
 }
 
+/* Network Status */
+.network-status {
+    font-size: 12px;
+    color: #888;
+    padding: 0 10px;
+}
+
 
   /* ===== Modal Overlay ===== */
 .modal-overlay {
@@ -495,36 +527,384 @@ body {
     font-size: 14px;
   }
   
-/* Network Status */
-.network-status {
+  /* Status Bar Styles */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    background: var(--status-bar-bg, #1e1e1e);
+    color: var(--status-bar-text, #ffffff);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
     font-size: 12px;
+    border-top: 1px solid #3e3e42;
+    z-index: 1000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.status-bar-left,
+.status-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+}
+
+.status-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-icon {
+    font-size: 11px;
+}
+
+.status-text {
+    font-weight: 500;
+}
+
+/* Online/Offline status colors */
+.status-online {
+    background: var(--online-color, #1e1e1e);
+}
+
+.status-offline {
+    background: var(--offline-color, #1e1e1e);
+}
+
+/* Adjust main container to accommodate status bar */
+.main-container {
+    margin-bottom: 22px; /* Same as status bar height */
+}
+
+/* Patients Container */
+.patients-container {
+    margin-top: 20px;
+}
+
+/* Controls Section */
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #252526;
+    border-radius: 8px;
+    border: 1px solid #3e3e42;
+}
+
+.controls-left {
+    display: flex;
+    gap: 12px;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Control Buttons */
+.control-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-button {
+    background: #4ec9b0;
+    color: #000;
+}
+
+.export-button:hover {
+    background: #45b7a0;
+}
+
+.refresh-button {
+    background: #007acc;
+    color: white;
+}
+
+.refresh-button:hover {
+    background: #005a9e;
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
     color: #888;
-    padding: 0 10px;
-}
-.bottom-toolbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 28px;
-  background-color: #1e1e1e;
-  color: #ccc;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  font-size: 13px;
-  border-top: 1px solid #333;
-  z-index: 1000;
+    font-size: 20px;
 }
 
-.status-left, .status-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.search-input {
+    background: #2d2d30;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+    padding: 10px 16px 10px 40px;
+    color: #ffffff;
+    font-size: 14px;
+    width: 300px;
+    transition: all 0.2s;
 }
 
-.material-icons {
-  font-size: 16px;
-  vertical-align: middle;
+.search-input:focus {
+    outline: none;
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
 }
+
+.search-input::placeholder {
+    color: #666;
+}
+
+/* Tabulator Container */
+.tabulator-container {
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Tabulator Custom Styling for Dark Theme */
+.tabulator {
+    background: #252526 !important;
+    color: #cccccc !important;
+    border: none !important;
+}
+
+.tabulator .tabulator-header {
+    background: #2d2d30 !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #3e3e42 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+    background: #2d2d30 !important;
+    border-right: 1px solid #3e3e42 !important;
+    color: #ffffff !important;
+}
+
+.tabulator .tabulator-header .tabulator-col:hover {
+    background: #3e3e42 !important;
+}
+
+.tabulator .tabulator-tableHolder {
+    background: #252526 !important;
+}
+
+.tabulator .tabulator-table {
+    background: #252526 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-row {
+    background: #252526 !important;
+    border-bottom: 1px solid #3e3e42 !important;
+}
+
+.tabulator-row:hover {
+    background: #2d2d30 !important;
+}
+
+.tabulator-row.tabulator-row-even {
+    background: #2a2a2a !important;
+}
+
+.tabulator-row.tabulator-row-even:hover {
+    background: #323232 !important;
+}
+
+.tabulator-cell {
+    border-right: 1px solid #3e3e42 !important;
+    color: #cccccc !important;
+}
+
+/* Pagination Styling */
+.tabulator-footer {
+    background: #2d2d30 !important;
+    border-top: 1px solid #3e3e42 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-paginator {
+    background: #2d2d30 !important;
+    color: #cccccc !important;
+}
+
+.tabulator-page {
+    background: #3e3e42 !important;
+    color: #cccccc !important;
+    border: 1px solid #3e3e42 !important;
+}
+
+.tabulator-page.active {
+    background: #007acc !important;
+    color: #ffffff !important;
+}
+
+.tabulator-page:hover:not(.disabled) {
+    background: #4ec9b0 !important;
+    color: #000000 !important;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-btn {
+    background: #007acc;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #005a9e;
+}
+
+.delete-btn {
+    background: #f48771;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #e57367;
+}
+
+.action-btn .material-icons {
+    font-size: 16px;
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #888;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top: 3px solid #007acc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.error-state .material-icons {
+    font-size: 48px;
+    color: #f48771;
+    margin-bottom: 16px;
+}
+
+.retry-button {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.retry-button:hover {
+    background: #005a9e;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .controls-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .controls-left, .controls-right {
+        justify-content: center;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .tabulator-container {
+        font-size: 12px;
+    }
+}
+
+/* ================= Patients Page Full-Height Layout ================= */
+.patients-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.controls-section {
+    flex: 0 0 auto; /* fixed height controls */
+    margin-bottom: 10px;
+}
+
+.tabulator-container {
+    flex: 1 1 auto; /* fill remaining space */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #3e3e42;
+    border-radius: 8px;
+    background: #252526;
+}
+
